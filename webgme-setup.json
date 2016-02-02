@@ -1,0 +1,23 @@
+{
+  "components": {
+    "addons": {},
+    "decorators": {},
+    "layouts": {},
+    "plugins": {
+      "MOCACodeGenerator": {
+        "src": "src\\plugins\\MOCACodeGenerator",
+        "test": "test\\plugins\\MOCACodeGenerator"
+      }
+    },
+    "seeds": {},
+    "visualizers": {}
+  },
+  "dependencies": {
+    "addons": {},
+    "decorators": {},
+    "layouts": {},
+    "plugins": {},
+    "seeds": {},
+    "visualizers": {}
+  }
+}

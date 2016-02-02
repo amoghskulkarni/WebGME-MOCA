@@ -1,0 +1,15 @@
+#!/usr/bin/python
+print "<%= OpenMDAOProblem.name %>"
+<%
+var i;
+for (i = 0; i < OpenMDAOProblem.children.length; i += 1) {
+%>
+print "child " + "<%= i %>: " \
+    + "Name - " + "<%= OpenMDAOProblem.children[i].name %> " \
+    + "Id - " + "<%= OpenMDAOProblem.children[i].id %> " \
+    + "Meta - " + "<%= OpenMDAOProblem.children[i].meta %>"
+<%
+}
+%>
+
+dummy = raw_input("Press enter to exit..")
