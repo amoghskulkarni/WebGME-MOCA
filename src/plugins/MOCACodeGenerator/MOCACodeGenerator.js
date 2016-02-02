@@ -81,32 +81,11 @@ define([
             nodeObject;
         nodeObject = self.activeNode;
 
-        // Using the logger.
-//         self.logger.debug('This is a debug message.');
-//         self.logger.info('This is an info message.');
-//         self.logger.warn('This is a warning message.');
-//         self.logger.error('This is an error message.');
         if (self.core.getPath(nodeObject) === '' ||
             self.core.getAttribute(self.getMetaType(nodeObject), 'name') !== 'Problem') {
-            callback(new Error('Active node is not a "UMLStateMachine".'), self.result);
+            callback(new Error('Active node is not a "OpenMDAO Problem".'), self.result);
             return;
         }
-
-        // Using the coreAPI to make changes.
-//         self.core.setAttribute(nodeObject, 'name', 'My new obj');
-//         self.core.setRegistry(nodeObject, 'position', {x: 70, y: 70});
-
-
-        // This will save the changes. If you don't want to save;
-        // exclude self.save and call callback directly from this scope.
-//         self.save('MOCACodeGenerator updated model.', function (err) {
-//             if (err) {
-//                 callback(err, self.result);
-//                 return;
-//             }
-//             self.result.setSuccess(true);
-//             callback(null, self.result);
-//         });
 
         self.generateDataModel(nodeObject)
             .then(function (dataModel) {
@@ -148,17 +127,6 @@ define([
                 metaType;
 
             for (i = 0; i < children.length; i += 1) {
-//                 if (self.isMetaTypeOf(children[i], self.META.StateBase) === true) {
-
-//                     statePromises.push(self.getStateData(children[i]));
-//                     metaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
-
-//                     if (metaType === 'Initial') {
-//                         dataModel.stateMachine.initialState = self.core.getPath(children[i]);
-//                     } else if (metaType === 'End') {
-//                         dataModel.stateMachine.finalStates.push(self.core.getPath(children[i]));
-//                     }
-//                 }
                 childPromises.push(self.getChildData(children[i]));
             }
 
@@ -186,50 +154,6 @@ define([
             counter;
 
         deferred.resolve(childData);
-
-//         function atDestinationState(connection) {
-
-//             return function (err, dstState) {
-//                 if (err) {
-//                     error = new Error(err);
-//                 } else {
-//                     stateData.transitions.push({
-//                         event: self.core.getAttribute(connection, 'event'),
-//                         targetId: self.core.getPath(dstState),
-//                         targetName: self.core.getAttribute(dstState, 'name'),
-//                     });
-//                 }
-
-//                 counter -= 1;
-//                 if (counter === 0) {
-//                     if (error) {
-//                         deferred.reject(error);
-//                     } else {
-//                         deferred.resolve(stateData);
-//                     }
-//                 }
-//             }
-//         }
-
-        // Load all connections going out from the stateNode, i.e. has the stateNode as 'src'.
-//         self.core.loadCollection(stateNode, 'src', function (err, connections) {
-//             if (err) {
-//                 deferred.reject(new Error(err));
-//                 return;
-//             }
-//             var i;
-//             counter = connections.length;
-
-//             // For each connection load the destination state.
-//             for (i = 0; i < connections.length; i += 1) {
-//                 self.core.loadPointer(connections[i], 'dst', atDestinationState(connections[i]));
-//             }
-
-//             // Make sure to resolve when there are no connections.
-//             if (connections.length === 0) {
-//                 deferred.resolve(stateData);
-//             }
-//         });
 
         return deferred.promise;
     };
