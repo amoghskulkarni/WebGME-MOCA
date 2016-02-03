@@ -32,13 +32,10 @@ define([
         // Call base class' constructor.
         PluginBase.call(this);
 
-        this.LANGUAGES = [
+        this.FILES = [
             {
-                name: 'Python',
-                generated: 'python.generated.py.ejs',
-                batFile: 'python.bat.ejs',
-                static: 'python.simulator.py.ejs',
-                fileExtension: 'py'
+                name: 'components',
+                template: 'moca.components.generated.py.ejs'
             }
         ];
     };
@@ -81,9 +78,9 @@ define([
             nodeObject;
         nodeObject = self.activeNode;
 
-        if (self.core.getPath(nodeObject) === '' ||
-            self.core.getAttribute(self.getMetaType(nodeObject), 'name') !== 'Problem') {
-            callback(new Error('Active node is not a "OpenMDAO Problem".'), self.result);
+        if (self.core.getParent(nodeObject) === null &&
+            self.core.getAttribute(nodeObject, 'name') !== "ROOT") {
+            callback(new Error('The plugin has to be executed from ROOT.'), self.result);
             return;
         }
 
@@ -106,68 +103,54 @@ define([
     };
 
 
-    MOCACodeGenerator.prototype.generateDataModel = function (problemNode) {
+    MOCACodeGenerator.prototype.generateDataModel = function (rootNode) {
         var self = this,
             deferred = new Q.defer(),
             dataModel = {
-                OpenMDAOProblem: {
-                    name: self.core.getAttribute(problemNode, 'name'),
-                    driver: self.core.getAttribute(problemNode, 'Driver'),
-                    comps: [],
-                    groups: [],
-                    desvars: [],
-                    objectives: [],
-                    records: []
-                }
+                comps: [],
+                groups: [],
+                problems: [
+                    // {
+                    //     name:
+                    //     driver:
+                    //     comps: [],
+                    //     groups: [],
+                    //     desvars: [],
+                    //     objectives: [],
+                    //     records: []
+                    // }
+                ]
             };
 
 
-        self.core.loadChildren(problemNode, function (err, children) {
+        self.core.loadChildren(rootNode, function (err, children) {
             if (err) {
                 deferred.reject(new Error(err));
                 return;
             }
             var componentPromises = [],
                 groupPromises = [],
-                designvariablePromises = [],
-                objectivePromises = [],
-                recordPromises = [],
-                i;
+                problemPromises = [];
 
-            for (i = 0; i < children.length; i += 1) {
-              if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Component')
-                  componentPromises.push(self.getComponentData(children[i]));
-//               else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
-//                   groupPromises.push(self.getGroupData(children[i]));
-              else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'DesignVariable')
-                  designvariablePromises.push(self.getDesignVariableData(children[i]));
-              else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Objective')
-                  objectivePromises.push(self.getObjectiveData(children[i]));
-              else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Record')
-                  recordPromises.push(self.getRecordData(children[i]));
-                // childPromises.push(self.getChildData(children[i]));
+            for (var i = 0; i < children.length; i += 1) {
+                if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Component')
+                    componentPromises.push(self.getComponentData(children[i]));
+                // else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
+                //     groupPromises.push(self.getGroupData(children[i]));
+                // else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Problem')
+                //     problemPromises.push(self.getProblemData(children[i]));
             }
 
             Q.all(componentPromises)
                 .then(function (componentsData) {
-                    dataModel.OpenMDAOProblem.comps = componentsData;
+                    dataModel.comps = componentsData;
                     Q.all(groupPromises)
                         .then(function (groupsData) {
-                            dataModel.OpenMDAOProblem.groups = groupsData;
-                            Q.all(designvariablePromises)
-                                .then(function (designvariablesData) {
-                                    dataModel.OpenMDAOProblem.desvars = designvariablesData;
-                                    Q.all(objectivePromises)
-                                        .then(function (objectivesData) {
-                                            dataModel.OpenMDAOProblem.objectives = objectivesData;
-                                            Q.all(recordPromises)
-                                                .then(function (recordData) {
-                                                    dataModel.OpenMDAOProblem.records = recordData;
-                                                    deferred.resolve(dataModel);
-                                                })
-                                                .catch(deferred.reject);
-                                        })
-                                        .catch(deferred.reject);
+                            dataModel.groups = groupsData;
+                            Q.all(problemPromises)
+                                .then(function (problemsData) {
+                                    dataModel.problems = problemsData;
+                                    deferred.resolve(dataModel);
                                 })
                                 .catch(deferred.reject);
                         })
@@ -184,7 +167,8 @@ define([
             deferred = new Q.defer(),
             componentData = {
                 name: self.core.getAttribute(componentNode, 'name'),
-                base: self.core.getAttribute(componentNode, 'name'),
+                type: self.core.getAttribute(componentNode, 'Type'),
+                force_fd: self.core.getAttribute(componentNode, 'ForceFD'),
                 parameters: [],
                 unknowns: [],
                 residues: []
@@ -200,14 +184,13 @@ define([
                 residuePromises = [],
                 i;
 
-            for (i = 0; i < children.length; i += 1) {
+            for (var i = 0; i < children.length; i += 1) {
                 if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Parameter')
                     parameterPromises.push(self.getParameterData(children[i]));
                 else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Unknown')
                     unknownPromises.push(self.getUnknownData(children[i]));
                 else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Residue')
                     residuePromises.push(self.getResidueData(children[i]));
-                  // childPromises.push(self.getChildData(children[i]));
             }
 
             Q.all(parameterPromises)
@@ -263,17 +246,16 @@ define([
             error,
             counter;
 
-        // Load all connections going out from the stateNode, i.e. has the stateNode as 'src'.
+        // Load all connections going out from the node, i.e. has the node as 'src'.
         self.core.loadCollection(unknownNode, 'src', function (err, connections) {
             if (err) {
                 deferred.reject(new Error(err));
                 return;
             }
-            var i;
-            counter = connections.length;
+            var counter = connections.length;
 
             // For each connection load the destination state.
-            for (i = 0; i < connections.length; i += 1) {
+            for (var i = 0; i < connections.length; i += 1) {
                 self.core.loadPointer(connections[i], 'dst', function (err, dstNode) {
                     if (err) {
                         error = new Error(err);
@@ -324,140 +306,141 @@ define([
     // TODO: getGroupData()
 
 
-    MOCACodeGenerator.prototype.getDesignVariableData = function(designvariableNode) {
-        var self = this,
-            deferred = new Q.defer(),
-            designvariableData = {
-                name: self.core.getAttribute(designvariableNode, 'name'),
-                upper: self.core.getAttribute(designvariableNode, 'Upper'),
-                lower: self.core.getAttribute(designvariableNode, 'Lower'),
-                connections: [
-                    // targetName: the name of the port that this unknown is connected to
-                    // targetParentName: the name of the parent of the port that this unknown
-                    //              is connected to
-                ]
-            },
-            error,
-            counter;
-
-        // Load all connections going out from the node, i.e. has the stateNode as 'src'.
-        self.core.loadCollection(designvariableNode, 'src', function (err, connections) {
-            if (err) {
-                deferred.reject(new Error(err));
-                return;
-            }
-            var i;
-            counter = connections.length;
-
-            // For each connection load the destination node.
-            for (i = 0; i < connections.length; i += 1) {
-                self.core.loadPointer(connections[i], 'dst', function (err, dstNode) {
-                    if (err) {
-                        error = new Error(err);
-                    } else {
-                        designvariableData.connections.push({
-                            targetName: self.core.getAttribute(dstNode, 'name')
-                            // TODO: targetParentName
-                        });
-                    }
-
-                    counter -= 1;
-                    if (counter === 0) {
-                        if (error) {
-                            deferred.reject(error);
-                        } else {
-                            deferred.resolve(designvariableData);
-                        }
-                    }
-                });
-            }
-
-            // Make sure to resolve when there are no connections.
-            if (connections.length === 0) {
-                deferred.resolve(designvariableData);
-            }
-        });
-
-        return deferred.promise;
-    };
-
-    MOCACodeGenerator.prototype.getObjectiveData = function(objectiveNode) {
-        var self = this,
-            deferred = new Q.defer(),
-            objectiveData = {
-                name: self.core.getAttribute(objectiveNode, 'name'),
-                connections: [
-                    // sourceName: the name of the port that this unknown is connected to
-                    // sourceParentName: the name of the parent of the port that this unknown
-                    //              is connected to
-                ]
-            },
-            error,
-            counter;
-
-        // Load all connections coming in into the node, i.e. has the Node as 'dst'.
-        self.core.loadCollection(objectiveNode, 'dst', function (err, connections) {
-            if (err) {
-                deferred.reject(new Error(err));
-                return;
-            }
-            var i;
-            counter = connections.length;
-
-            // For each connection load the src node.
-            for (i = 0; i < connections.length; i += 1) {
-                self.core.loadPointer(connections[i], 'src', function (err, srcNode) {
-                    if (err) {
-                        error = new Error(err);
-                    } else {
-                        objectiveData.connections.push({
-                            sourceName: self.core.getAttribute(srcNode, 'name')
-                            // TODO: sourceParentName
-                        });
-                    }
-
-                    counter -= 1;
-                    if (counter === 0) {
-                        if (error) {
-                            deferred.reject(error);
-                        } else {
-                            deferred.resolve(objectiveData);
-                        }
-                    }
-                });
-            }
-
-            // Make sure to resolve when there are no connections.
-            if (connections.length === 0) {
-                deferred.resolve(objectiveData);
-            }
-        });
-
-        return deferred.promise;
-    };
-
-    MOCACodeGenerator.prototype.getRecordData = function(recordNode) {
-        var self = this,
-            deferred = new Q.defer(),
-            recordData = {
-                name: self.core.getAttribute(designvariableNode, 'name')
-            },
-            error,
-            counter;
-
-        deferred.resolve(objectiveData);
-
-        return deferred.promise;
-    };
+    // TODO: Call these methods in getProblemData()
+    // MOCACodeGenerator.prototype.getDesignVariableData = function(designvariableNode) {
+    //     var self = this,
+    //         deferred = new Q.defer(),
+    //         designvariableData = {
+    //             name: self.core.getAttribute(designvariableNode, 'name'),
+    //             upper: self.core.getAttribute(designvariableNode, 'Upper'),
+    //             lower: self.core.getAttribute(designvariableNode, 'Lower'),
+    //             connections: [
+    //                 // targetName: the name of the port that this unknown is connected to
+    //                 // targetParentName: the name of the parent of the port that this unknown
+    //                 //              is connected to
+    //             ]
+    //         },
+    //         error,
+    //         counter;
+    //
+    //     // Load all connections going out from the node, i.e. has the stateNode as 'src'.
+    //     self.core.loadCollection(designvariableNode, 'src', function (err, connections) {
+    //         if (err) {
+    //             deferred.reject(new Error(err));
+    //             return;
+    //         }
+    //         var i;
+    //         counter = connections.length;
+    //
+    //         // For each connection load the destination node.
+    //         for (i = 0; i < connections.length; i += 1) {
+    //             self.core.loadPointer(connections[i], 'dst', function (err, dstNode) {
+    //                 if (err) {
+    //                     error = new Error(err);
+    //                 } else {
+    //                     designvariableData.connections.push({
+    //                         targetName: self.core.getAttribute(dstNode, 'name')
+    //                         // TODO: targetParentName
+    //                     });
+    //                 }
+    //
+    //                 counter -= 1;
+    //                 if (counter === 0) {
+    //                     if (error) {
+    //                         deferred.reject(error);
+    //                     } else {
+    //                         deferred.resolve(designvariableData);
+    //                     }
+    //                 }
+    //             });
+    //         }
+    //
+    //         // Make sure to resolve when there are no connections.
+    //         if (connections.length === 0) {
+    //             deferred.resolve(designvariableData);
+    //         }
+    //     });
+    //
+    //     return deferred.promise;
+    // };
+    //
+    // MOCACodeGenerator.prototype.getObjectiveData = function(objectiveNode) {
+    //     var self = this,
+    //         deferred = new Q.defer(),
+    //         objectiveData = {
+    //             name: self.core.getAttribute(objectiveNode, 'name'),
+    //             connections: [
+    //                 // sourceName: the name of the port that this unknown is connected to
+    //                 // sourceParentName: the name of the parent of the port that this unknown
+    //                 //              is connected to
+    //             ]
+    //         },
+    //         error,
+    //         counter;
+    //
+    //     // Load all connections coming in into the node, i.e. has the Node as 'dst'.
+    //     self.core.loadCollection(objectiveNode, 'dst', function (err, connections) {
+    //         if (err) {
+    //             deferred.reject(new Error(err));
+    //             return;
+    //         }
+    //         var i;
+    //         counter = connections.length;
+    //
+    //         // For each connection load the src node.
+    //         for (i = 0; i < connections.length; i += 1) {
+    //             self.core.loadPointer(connections[i], 'src', function (err, srcNode) {
+    //                 if (err) {
+    //                     error = new Error(err);
+    //                 } else {
+    //                     objectiveData.connections.push({
+    //                         sourceName: self.core.getAttribute(srcNode, 'name')
+    //                         // TODO: sourceParentName
+    //                     });
+    //                 }
+    //
+    //                 counter -= 1;
+    //                 if (counter === 0) {
+    //                     if (error) {
+    //                         deferred.reject(error);
+    //                     } else {
+    //                         deferred.resolve(objectiveData);
+    //                     }
+    //                 }
+    //             });
+    //         }
+    //
+    //         // Make sure to resolve when there are no connections.
+    //         if (connections.length === 0) {
+    //             deferred.resolve(objectiveData);
+    //         }
+    //     });
+    //
+    //     return deferred.promise;
+    // };
+    //
+    // MOCACodeGenerator.prototype.getRecordData = function(recordNode) {
+    //     var self = this,
+    //         deferred = new Q.defer(),
+    //         recordData = {
+    //             name: self.core.getAttribute(designvariableNode, 'name')
+    //         },
+    //         error,
+    //         counter;
+    //
+    //     deferred.resolve(objectiveData);
+    //
+    //     return deferred.promise;
+    // };
 
     MOCACodeGenerator.prototype.generateArtifact = function (dataModel) {
         var self = this,
             filesToAdd = {},
             deferred = new Q.defer(),
-            artifact = self.blobClient.createArtifact(dataModel.OpenMDAOProblem.name);
+            artifact = self.blobClient.createArtifact('MOCA');
 
-        filesToAdd[dataModel.OpenMDAOProblem.name + '.json'] = JSON.stringify(dataModel, null, 2);
-        filesToAdd[dataModel.OpenMDAOProblem.name + '_metadata.json'] = JSON.stringify({
+        filesToAdd['MOCA.json'] = JSON.stringify(dataModel, null, 2);
+        filesToAdd['MOCA_metadata.json'] = JSON.stringify({
             projectId: self.projectId,
             commitHash: self.commitHash,
             branchName: self.branchName,
@@ -465,9 +448,11 @@ define([
             pluginVersion: self.getVersion()
         }, null, 2);
 
-        self.LANGUAGES.forEach(function (languageInfo) {
-            self.addLanguageToFiles(filesToAdd, dataModel, languageInfo);
-        });
+        // self.LANGUAGES.forEach(function (languageInfo) {
+        //     self.addLanguageToFiles(filesToAdd, dataModel, languageInfo);
+        // });
+
+        self.addPythonSourceFiles(filesToAdd, dataModel);
 
         artifact.addFiles(filesToAdd, function (err) {
             if (err) {
@@ -489,21 +474,34 @@ define([
     };
 
 
-    MOCACodeGenerator.prototype.addLanguageToFiles = function (filesToAdd, dataModel, languageInfo) {
-        var genFileName = 'MOCA-GeneratedCode/' + dataModel.OpenMDAOProblem.name + '.' + languageInfo.fileExtension,
-            batFileName = 'MOCA-GeneratedCode/' + dataModel.OpenMDAOProblem.name + '.bat';
+    MOCACodeGenerator.prototype.addPythonSourceFiles = function (filesToAdd, dataModel) {
+        // var genFileName = 'MOCA-GeneratedCode/' + dataModel.OpenMDAOProblem.name + '.' + languageInfo.fileExtension,
+        //     batFileName = 'MOCA-GeneratedCode/' + dataModel.OpenMDAOProblem.name + '.bat';
+        //
+        // this.logger.debug(genFileName);
+        // this.logger.debug(batFileName);
+        //
+        // filesToAdd[genFileName] = ejs.render(TEMPLATES[languageInfo.generated], dataModel);
+        // filesToAdd[batFileName] = ejs.render(TEMPLATES[languageInfo.batFile], dataModel);
 
-        this.logger.debug(genFileName);
-        this.logger.debug(batFileName);
+        var self = this;
 
-        filesToAdd[genFileName] = ejs.render(TEMPLATES[languageInfo.generated], dataModel);
-        filesToAdd[batFileName] = ejs.render(TEMPLATES[languageInfo.batFile], dataModel);
+        self.FILES.forEach(function (fileInfo) {
+            if (fileInfo.name === 'components')
+            {
+                var genFileName = 'MOCA_GeneratedCode/' + fileInfo.name + '.py';
+                self.logger.debug(genFileName);
+                filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel);
+            }
+
+            // TODO: If the filename is "groups" - use the
+            // TODO: If the filename is "problem" - use the template for problems
+            //      additionally generate .bat file for that as well
+        });
 
         //TODO Add the static files too.
-        this.logger.info('Generated files for ', languageInfo.name);
-
+        self.logger.info('Generated python files for MOCA');
     };
-
 
     return MOCACodeGenerator;
 });

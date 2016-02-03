@@ -1,0 +1,92 @@
+#!/usr/bin/python
+from openmdao.api import Component
+import sys
+
+<%
+// Generate the code for all the components
+for (var i = 0; i < comps.length; i++) {
+%>
+class <%= comps[i].name %>(Component):
+    def __init__(self):
+        super(<%= comps[i].name %>, self).__init__()
+<%
+    // Generate "add_param" statements
+    for (var j = 0; j < comps[i].parameters.length; j++) {
+%>
+        self.add_param('<%= comps[i].parameters[j].name %>', val=<%= comps[i].parameters[j].value %>)
+<%
+    }
+%>
+<%
+    // Generate "add_output" and "add_state" statements
+    for (var j = 0; j < comps[i].unknowns.length; j++) {
+        var unknown_type;
+        if (comps[i].unknowns[j].type == 'Output') {
+            unknown_type = 'output';
+        } else {
+            unknown_type = 'state';
+        }
+%>
+        self.add_<%= unknown_type %>('<%= comps[i].unknowns[j].name %>', val=<%= comps[i].unknowns[j].value %>)
+<%
+    }
+%>
+<%
+    // Generate statement configuring force_fd
+    if (comps[i].force_fd === true) {
+%>
+        self.fd_options['force_fd'] = True
+<%
+    }
+%>
+    def solve_nonlinear(self, params, unknowns, resids):
+        # This is a dummy implementation of the method solve_nonlinear()
+        # This method should be implemented by the user as per the application
+
+        # Assigning shorthand(s) to the parameter(s)
+<%
+    // Generate statements for dummy implementation of the method
+    for (var j = 0; j < comps[i].parameters.length; j++) {
+%>
+        <%= comps[i].parameters[j].name %> = params['<%= comps[i].parameters[j].name %>']
+<%
+    }
+%>
+
+        # Assign value(s) to the unknown(s)
+<%
+    var dummyStatement = '';
+    for (var j = 0; j < comps[i].parameters.length; j++) {
+        dummyStatement += comps[i].parameters[j].name;
+        if (j != comps[i].parameters.length - 1)
+            dummyStatement += ' + ';
+    }
+    for (var j = 0; j < comps[i].unknowns.length; j++) {
+%>
+        unknowns['<%= comps[i].unknowns[j].name %>'] = <%= dummyStatement %>
+<%
+    }
+%>
+<%
+    // If the component is implicit, generate code for apply_nonlinear()
+    if (comps[i].type === 'Implicit') {
+%>
+    def apply_nonlinear(self, params, unknowns, resids):
+        print "Provide the values of the residuals in apply_nonlinear() for <%= comps[i].name %>"
+<%
+    }
+%>
+<%
+    // If the force_fd is set to false, generate code for linearize()
+    if (comps[i].force_fd === false) {
+%>
+    def linearize(self, params, unknowns, resids):
+        print "Provide the Jacobian matrix in linearize() for <%= comps[i].name %>"
+        # If you don't want to provide the Jacobian, set "ForceFD" option to True
+        # in MOCA model (the default setting)
+<%
+    }
+%>
+<%
+}
+%>
