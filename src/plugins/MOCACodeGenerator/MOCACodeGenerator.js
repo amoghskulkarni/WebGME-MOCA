@@ -133,7 +133,7 @@ define([
                 problemPromises = [];
 
             for (var i = 0; i < children.length; i += 1) {
-                if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Component')
+                if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Component') 
                     componentPromises.push(self.getComponentData(children[i]));
                 // else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
                 //     groupPromises.push(self.getGroupData(children[i]));
