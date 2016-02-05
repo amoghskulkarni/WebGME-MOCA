@@ -1,0 +1,29 @@
+#!/usr/bin/python
+from openmdao.api import Group
+import sys
+
+<%
+// Generate the code for all the groups
+for (var i = 0; i < groups.length; i++) {
+%>
+class <%= groups[i].name %>(Group):
+    def __init__(self):
+        super(<%= groups[i].name %>, self).__init__()
+<%
+    // Generate the code for add() statements -
+    // add instances of components and groups
+    for (var j = 0; j < groups[i].compInstances.length; j++) {
+        promotesString = '';
+        for (var k = 0; k < groups[i].compInstances[j].promotes.length; k++) {
+            promotesString += "'" + groups[i].compInstances[j].promotes[k] + "'";
+            if (k != groups[i].compInstances[j].promotes.length - 1)
+                promotesString += ', ';
+        }
+%>
+        self.add('<%= groups[i].compInstances[j].name %>', <%= groups[i].compInstances[j].base %>, promotes=[<%- promotesString %>])
+<%
+    }
+%>
+<%
+}
+%>
