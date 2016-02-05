@@ -299,25 +299,25 @@ define([
             for (var i = 0; i < children.length; i += 1) {
                 if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Component')
                     compInstancePromises.push(self.getCompInstanceData(children[i]));
-                // else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
-                //     groupInstancePromises.push(self.getGroupInstanceData(children[i]));
+                else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
+                    groupInstancePromises.push(self.getGroupInstanceData(children[i]));
                 // TODO: get connections data
             }
 
             Q.all(compInstancePromises)
                 .then(function (compInstancesData) {
                     groupData.compInstances = compInstancesData;
-                    // Q.all(groupInstancePromises)
-                    //     .then(function (groupInstancesData) {
-                    //         groupData.groupInstances = groupInstancesData;
+                    Q.all(groupInstancePromises)
+                        .then(function (groupInstancesData) {
+                            groupData.groupInstances = groupInstancesData;
                             // Q.all(promotePromises)
                             //     .then(function (promotesData) {
                             //         groupData.promotes = promotesData;
                                     deferred.resolve(groupData);
                                 // })
                                 // .catch(deferred.reject);
-                        // })
-                        // .catch(deferred.reject);
+                        })
+                        .catch(deferred.reject);
                 })
                 .catch(deferred.reject);
         });
@@ -374,52 +374,52 @@ define([
         return deferred.promise
     };
 
-    // MOCACodeGenerator.prototype.getGroupInstanceData = function (groupInstanceNode) {
-    //     var self = this,
-    //         deferred = Q.defer(),
-    //         groupInstancesData = {
-    //             name: self.core.getAttribute(groupInstanceNode, 'name'),
-    //             base: self.core.getAttribute(self.core.getBase(groupInstanceNode), 'name'),
-    //             promotes: []
-    //         };
-    //
-    //     self.core.loadChildren(groupInstanceNode, function(err, children) {
-    //         if (err) {
-    //             deferred.reject(new Error(err));
-    //             return;
-    //         }
-    //
-    //         for (var i = 0; i < children.length; i++) {
-    //             self.core.loadCollection(children[i], 'dst', function(err, connections) {
-    //                 if (err) {
-    //                     deferred.reject(new Error(err));
-    //                     return;
-    //                 }
-    //
-    //                 for (var j = 0; j < connections.length; j++) {
-    //                     if (self.core.getAttribute(connections[j], 'name') === 'PrToPortAssoc') {
-    //                         self.core.loadPointer(connections[j], 'dst', function (err, dstNode) {
-    //                             if (err) {
-    //                                 error = new Error(err);
-    //                             } else {
-    //                                 groupInstancesData.promotes.push(self.core.getAttribute(dstNode, 'name'));
-    //                             }
-    //                             deferred.resolve(groupInstancesData);
-    //                         });
-    //                     }
-    //                 }
-    //
-    //                 if (connections.length == 0)
-    //                     deferred.resolve(groupInstancesData);
-    //             });
-    //         }
-    //
-    //         if (children.length == 0)
-    //             deferred.resolve(groupInstancesData);
-    //     });
-    //
-    //     return deferred.promise
-    // };
+    MOCACodeGenerator.prototype.getGroupInstanceData = function (groupInstanceNode) {
+        var self = this,
+            deferred = Q.defer(),
+            groupInstancesData = {
+                name: self.core.getAttribute(groupInstanceNode, 'name'),
+                base: self.core.getAttribute(self.core.getBase(groupInstanceNode), 'name'),
+                promotes: []
+            };
+
+        self.core.loadChildren(groupInstanceNode, function(err, children) {
+            if (err) {
+                deferred.reject(new Error(err));
+                return;
+            }
+
+            for (var i = 0; i < children.length; i++) {
+                self.core.loadCollection(children[i], 'dst', function(err, connections) {
+                    if (err) {
+                        deferred.reject(new Error(err));
+                        return;
+                    }
+
+                    for (var j = 0; j < connections.length; j++) {
+                        if (self.core.getAttribute(connections[j], 'name') === 'PrToPortAssoc') {
+                            self.core.loadPointer(connections[j], 'dst', function (err, dstNode) {
+                                if (err) {
+                                    error = new Error(err);
+                                } else {
+                                    groupInstancesData.promotes.push(self.core.getAttribute(dstNode, 'name'));
+                                }
+                                deferred.resolve(groupInstancesData);
+                            });
+                        }
+                    }
+
+                    if (connections.length == 0)
+                        deferred.resolve(groupInstancesData);
+                });
+            }
+
+            if (children.length == 0)
+                deferred.resolve(groupInstancesData);
+        });
+
+        return deferred.promise
+    };
 
 
     // TODO: getConnectionsData()

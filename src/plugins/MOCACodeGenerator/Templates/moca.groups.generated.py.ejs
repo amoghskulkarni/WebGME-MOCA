@@ -10,8 +10,8 @@ class <%= groups[i].name %>(Group):
     def __init__(self):
         super(<%= groups[i].name %>, self).__init__()
 <%
-    // Generate the code for add() statements -
-    // add instances of components and groups
+    // Generate the code for add() statements for components -
+    // add instances of components
     for (var j = 0; j < groups[i].compInstances.length; j++) {
         promotesString = '';
         for (var k = 0; k < groups[i].compInstances[j].promotes.length; k++) {
@@ -20,7 +20,22 @@ class <%= groups[i].name %>(Group):
                 promotesString += ', ';
         }
 %>
-        self.add('<%= groups[i].compInstances[j].name %>', <%= groups[i].compInstances[j].base %>, promotes=[<%- promotesString %>])
+        self.add('<%= groups[i].compInstances[j].name %>', <%= groups[i].compInstances[j].base %>(), promotes=[<%- promotesString %>])
+<%
+    }
+%>
+<%
+    // Generate the code for add() statements for groups -
+    // add instances of groups
+    for (var j = 0; j < groups[i].groupInstances.length; j++) {
+        promotesString = '';
+        for (var k = 0; k < groups[i].groupInstances[j].promotes.length; k++) {
+            promotesString += "'" + groups[i].groupInstances[j].promotes[k] + "'";
+            if (k != groups[i].groupInstances[j].promotes.length - 1)
+                promotesString += ', ';
+        }
+%>
+        self.add('<%= groups[i].groupInstances[j].name %>', <%= groups[i].groupInstances[j].base %>(), promotes=[<%- promotesString %>])
 <%
     }
 %>
