@@ -36,6 +36,10 @@ define([
             {
                 name: 'components',
                 template: 'moca.components.generated.py.ejs'
+            },
+            {
+                name: 'groups',
+                template: 'moca.groups.generated.py.ejs'
             }
         ];
     };
@@ -135,8 +139,8 @@ define([
             for (var i = 0; i < children.length; i += 1) {
                 if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Component')
                     componentPromises.push(self.getComponentData(children[i]));
-                // else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
-                //     groupPromises.push(self.getGroupData(children[i]));
+                else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
+                    groupPromises.push(self.getGroupData(children[i]));
                 // else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Problem')
                 //     problemPromises.push(self.getProblemData(children[i]));
             }
@@ -170,9 +174,8 @@ define([
                 type: self.core.getAttribute(componentNode, 'Type'),
                 force_fd: self.core.getAttribute(componentNode, 'ForceFD'),
                 parameters: [],
-                unknowns: [],
-                residues: []
-            }
+                unknowns: []
+            };
 
         self.core.loadChildren(componentNode, function(err, children) {
             if (err) {
@@ -180,17 +183,13 @@ define([
                 return;
             }
             var parameterPromises = [],
-                unknownPromises = [],
-                residuePromises = [],
-                i;
+                unknownPromises = [];
 
             for (var i = 0; i < children.length; i += 1) {
                 if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Parameter')
                     parameterPromises.push(self.getParameterData(children[i]));
                 else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Unknown')
                     unknownPromises.push(self.getUnknownData(children[i]));
-                else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Residue')
-                    residuePromises.push(self.getResidueData(children[i]));
             }
 
             Q.all(parameterPromises)
@@ -199,12 +198,7 @@ define([
                     Q.all(unknownPromises)
                         .then(function (unknownsData) {
                             componentData.unknowns = unknownsData;
-                            Q.all(residuePromises)
-                                .then(function (residuesData) {
-                                    componentData.residues = residuesData;
-                                    deferred.resolve(componentData);
-                                })
-                                .catch(deferred.reject);
+                            deferred.resolve(componentData);
                         })
                         .catch(deferred.reject);
                 })
@@ -237,74 +231,191 @@ define([
                 name: self.core.getAttribute(unknownNode, 'name'),
                 value: self.core.getAttribute(unknownNode, 'Value'),
                 type: self.core.getAttribute(unknownNode, 'Type'),
-                connections: [
-                    // targetName: the name of the port that this unknown is connected to
-                    // targetParentName: the name of the parent of the port that this unknown
-                    //              is connected to
-                ]
             },
             error,
             counter;
 
-        // Load all connections going out from the node, i.e. has the node as 'src'.
-        self.core.loadCollection(unknownNode, 'src', function (err, connections) {
+        deferred.resolve(unknownData);
+
+        return deferred.promise;
+    };
+
+
+    MOCACodeGenerator.prototype.getGroupData = function(groupNode) {
+        var self = this,
+            deferred = new Q.defer(),
+            groupData = {
+                name: self.core.getAttribute(groupNode, 'name'),
+                compInstances: [],
+                groupInstances: [],
+                connections: []
+            };
+
+        self.core.loadChildren(groupNode, function(err, children) {
             if (err) {
                 deferred.reject(new Error(err));
                 return;
             }
-            var counter = connections.length;
+            var compInstancePromises = [],
+                groupInstancePromises = [],
+                connectionPromises = [];
 
-            // For each connection load the destination state.
-            for (var i = 0; i < connections.length; i += 1) {
-                self.core.loadPointer(connections[i], 'dst', function (err, dstNode) {
+            for (var i = 0; i < children.length; i += 1) {
+                if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Component')
+                    compInstancePromises.push(self.getCompInstanceData(children[i]));
+                else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
+                    groupInstancePromises.push(self.getGroupInstanceData(children[i]));
+                else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'OutToInConn')
+                    connectionPromises.push(self.getConnectionData(children[i]));
+            }
+
+            Q.all(compInstancePromises)
+                .then(function (compInstancesData) {
+                    groupData.compInstances = compInstancesData;
+                    Q.all(groupInstancePromises)
+                        .then(function (groupInstancesData) {
+                            groupData.groupInstances = groupInstancesData;
+                            Q.all(connectionPromises)
+                                .then(function (connectionsData) {
+                                    groupData.connections = connectionsData;
+                                    deferred.resolve(groupData);
+                                })
+                                .catch(deferred.reject);
+                        })
+                        .catch(deferred.reject);
+                })
+                .catch(deferred.reject);
+        });
+
+        deferred.resolve(groupData);
+
+        return deferred.promise;
+    }
+
+    MOCACodeGenerator.prototype.getCompInstanceData = function (compInstanceNode) {
+        var self = this,
+            deferred = Q.defer(),
+            compInstancesData = {
+                name: self.core.getAttribute(compInstanceNode, 'name'),
+                base: self.core.getAttribute(self.core.getBase(compInstanceNode), 'name'),
+                promotes: []
+            };
+
+        self.core.loadChildren(compInstanceNode, function(err, children) {
+            if (err) {
+                deferred.reject(new Error(err));
+                return;
+            }
+
+            for (var i = 0; i < children.length; i++) {
+                self.core.loadCollection(children[i], 'dst', function(err, connections) {
                     if (err) {
-                        error = new Error(err);
-                    } else {
-                        unknownData.connections.push({
-                            targetName: self.core.getAttribute(dstNode, 'name')
-                            // TODO: targetParentName
-                        });
+                        deferred.reject(new Error(err));
+                        return;
                     }
 
-                    counter -= 1;
-                    if (counter === 0) {
-                        if (error) {
-                            deferred.reject(error);
-                        } else {
-                            deferred.resolve(unknownData);
+                    for (var j = 0; j < connections.length; j++) {
+                        if (self.core.getAttribute(connections[j], 'name') === 'PrToPortAssoc') {
+                            self.core.loadPointer(connections[j], 'dst', function (err, dstNode) {
+                                if (err) {
+                                    deferred.reject(new Error(err));
+                                } else {
+                                    compInstancesData.promotes.push(self.core.getAttribute(dstNode, 'name'));
+                                }
+                                deferred.resolve(compInstancesData);
+                            });
                         }
                     }
+
+                    if (connections.length == 0)
+                        deferred.resolve(compInstancesData);
                 });
             }
 
-            // Make sure to resolve when there are no connections.
-            if (connections.length === 0) {
-                deferred.resolve(unknownData);
+            if (children.length == 0)
+                deferred.resolve(compInstancesData);
+        });
+
+        return deferred.promise
+    };
+
+    MOCACodeGenerator.prototype.getGroupInstanceData = function (groupInstanceNode) {
+        var self = this,
+            deferred = Q.defer(),
+            groupInstancesData = {
+                name: self.core.getAttribute(groupInstanceNode, 'name'),
+                base: self.core.getAttribute(self.core.getBase(groupInstanceNode), 'name'),
+                promotes: []
+            };
+
+        self.core.loadChildren(groupInstanceNode, function(err, children) {
+            if (err) {
+                deferred.reject(new Error(err));
+                return;
+            }
+
+            for (var i = 0; i < children.length; i++) {
+                self.core.loadCollection(children[i], 'dst', function(err, connections) {
+                    if (err) {
+                        deferred.reject(new Error(err));
+                        return;
+                    }
+
+                    for (var j = 0; j < connections.length; j++) {
+                        if (self.core.getAttribute(connections[j], 'name') === 'PrToPortAssoc') {
+                            self.core.loadPointer(connections[j], 'dst', function (err, dstNode) {
+                                if (err) {
+                                    deferred.reject(new Error(err));
+                                } else {
+                                    groupInstancesData.promotes.push(self.core.getAttribute(dstNode, 'name'));
+                                }
+                                deferred.resolve(groupInstancesData);
+                            });
+                        }
+                    }
+
+                    if (connections.length == 0)
+                        deferred.resolve(groupInstancesData);
+                });
+            }
+
+            if (children.length == 0)
+                deferred.resolve(groupInstancesData);
+        });
+
+        return deferred.promise
+    };
+
+    MOCACodeGenerator.prototype.getConnectionData = function (connectionNode) {
+        var self = this,
+            deferred = Q.defer(),
+            connectionData = {
+                src: null,
+                srcParent: null,
+                dst: null,
+                dstParent: null
+            };
+
+        self.core.loadPointer(connectionNode, 'src', function (err, srcNode) {
+            if (err) {
+                deferred.reject(new Error(err))
+            } else {
+                connectionData.src = self.core.getAttribute(srcNode, 'name');
+                connectionData.srcParent = self.core.getAttribute(self.core.getParent(srcNode), 'name');
+                self.core.loadPointer(connectionNode, 'dst', function (err, dstNode) {
+                    if (err) {
+                        deferred.reject(new Error(err));
+                    } else {
+                        connectionData.dst = self.core.getAttribute(dstNode, 'name');
+                        connectionData.dstParent = self.core.getAttribute(self.core.getParent(dstNode), 'name');
+                        deferred.resolve(connectionData);
+                    }
+                });
             }
         });
 
         return deferred.promise;
     };
-
-
-    MOCACodeGenerator.prototype.getResidueData = function(residueNode) {
-        var self = this,
-            deferred = new Q.defer(),
-            residueData = {
-                name: self.core.getAttribute(residueNode, 'name'),
-                value: self.core.getAttribute(residueNode, 'Value')
-            },
-            error,
-            counter;
-
-        deferred.resolve(residueData);
-
-        return deferred.promise;
-    };
-
-
-    // TODO: getGroupData()
-
 
     // TODO: Call these methods in getProblemData()
     // MOCACodeGenerator.prototype.getDesignVariableData = function(designvariableNode) {
@@ -448,10 +559,6 @@ define([
             pluginVersion: self.getVersion()
         }, null, 2);
 
-        // self.LANGUAGES.forEach(function (languageInfo) {
-        //     self.addLanguageToFiles(filesToAdd, dataModel, languageInfo);
-        // });
-
         self.addPythonSourceFiles(filesToAdd, dataModel);
 
         artifact.addFiles(filesToAdd, function (err) {
@@ -475,26 +582,15 @@ define([
 
 
     MOCACodeGenerator.prototype.addPythonSourceFiles = function (filesToAdd, dataModel) {
-        // var genFileName = 'MOCA-GeneratedCode/' + dataModel.OpenMDAOProblem.name + '.' + languageInfo.fileExtension,
-        //     batFileName = 'MOCA-GeneratedCode/' + dataModel.OpenMDAOProblem.name + '.bat';
-        //
-        // this.logger.debug(genFileName);
-        // this.logger.debug(batFileName);
-        //
-        // filesToAdd[genFileName] = ejs.render(TEMPLATES[languageInfo.generated], dataModel);
-        // filesToAdd[batFileName] = ejs.render(TEMPLATES[languageInfo.batFile], dataModel);
-
         var self = this;
 
         self.FILES.forEach(function (fileInfo) {
-            if (fileInfo.name === 'components')
+            if (fileInfo.name !== 'problem')
             {
                 var genFileName = 'MOCA_GeneratedCode/' + fileInfo.name + '.py';
                 self.logger.debug(genFileName);
                 filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel);
             }
-
-            // TODO: If the filename is "groups" - use the template for groups
             // TODO: If the filename is "problem" - use the template for problems
             //      additionally generate .bat file for that as well
         });

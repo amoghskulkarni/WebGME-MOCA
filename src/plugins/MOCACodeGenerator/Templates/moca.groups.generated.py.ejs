@@ -1,0 +1,52 @@
+#!/usr/bin/python
+from openmdao.api import Group
+import sys
+
+<%
+// Generate the code for all the groups
+for (var i = 0; i < groups.length; i++) {
+%>
+class <%= groups[i].name %>(Group):
+    def __init__(self):
+        super(<%= groups[i].name %>, self).__init__()
+<%
+    // Generate the code for add() statements for components -
+    // add instances of components
+    for (var j = 0; j < groups[i].compInstances.length; j++) {
+        promotesString = '';
+        for (var k = 0; k < groups[i].compInstances[j].promotes.length; k++) {
+            promotesString += "'" + groups[i].compInstances[j].promotes[k] + "'";
+            if (k != groups[i].compInstances[j].promotes.length - 1)
+                promotesString += ', ';
+        }
+%>
+        self.add('<%= groups[i].compInstances[j].name %>', <%= groups[i].compInstances[j].base %>(), promotes=[<%- promotesString %>])
+<%
+    }
+%>
+<%
+    // Generate the code for add() statements for groups -
+    // add instances of groups
+    for (var j = 0; j < groups[i].groupInstances.length; j++) {
+        var promotesString = '';
+        for (var k = 0; k < groups[i].groupInstances[j].promotes.length; k++) {
+            promotesString += "'" + groups[i].groupInstances[j].promotes[k] + "'";
+            if (k != groups[i].groupInstances[j].promotes.length - 1)
+                promotesString += ', ';
+        }
+%>
+        self.add('<%= groups[i].groupInstances[j].name %>', <%= groups[i].groupInstances[j].base %>(), promotes=[<%- promotesString %>])
+<%
+    }
+%>
+<%
+    // Generate the code for connect() statements for connections between ports
+    for (var j = 0; j < groups[i].connections.length; j++) {
+%>
+        self.connect('<%= groups[i].connections[j].srcParent %>.<%= groups[i].connections[j].src %>', '<%= groups[i].connections[j].dstParent %>.<%= groups[i].connections[j].dst %>')
+<%
+    }
+%>
+<%
+}
+%>
