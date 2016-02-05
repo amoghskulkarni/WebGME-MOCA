@@ -235,41 +235,6 @@ define([
             error,
             counter;
 
-        // // Load all connections going out from the node, i.e. has the node as 'src'.
-        // self.core.loadCollection(unknownNode, 'src', function (err, connections) {
-        //     if (err) {
-        //         deferred.reject(new Error(err));
-        //         return;
-        //     }
-        //     var counter = connections.length;
-        //
-        //     // For each connection load the destination state.
-        //     for (var i = 0; i < connections.length; i += 1) {
-        //         self.core.loadPointer(connections[i], 'dst', function (err, dstNode) {
-        //             if (err) {
-        //                 error = new Error(err);
-        //             } else {
-        //                 unknownData.connections.push({
-        //                     targetName: self.core.getAttribute(dstNode, 'name')
-        //                 });
-        //             }
-        //
-        //             counter -= 1;
-        //             if (counter === 0) {
-        //                 if (error) {
-        //                     deferred.reject(error);
-        //                 } else {
-        //                     deferred.resolve(unknownData);
-        //                 }
-        //             }
-        //         });
-        //     }
-        //
-        //     // Make sure to resolve when there are no connections.
-        //     if (connections.length === 0) {
-        //         deferred.resolve(unknownData);
-        //     }
-        // });
         deferred.resolve(unknownData);
 
         return deferred.promise;
@@ -293,15 +258,15 @@ define([
             }
             var compInstancePromises = [],
                 groupInstancePromises = [],
-                connectionPromises = [],
-                promotePromises = [];
+                connectionPromises = [];
 
             for (var i = 0; i < children.length; i += 1) {
                 if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Component')
                     compInstancePromises.push(self.getCompInstanceData(children[i]));
                 else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
                     groupInstancePromises.push(self.getGroupInstanceData(children[i]));
-                // TODO: get connections data
+                else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'OutToInConn')
+                    connectionPromises.push(self.getConnectionData(children[i]));
             }
 
             Q.all(compInstancePromises)
@@ -310,12 +275,12 @@ define([
                     Q.all(groupInstancePromises)
                         .then(function (groupInstancesData) {
                             groupData.groupInstances = groupInstancesData;
-                            // Q.all(promotePromises)
-                            //     .then(function (promotesData) {
-                            //         groupData.promotes = promotesData;
+                            Q.all(connectionPromises)
+                                .then(function (connectionsData) {
+                                    groupData.connections = connectionsData;
                                     deferred.resolve(groupData);
-                                // })
-                                // .catch(deferred.reject);
+                                })
+                                .catch(deferred.reject);
                         })
                         .catch(deferred.reject);
                 })
@@ -353,7 +318,7 @@ define([
                         if (self.core.getAttribute(connections[j], 'name') === 'PrToPortAssoc') {
                             self.core.loadPointer(connections[j], 'dst', function (err, dstNode) {
                                 if (err) {
-                                    error = new Error(err);
+                                    deferred.reject(new Error(err));
                                 } else {
                                     compInstancesData.promotes.push(self.core.getAttribute(dstNode, 'name'));
                                 }
@@ -400,7 +365,7 @@ define([
                         if (self.core.getAttribute(connections[j], 'name') === 'PrToPortAssoc') {
                             self.core.loadPointer(connections[j], 'dst', function (err, dstNode) {
                                 if (err) {
-                                    error = new Error(err);
+                                    deferred.reject(new Error(err));
                                 } else {
                                     groupInstancesData.promotes.push(self.core.getAttribute(dstNode, 'name'));
                                 }
@@ -421,8 +386,36 @@ define([
         return deferred.promise
     };
 
+    MOCACodeGenerator.prototype.getConnectionData = function (connectionNode) {
+        var self = this,
+            deferred = Q.defer(),
+            connectionData = {
+                src: null,
+                srcParent: null,
+                dst: null,
+                dstParent: null
+            };
 
-    // TODO: getConnectionsData()
+        self.core.loadPointer(connectionNode, 'src', function (err, srcNode) {
+            if (err) {
+                deferred.reject(new Error(err))
+            } else {
+                connectionData.src = self.core.getAttribute(srcNode, 'name');
+                connectionData.srcParent = self.core.getAttribute(self.core.getParent(srcNode), 'name');
+                self.core.loadPointer(connectionNode, 'dst', function (err, dstNode) {
+                    if (err) {
+                        deferred.reject(new Error(err));
+                    } else {
+                        connectionData.dst = self.core.getAttribute(dstNode, 'name');
+                        connectionData.dstParent = self.core.getAttribute(self.core.getParent(dstNode), 'name');
+                        deferred.resolve(connectionData);
+                    }
+                });
+            }
+        });
+
+        return deferred.promise;
+    };
 
     // TODO: Call these methods in getProblemData()
     // MOCACodeGenerator.prototype.getDesignVariableData = function(designvariableNode) {
@@ -566,10 +559,6 @@ define([
             pluginVersion: self.getVersion()
         }, null, 2);
 
-        // self.LANGUAGES.forEach(function (languageInfo) {
-        //     self.addLanguageToFiles(filesToAdd, dataModel, languageInfo);
-        // });
-
         self.addPythonSourceFiles(filesToAdd, dataModel);
 
         artifact.addFiles(filesToAdd, function (err) {
@@ -593,15 +582,6 @@ define([
 
 
     MOCACodeGenerator.prototype.addPythonSourceFiles = function (filesToAdd, dataModel) {
-        // var genFileName = 'MOCA-GeneratedCode/' + dataModel.OpenMDAOProblem.name + '.' + languageInfo.fileExtension,
-        //     batFileName = 'MOCA-GeneratedCode/' + dataModel.OpenMDAOProblem.name + '.bat';
-        //
-        // this.logger.debug(genFileName);
-        // this.logger.debug(batFileName);
-        //
-        // filesToAdd[genFileName] = ejs.render(TEMPLATES[languageInfo.generated], dataModel);
-        // filesToAdd[batFileName] = ejs.render(TEMPLATES[languageInfo.batFile], dataModel);
-
         var self = this;
 
         self.FILES.forEach(function (fileInfo) {
