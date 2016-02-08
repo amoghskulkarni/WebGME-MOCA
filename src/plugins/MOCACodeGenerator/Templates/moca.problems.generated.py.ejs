@@ -1,0 +1,53 @@
+#!/usr/bin/python
+Problem: <%= name %>
+Driver: <%= driver %>
+<%
+for (var i = 0; i < compInstances.length; i++) {
+%>
+Comp instance: <%= compInstances[i].name %>
+<%
+}
+%>
+<%
+for (var i = 0; i < groupInstances.length; i++) {
+%>
+Group instance: <%= groupInstances[i].name %>
+<%
+}
+%>
+<%
+for (var i = 0; i < connections.length; i++) {
+%>
+Connections instance: <%= connections[i].srcParent %>.<%= connections[i].src %> To <%= connections[i].dstParent %>.<%= connections[i].dst %>
+<%
+}
+%>
+<%
+for (var i = 0; i < desvars.length; i++) {
+%>
+Desvars:
+    name: <%= desvars[i].name %>
+    Upper: <%= desvars[i].upper %>
+    Lower: <%= desvars[i].lower %>
+    Connection: <%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %>
+<%
+}
+%>
+<%
+for (var i = 0; i < objectives.length; i++) {
+%>
+Objectives:
+    name: <%= objectives[i].name %>
+    Connection: <%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>
+<%
+}
+%>
+<%
+for (var i = 0; i < records.length; i++) {
+%>
+Objectives:
+    name: <%= records[i].name %>
+    Connection: <%= records[i].connection[0].srcParent %>.<%= records[i].connection[0].src %>
+<%
+}
+%>
