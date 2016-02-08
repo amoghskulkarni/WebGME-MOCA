@@ -127,12 +127,37 @@ define([
         return self.core.loadChildren(rootNode)
             .then(function (children) {
                 for (var i = 0; i < children.length; i++) {
-                    if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Component')
-                        componentPromises.push(self.getComponentData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
-                        groupPromises.push(self.getGroupData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Problem')
+                    // if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Component')
+                    //     componentPromises.push(self.getComponentData(children[i]));
+                    // else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
+                    //     groupPromises.push(self.getGroupData(children[i]));
+                    if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'ComponentLibrary') {
+                        var tempList = [];
+                        componentPromises = self.core.loadChildren(children[i])
+                            .then(function (comps) {
+                                for (var j = 0; j < comps.length; j++) {
+                                    tempList.push(self.getComponentData(comps[j]));
+                                }
+                            })
+                            .then(function () {
+                                 return tempList;
+                            });
+                    }
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group') {
+                        var tempList = [];
+                        groupPromises = self.core.loadChildren(children[i])
+                            .then(function (groups) {
+                                for (var j = 0; j < groups.length; j++) {
+                                    tempList.push(self.getGroupData(groups[j]));
+                                }
+                            })
+                            .then(function () {
+                                return tempList;
+                            })
+                    }
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Problem') {
                         problemPromises.push(self.getProblemData(children[i]));
+                    }
                 }
 
                 return Q.all(componentPromises);
@@ -501,6 +526,7 @@ define([
                 return recordData;
             });
     }
+
 
     MOCACodeGenerator.prototype.generateArtifact = function (dataModel) {
         var self = this,
