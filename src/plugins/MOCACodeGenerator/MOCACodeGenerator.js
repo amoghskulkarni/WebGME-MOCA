@@ -119,6 +119,8 @@ define([
                 groups: [],
                 problems: []
             },
+            componentLibraryPromises = [],
+            groupLibraryPromises = [],
             componentPromises = [],
             groupPromises = [],
             problemPromises = [];
@@ -127,14 +129,39 @@ define([
         return self.core.loadChildren(rootNode)
             .then(function (children) {
                 for (var i = 0; i < children.length; i++) {
-                    if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Component')
-                        componentPromises.push(self.getComponentData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
-                        groupPromises.push(self.getGroupData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Problem')
+                    // if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Component')
+                    //     componentPromises.push(self.getComponentData(children[i]));
+                    // else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
+                    //     groupPromises.push(self.getGroupData(children[i]));
+                    if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'ComponentLibrary') {
+                        componentLibraryPromises.push(self.core.loadChildren(children[i])
+                            .then(function (comps) {
+                                for (var j = 0; j < comps.length; j++) {
+                                    componentPromises.push(self.getComponentData(comps[j]));
+                                }
+                            })
+                        );
+                    }
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'GroupLibrary') {
+                        groupLibraryPromises.push(self.core.loadChildren(children[i])
+                            .then(function (groups) {
+                                for (var j = 0; j < groups.length; j++) {
+                                    groupPromises.push(self.getGroupData(groups[j]));
+                                }
+                            })
+                        );
+                    }
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Problem') {
                         problemPromises.push(self.getProblemData(children[i]));
+                    }
                 }
 
+                return Q.all(componentLibraryPromises);
+            })
+            .then(function () {
+                return Q.all(groupLibraryPromises);
+            })
+            .then(function () {
                 return Q.all(componentPromises);
             })
             .then(function (componentsData) {
