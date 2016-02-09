@@ -269,7 +269,7 @@ define([
                         compInstancePromises.push(self.getCompInstanceData(children[i]));
                     else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
                         groupInstancePromises.push(self.getGroupInstanceData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'OutToInConn')
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'DataConn')
                         connectionPromises.push(self.getConnectionData(children[i]));
                 }
 
@@ -422,7 +422,7 @@ define([
                         compInstancePromises.push(self.getCompInstanceData(children[i]));
                     else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
                         groupInstancePromises.push(self.getGroupInstanceData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'OutToInConn')
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'DataConn')
                         connectionPromises.push(self.getConnectionData(children[i]));
                     else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'DesVarToInConn')
                         desvarPromises.push(self.getDesignVariableData(children[i]));
