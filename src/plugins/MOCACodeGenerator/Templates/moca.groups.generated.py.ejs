@@ -1,5 +1,7 @@
 #!/usr/bin/python
+
 from openmdao.api import Group
+import components
 import sys
 
 <%
@@ -20,7 +22,7 @@ class <%= groups[i].name %>(Group):
                 promotesString += ', ';
         }
 %>
-        self.add('<%= groups[i].compInstances[j].name %>', <%= groups[i].compInstances[j].base %>(), promotes=[<%- promotesString %>])
+        self.add('<%= groups[i].compInstances[j].name %>', components.<%= groups[i].compInstances[j].base %>(), promotes=[<%- promotesString %>])
 <%
     }
 %>

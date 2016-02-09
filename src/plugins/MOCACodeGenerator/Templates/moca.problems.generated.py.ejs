@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+from openmdao.api import IndepVarComp, Group, Problem, ScipyOptimizer
+import components
+import groups
+
 class RootGroup(Group):
     def __init__(self):
         super(RootGroup, self).__init__()
@@ -22,7 +26,7 @@ for (var j = 0; j < compInstances.length; j++) {
             promotesString += ', ';
     }
 %>
-        self.add('<%= compInstances[j].name %>', <%= compInstances[j].base %>(), promotes=[<%- promotesString %>])
+        self.add('<%= compInstances[j].name %>', components.<%= compInstances[j].base %>(), promotes=[<%- promotesString %>])
 <%
 }
 %>
@@ -37,7 +41,7 @@ for (var j = 0; j < groupInstances.length; j++) {
             promotesString += ', ';
     }
 %>
-        self.add('<%= groupInstances[j].name %>', <%= groupInstances[j].base %>(), promotes=[<%- promotesString %>])
+        self.add('<%= groupInstances[j].name %>', groups.<%= groupInstances[j].base %>(), promotes=[<%- promotesString %>])
 <%
 }
 %>
@@ -130,3 +134,4 @@ for (var i = 0; i < desvars.length; i++) {
 <%
 }
 %>
+    dummy = raw_input("Press Enter to exit..")
