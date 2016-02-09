@@ -12,6 +12,9 @@ class <%= comps[i].name %>(Component):
 <%
     // Generate "add_param" statements
     for (var j = 0; j < comps[i].parameters.length; j++) {
+        valueString = comps[i].parameters[j].value;
+        if (valueString.indexOf('.') === -1)
+            valueString += '.0';
 %>
         self.add_param('<%= comps[i].parameters[j].name %>', val=<%= comps[i].parameters[j].value %>)
 <%
@@ -26,6 +29,9 @@ class <%= comps[i].name %>(Component):
         } else {
             unknown_type = 'state';
         }
+        valueString = comps[i].unknowns[j].value;
+        if (valueString.indexOf('.') === -1)
+            valueString += '.0';
 %>
         self.add_<%= unknown_type %>('<%= comps[i].unknowns[j].name %>', val=<%= comps[i].unknowns[j].value %>)
 <%

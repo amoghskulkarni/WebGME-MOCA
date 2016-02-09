@@ -214,8 +214,14 @@ define([
             deferred = new Q.defer(),
             parameterData = {
                 name: self.core.getAttribute(parameterNode, 'name'),
-                value: self.core.getAttribute(parameterNode, 'Value')
+                value: null
             };
+
+        var valueString = self.core.getAttribute(parameterNode, 'Value').toString();
+        if (valueString.indexOf('.') === -1)
+            valueString += ".0";
+
+        parameterData.value = valueString;
 
         deferred.resolve(parameterData);
 
@@ -228,9 +234,15 @@ define([
             deferred = new Q.defer(),
             unknownData = {
                 name: self.core.getAttribute(unknownNode, 'name'),
-                value: self.core.getAttribute(unknownNode, 'Value'),
-                type: self.core.getAttribute(unknownNode, 'Type'),
+                value: null,
+                type: self.core.getAttribute(unknownNode, 'Type')
             };
+
+        var valueString = self.core.getAttribute(unknownNode, 'Value').toString();
+        if (valueString.indexOf('.') === -1)
+            valueString += ".0";
+
+        unknownData.value = valueString;
 
         deferred.resolve(unknownData);
 
@@ -573,8 +585,8 @@ define([
                 self.logger.debug(genFileName);
                 filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel);
             } else {
-                // TODO: If the filename is "problem" - use the template for problems
-                //      additionally generate .bat file for that as well
+                // If the filename is "problem" - use the template for problems
+                // additionally generate .bat file for that as well
                 for (var i = 0; i < dataModel.problems.length; i++) {
                     var genFileName = 'MOCA_GeneratedCode/' + dataModel.problems[i].name + '.py';
                     var genBatFile = 'MOCA_GeneratedCode/' + dataModel.problems[i].name + '.bat';
