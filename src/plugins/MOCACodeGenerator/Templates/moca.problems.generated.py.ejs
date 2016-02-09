@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-from openmdao.api import IndepVarComp, Group, Problem, ScipyOptimizer
+from openmdao.api import IndepVarComp, Group, Problem
+from openmdao.api import ScipyOptimizer, FullFactorialDriver, DumpRecorder
 import components
 import groups
 
@@ -78,9 +79,18 @@ if (driver === 'ScipyOptimizer') {
 } else {
 // TODO: How to record a specific output, so that we can make use of records in MOCA?
 %>
-        # driver = FullFactorialDriver(<%= doeSamples %>)
-        # driver.options
-        # rec = DumpRecorder
+        driver = FullFactorialDriver(<%= doeSamples %>)
+<%
+}
+%>
+<%
+// add recorder
+if (recorder == true) {
+%>
+        rec = DumpRecorder('<%= name %>_dumpfile')
+        rec.options['record_params'] = True
+        rec.options['record_unknowns'] = True
+        driver.add_recorder(rec)
 <%
 }
 %>
@@ -117,20 +127,31 @@ if __name__ == "__main__":
 
     print "Result:"
     print "------"
+
 <%
-optimalString = ""
-for (var i = 0; i < objectives.length; i++) {
-    optimalString += objectives[i].connection[0].srcParent + "." + objectives[i].connection[0].src
-    if (i != objectives.length - 1)
-        optimalString += ", "
-}
-optimalString = "'" + optimalString + "'"
+// Print result in case of optimizer
+if (driver === 'ScipyOptimizer') {
 %>
-    print "For optimal " + <%- optimalString %>
+    print "\tObjective(s):"
+    print "\t------------"
 <%
-for (var i = 0; i < desvars.length; i++) {
+    for (var i = 0; i < objectives.length; i++) {
 %>
-    print("<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %> = %f" % (top['<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %>']))
+    print("\t<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %> = %f" % (top['<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>']))
+<%
+    }
+%>
+    print "\tDesign variable(s):"
+    print "\t------------------"
+<%
+    for (var i = 0; i < desvars.length; i++) {
+%>
+    print("\t<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %> = %f" % (top['<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %>']))
+<%
+    }
+} else {
+%>
+    print "The DOE result is written in a file named <%= name %>_dumpfile in the parent folder."
 <%
 }
 %>

@@ -400,6 +400,7 @@ define([
                 name: self.core.getAttribute(problemNode, 'name'),
                 driver: self.core.getAttribute(problemNode, 'Driver'),
                 doeSamples: self.core.getAttribute(problemNode, 'Samples'),
+                recorder: self.core.getAttribute(problemNode, 'Record'),
                 compInstances: [],
                 groupInstances: [],
                 connections: [],
