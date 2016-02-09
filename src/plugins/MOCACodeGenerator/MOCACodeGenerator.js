@@ -387,6 +387,7 @@ define([
             problemData = {
                 name: self.core.getAttribute(problemNode, 'name'),
                 driver: self.core.getAttribute(problemNode, 'Driver'),
+                doeSamples: self.core.getAttribute(problemNode, 'Samples'),
                 compInstances: [],
                 groupInstances: [],
                 connections: [],

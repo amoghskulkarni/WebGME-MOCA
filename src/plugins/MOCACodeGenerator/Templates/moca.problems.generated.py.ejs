@@ -1,53 +1,132 @@
 #!/usr/bin/python
-Problem: <%= name %>
-Driver: <%= driver %>
+
+class RootGroup(Group):
+    def __init__(self):
+        super(RootGroup, self).__init__()
 <%
-for (var i = 0; i < compInstances.length; i++) {
+// add() statements for design variables
+for (var i = 0; i < desvars.length; i++) {
 %>
-Comp instance: <%= compInstances[i].name %>
-<%
-}
-%>
-<%
-for (var i = 0; i < groupInstances.length; i++) {
-%>
-Group instance: <%= groupInstances[i].name %>
+        self.add('<%= desvars[i].name %>', IndepVarComp('<%= desvars[i].connection[0].dst %>', 0.0))
 <%
 }
 %>
 <%
-for (var i = 0; i < connections.length; i++) {
+// Generate the code for add() statements for components -
+// add instances of components
+for (var j = 0; j < compInstances.length; j++) {
+    promotesString = '';
+    for (var k = 0; k < compInstances[j].promotes.length; k++) {
+        promotesString += "'" + compInstances[j].promotes[k] + "'";
+        if (k != compInstances[j].promotes.length - 1)
+            promotesString += ', ';
+    }
 %>
-Connections instance: <%= connections[i].srcParent %>.<%= connections[i].src %> To <%= connections[i].dstParent %>.<%= connections[i].dst %>
+        self.add('<%= compInstances[j].name %>', <%= compInstances[j].base %>(), promotes=[<%- promotesString %>])
 <%
 }
 %>
+<%
+// Generate the code for add() statements for groups -
+// add instances of groups
+for (var j = 0; j < groupInstances.length; j++) {
+    var promotesString = '';
+    for (var k = 0; k < groupInstances[j].promotes.length; k++) {
+        promotesString += "'" + groupInstances[j].promotes[k] + "'";
+        if (k != groupInstances[j].promotes.length - 1)
+            promotesString += ', ';
+    }
+%>
+        self.add('<%= groupInstances[j].name %>', <%= groupInstances[j].base %>(), promotes=[<%- promotesString %>])
+<%
+}
+%>
+<%
+// Generate the code for connect() statements for connections between ports
+for (var j = 0; j < connections.length; j++) {
+%>
+        self.connect('<%= connections[j].srcParent %>.<%= connections[j].src %>', '<%= connections[j].dstParent %>.<%= connections[j].dst %>')
+<%
+}
+%>
+<%
+// Generate the code for connect() statements for connections
+// between IndepVarComps' ports and ports
+for (var j = 0; j < desvars.length; j++) {
+%>
+        self.connect('<%= desvars[j].name %>.<%= desvars[j].connection[0].dst %>', '<%= desvars[j].connection[0].dstParent %>.<%= desvars[j].connection[0].dst %>')
+<%
+}
+%>
+
+
+class <%= name %>(Problem):
+    def __init__(self):
+        super(<%= name %>, self).__init__()
+        self.root = RootGroup()
+<%
+// Driver settings
+if (driver === 'ScipyOptimizer') {
+%>
+        driver = ScipyOptimizer()
+        driver.options['optimizer'] = 'SLSQP'
+<%
+} else {
+// TODO: How to record a specific output, so that we can make use of records in MOCA?
+%>
+        # driver = FullFactorialDriver(<%= doeSamples %>)
+        # driver.options
+        # rec = DumpRecorder
+<%
+}
+%>
+<%
+// add_desvar() statements for design variables
+for (var i = 0; i < desvars.length; i++) {
+%>
+        driver.add_desvar('<%= desvars[i].name %>.<%= desvars[i].connection[0].dst %>', lower=<%= desvars[i].lower %>, upper=<%= desvars[i].upper %>)
+<%
+}
+%>
+<%
+// add_objective() statements for objectives
+for (var i = 0; i < objectives.length; i++) {
+%>
+        driver.add_objective('<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>')
+<%
+}
+%>
+<%
+// TODO: Constraints
+%>
+        self.driver = driver
+        self.setup()
+
+
+if __name__ == "__main__":
+
+    top = <%= name %>()
+
+    print "Running the MOCA problem " + <%= name %>
+
+    top.run()
+
+    print "Result:"
+    print "------"
+<%
+optimalString = ""
+for (var i = 0; i < objectives.length; i++) {
+    optimalString += objectives[i].connection[0].srcParent + "." + objectives[i].connection[0].src
+    if (i != objectives.length - 1)
+        optimalString += ", "
+}
+optimalString = "'" + optimalString + "'"
+%>
+    print "For optimal " + <%- optimalString %>
 <%
 for (var i = 0; i < desvars.length; i++) {
 %>
-Desvars:
-    name: <%= desvars[i].name %>
-    Upper: <%= desvars[i].upper %>
-    Lower: <%= desvars[i].lower %>
-    Connection: <%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %>
-<%
-}
-%>
-<%
-for (var i = 0; i < objectives.length; i++) {
-%>
-Objectives:
-    name: <%= objectives[i].name %>
-    Connection: <%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>
-<%
-}
-%>
-<%
-for (var i = 0; i < records.length; i++) {
-%>
-Objectives:
-    name: <%= records[i].name %>
-    Connection: <%= records[i].connection[0].srcParent %>.<%= records[i].connection[0].src %>
+    print("<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %> = %f" % (top['<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %>']))
 <%
 }
 %>
