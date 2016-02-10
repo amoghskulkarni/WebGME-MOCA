@@ -1,8 +1,18 @@
 #!/usr/bin/python
 
+# Static imports
 from openmdao.api import Group
 import components
 import sys
+
+# Dynamic imports
+<%
+if (algebraicLoop) {
+%>
+from openmdao.api import NLGaussSeidel, ScipyGMRES
+<%
+}
+%>
 
 <%
 // Generate the code for all the groups
@@ -46,6 +56,17 @@ class <%= groups[i].name %>(Group):
     for (var j = 0; j < groups[i].connections.length; j++) {
 %>
         self.connect('<%= groups[i].connections[j].srcParent %>.<%= groups[i].connections[j].src %>', '<%= groups[i].connections[j].dstParent %>.<%= groups[i].connections[j].dst %>')
+<%
+    }
+%>
+<%
+    // Change nl_solver and ln_driver in case of algebraic loop
+    if (groups[i].algebraicLoop) {
+%>
+        self.nl_solver = NLGaussSeidel()
+        self.nl_solver.options['atol'] = 1.0e-12
+
+        self.ln_solver = ScipyGMRES()
 <%
     }
 %>

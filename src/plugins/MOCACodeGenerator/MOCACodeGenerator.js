@@ -254,6 +254,7 @@ define([
         var self = this,
             groupData = {
                 name: self.core.getAttribute(groupNode, 'name'),
+                algebraicLoop: self.core.getAttribute(groupNode, 'AlgebraicLoop'),
                 compInstances: [],
                 groupInstances: [],
                 connections: []
@@ -401,6 +402,7 @@ define([
                 driver: self.core.getAttribute(problemNode, 'Driver'),
                 doeSamples: self.core.getAttribute(problemNode, 'Samples'),
                 recorder: self.core.getAttribute(problemNode, 'Record'),
+                algebraicLoop: self.core.getAttribute(groupNode, 'AlgebraicLoop'),
                 compInstances: [],
                 groupInstances: [],
                 connections: [],

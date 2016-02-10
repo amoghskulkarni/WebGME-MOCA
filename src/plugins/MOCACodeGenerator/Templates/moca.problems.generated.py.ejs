@@ -1,9 +1,36 @@
 #!/usr/bin/python
 
+# Static imports
 from openmdao.api import IndepVarComp, Group, Problem
-from openmdao.api import ScipyOptimizer, FullFactorialDriver, DumpRecorder
 import components
 import groups
+
+# Dynamic imports
+<%
+if (driver === 'ScipyOptimizer') {
+%>
+from openmdao.api import ScipyOptimizer
+<%
+} else if (driver === 'FullFactorialDriver') {
+%>
+from openmdao.api import FullFactorialDriver
+<%
+}
+%>
+<%
+if (recorder) {
+%>
+from openmdao.api import DumpRecorder
+<%
+}
+%>
+<%
+if (algebraicLoop) {
+%>
+from openmdao.api import NLGaussSeidel, ScipyGMRES
+<%
+}
+%>
 
 class RootGroup(Group):
     def __init__(self):
@@ -60,6 +87,17 @@ for (var j = 0; j < connections.length; j++) {
 for (var j = 0; j < desvars.length; j++) {
 %>
         self.connect('<%= desvars[j].name %>.<%= desvars[j].connection[0].dst %>', '<%= desvars[j].connection[0].dstParent %>.<%= desvars[j].connection[0].dst %>')
+<%
+}
+%>
+<%
+// Change nl_solver and ln_driver in case of algebraic loop
+if (algebraicLoop) {
+%>
+        self.nl_solver = NLGaussSeidel()
+        self.nl_solver.options['atol'] = 1.0e-12
+
+        self.ln_solver = ScipyGMRES()
 <%
 }
 %>
@@ -137,7 +175,7 @@ if (driver === 'ScipyOptimizer') {
 <%
     for (var i = 0; i < objectives.length; i++) {
 %>
-    print("\t<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %> = %f" % (top['<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>']))
+    print("\t\t<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %> = %f" % (top['<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>']))
 <%
     }
 %>
@@ -146,7 +184,7 @@ if (driver === 'ScipyOptimizer') {
 <%
     for (var i = 0; i < desvars.length; i++) {
 %>
-    print("\t<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %> = %f" % (top['<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %>']))
+    print("\t\t<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %> = %f" % (top['<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %>']))
 <%
     }
 } else {
