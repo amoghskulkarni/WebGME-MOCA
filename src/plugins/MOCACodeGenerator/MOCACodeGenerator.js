@@ -402,7 +402,7 @@ define([
                 driver: self.core.getAttribute(problemNode, 'Driver'),
                 doeSamples: self.core.getAttribute(problemNode, 'Samples'),
                 recorder: self.core.getAttribute(problemNode, 'Record'),
-                algebraicLoop: self.core.getAttribute(groupNode, 'AlgebraicLoop'),
+                algebraicLoop: self.core.getAttribute(problemNode, 'AlgebraicLoop'),
                 compInstances: [],
                 groupInstances: [],
                 connections: [],

@@ -7,10 +7,13 @@ import sys
 
 # Dynamic imports
 <%
-if (algebraicLoop) {
+for (var i = 0; i < groups.length; i++) {
+    if (groups[i].algebraicLoop) {
 %>
 from openmdao.api import NLGaussSeidel, ScipyGMRES
 <%
+        break;
+    }
 }
 %>
 
