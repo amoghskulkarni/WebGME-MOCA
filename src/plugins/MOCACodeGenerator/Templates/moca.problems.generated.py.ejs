@@ -143,7 +143,6 @@ if (driver === 'ScipyOptimizer') {
 %>
 <%
 } else if (driver === 'FullFactorialDOE') {
-// TODO: How to record a specific output, so that we can make use of records in MOCA?
 %>
         driver = FullFactorialDriver(<%= doeSamples %>)
 <%
@@ -159,20 +158,21 @@ if (recorder === 'Dump') {
         driver.add_recorder(rec)
 <%
 } else if (recorder === 'Specific') {
-        var includeString = '';
+        var incWord = "'" + "includes" + "'";
+        var incString = '';
         for (var i = 0; i < records.length; i++) {
-            // construct includeString
-            includeString += "'" + records[i].connection[0].srcParent + "." + records[i].connection[0].src + "'";
+            // construct incString
+            incString += "'" + records[i].connection[0].srcParent + "." + records[i].connection[0].src + "'";
             if (i != records.length - 1)
-                includeString += ', ';
+                incString += ", ";
         }
-        if (includeString === '')
-            includeString = "'" + "*" + "'";
+        if (incString === "")
+            incString = "'" + "*" + "'";
 %>
         rec = SqliteRecorder('<%= name %>_sqlitefile')
         rec.options['record_params'] = True
         rec.options['record_unknowns'] = True
-        rec.options['includes'] = [<%- includeString %>]
+        rec.options[<%- incWord %>] = [<%- incString %>]
         driver.add_recorder(rec)
 <%
 }
@@ -231,7 +231,7 @@ if (driver === 'ScipyOptimizer') {
     }
 } else {
 %>
-    print "The DOE result is written in a file named <%= name %>_dumpfile in the parent folder."
+    print "The DOE result is written in a file named <%= name %>_dumpfile or <%= name %>_sqlitefile in the parent folder."
 <%
 }
 %>
