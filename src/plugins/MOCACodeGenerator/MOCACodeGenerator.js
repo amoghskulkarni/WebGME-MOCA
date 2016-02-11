@@ -403,6 +403,7 @@ define([
                 doeSamples: self.core.getAttribute(problemNode, 'Samples'),
                 recorder: self.core.getAttribute(problemNode, 'Record'),
                 algebraicLoop: self.core.getAttribute(problemNode, 'AlgebraicLoop'),
+                constraints: [],
                 compInstances: [],
                 groupInstances: [],
                 connections: [],
@@ -410,6 +411,7 @@ define([
                 objectives: [],
                 records: []
             },
+            constraintPromises = [],
             compInstancePromises = [],
             groupInstancePromises = [],
             connectionPromises = [],
@@ -432,6 +434,8 @@ define([
                         objectivePromises.push(self.getObjectiveData(children[i]));
                     else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'OutToRecConn')
                         recordPromises.push(self.getRecordData(children[i]));
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'PortToConstraintConn')
+                        constraintPromises.push(self.getConstraintData(children[i]));
                 }
 
                 return Q.all(compInstancePromises);
@@ -458,6 +462,10 @@ define([
             })
             .then(function (recordData) {
                 problemData.records = recordData;
+                return Q.all(constraintPromises);
+            })
+            .then(function (constraintData) {
+                problemData.constraints = constraintData;
                 return problemData;
             });
     }
@@ -529,8 +537,8 @@ define([
             connectionPromises = [];
 
         return self.core.loadPointer(outToRecConnNode, 'dst')
-            .then(function(objectiveNode) {
-                recordData.name = self.core.getAttribute(objectiveNode, 'name');
+            .then(function(recordNode) {
+                recordData.name = self.core.getAttribute(recordNode, 'name');
                 connectionPromises.push(self.getConnectionData(outToRecConnNode));
 
                 return Q.all(connectionPromises);
@@ -540,6 +548,39 @@ define([
                 return recordData;
             });
     }
+
+
+    MOCACodeGenerator.prototype.getConstraintData = function (portToConstraintConnNode) {
+        var self = this,
+            constraintData = {
+                name: null,
+                enableUpper: null,
+                enableLower: null,
+                upper: null,
+                lower: null,
+                connection: [
+                    // src
+                    // srcParent
+                ]
+            },
+            connectionPromises = [];
+
+        return self.core.loadPointer(portToConstraintConnNode, 'dst')
+            .then(function(constraintNode) {
+                constraintData.name = self.core.getAttribute(constraintNode, 'name');
+                constraintData.enableUpper = self.core.getAttribute(constraintNode, 'EnableUpper');
+                constraintData.upper = self.core.getAttribute(constraintNode, 'Upper').toString();
+                constraintData.enableLower = self.core.getAttribute(constraintNode, 'EnableLower');
+                constraintData.lower = self.core.getAttribute(constraintNode, 'Lower').toString();
+                connectionPromises.push(self.getConnectionData(portToConstraintConnNode));
+
+                return Q.all(connectionPromises);
+            })
+            .then(function(connectionData) {
+                constraintData.connection = connectionData;
+                return constraintData;
+            });
+    };
 
 
     MOCACodeGenerator.prototype.generateArtifact = function (dataModel) {

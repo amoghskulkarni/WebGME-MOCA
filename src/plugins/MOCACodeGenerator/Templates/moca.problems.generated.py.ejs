@@ -11,7 +11,7 @@ if (driver === 'ScipyOptimizer') {
 %>
 from openmdao.api import ScipyOptimizer
 <%
-} else if (driver === 'FullFactorialDriver') {
+} else if (driver === 'FullFactorialDOE') {
 %>
 from openmdao.api import FullFactorialDriver
 <%
@@ -114,7 +114,31 @@ if (driver === 'ScipyOptimizer') {
         driver = ScipyOptimizer()
         driver.options['optimizer'] = 'SLSQP'
 <%
-} else {
+    for (var i = 0; i < constraints.length; i++) {
+        limitsString = '';
+        if (constraints[i].enableUpper) {
+            limitsString = 'upper=';
+            valueString = constraints[i].upper;
+            if (valueString.indexOf('.') === -1)
+                valueString += '.0';
+            limitsString += valueString;
+        }
+        if (constraints[i].enableLower) {
+            limitsString += ', lower=';
+            valueString = constraints[i].lower;
+            if (valueString.indexOf('.') === -1)
+                valueString += '.0';
+            limitsString += valueString;
+        }
+        if (!constraints[i].enableLower && !constraints[i].enableUpper)
+            break;
+%>
+        driver.add_constraint('<%= constraints[i].connection[0].srcParent %>.<%= constraints[i].connection[0].src %>', <%= limitsString %>)
+<%
+    }
+%>
+<%
+} else if (driver === 'FullFactorialDOE') {
 // TODO: How to record a specific output, so that we can make use of records in MOCA?
 %>
         driver = FullFactorialDriver(<%= doeSamples %>)
@@ -147,9 +171,6 @@ for (var i = 0; i < objectives.length; i++) {
         driver.add_objective('<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>')
 <%
 }
-%>
-<%
-// TODO: Constraints
 %>
         self.driver = driver
         self.setup()
