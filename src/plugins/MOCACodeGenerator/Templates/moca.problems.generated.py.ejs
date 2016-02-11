@@ -18,9 +18,13 @@ from openmdao.api import FullFactorialDriver
 }
 %>
 <%
-if (recorder) {
+if (recorder === 'Dump') {
 %>
 from openmdao.api import DumpRecorder
+<%
+} else if (recorder === 'Specific') {
+%>
+from openmdao.api import SqliteRecorder
 <%
 }
 %>
@@ -147,11 +151,28 @@ if (driver === 'ScipyOptimizer') {
 %>
 <%
 // add recorder
-if (recorder == true) {
+if (recorder === 'Dump') {
 %>
         rec = DumpRecorder('<%= name %>_dumpfile')
         rec.options['record_params'] = True
         rec.options['record_unknowns'] = True
+        driver.add_recorder(rec)
+<%
+} else if (recorder === 'Specific') {
+        var includeString = '';
+        for (var i = 0; i < records.length; i++) {
+            // construct includeString
+            includeString += "'" + records[i].connection[0].srcParent + "." + records[i].connection[0].src + "'";
+            if (i != records.length - 1)
+                includeString += ', ';
+        }
+        if (includeString === '')
+            includeString = "'" + "*" + "'";
+%>
+        rec = SqliteRecorder('<%= name %>_sqlitefile')
+        rec.options['record_params'] = True
+        rec.options['record_unknowns'] = True
+        rec.options['includes'] = [<%- includeString %>]
         driver.add_recorder(rec)
 <%
 }

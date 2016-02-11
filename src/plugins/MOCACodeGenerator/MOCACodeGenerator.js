@@ -401,7 +401,7 @@ define([
                 name: self.core.getAttribute(problemNode, 'name'),
                 driver: self.core.getAttribute(problemNode, 'Driver'),
                 doeSamples: self.core.getAttribute(problemNode, 'Samples'),
-                recorder: self.core.getAttribute(problemNode, 'Record'),
+                recorder: self.core.getAttribute(problemNode, 'Recorder'),
                 algebraicLoop: self.core.getAttribute(problemNode, 'AlgebraicLoop'),
                 constraints: [],
                 compInstances: [],
@@ -432,7 +432,7 @@ define([
                         desvarPromises.push(self.getDesignVariableData(children[i]));
                     else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'OutToObjConn')
                         objectivePromises.push(self.getObjectiveData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'OutToRecConn')
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'PortToRecConn')
                         recordPromises.push(self.getRecordData(children[i]));
                     else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'PortToConstraintConn')
                         constraintPromises.push(self.getConstraintData(children[i]));
@@ -452,20 +452,20 @@ define([
                 problemData.connections = connectionsData;
                 return Q.all(desvarPromises);
             })
-            .then(function (desvarData) {
-                problemData.desvars = desvarData;
+            .then(function (desvarsData) {
+                problemData.desvars = desvarsData;
                 return Q.all(objectivePromises);
             })
-            .then(function (objectiveData) {
-                problemData.objectives = objectiveData;
+            .then(function (objectivesData) {
+                problemData.objectives = objectivesData;
                 return Q.all(recordPromises);
             })
-            .then(function (recordData) {
-                problemData.records = recordData;
+            .then(function (recordsData) {
+                problemData.records = recordsData;
                 return Q.all(constraintPromises);
             })
-            .then(function (constraintData) {
-                problemData.constraints = constraintData;
+            .then(function (constraintsData) {
+                problemData.constraints = constraintsData;
                 return problemData;
             });
     }
@@ -525,7 +525,7 @@ define([
     }
 
 
-    MOCACodeGenerator.prototype.getRecordData = function (outToRecConnNode) {
+    MOCACodeGenerator.prototype.getRecordData = function (portToRecConnNode) {
         var self = this,
             recordData = {
                 name: null,
@@ -536,10 +536,10 @@ define([
             },
             connectionPromises = [];
 
-        return self.core.loadPointer(outToRecConnNode, 'dst')
+        return self.core.loadPointer(portToRecConnNode, 'dst')
             .then(function(recordNode) {
                 recordData.name = self.core.getAttribute(recordNode, 'name');
-                connectionPromises.push(self.getConnectionData(outToRecConnNode));
+                connectionPromises.push(self.getConnectionData(portToRecConnNode));
 
                 return Q.all(connectionPromises);
             })
