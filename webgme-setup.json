@@ -1,7 +1,11 @@
 {
   "components": {
     "addons": {},
-    "decorators": {},
+    "decorators": {
+      "CodeEditorDecorator": {
+        "src": "src\\decorators\\CodeEditorDecorator"
+      }
+    },
     "layouts": {},
     "plugins": {
       "MOCACodeGenerator": {

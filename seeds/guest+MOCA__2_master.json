@@ -61,11 +61,15 @@
             }
         },
         "3e57b729-bf11-bce5-3c6b-23c37852f26e": {
+            "28057fa6-1a5a-74f1-bd24-f7008bcae93b": {},
+            "334dfe2e-0a9f-9ed1-6b90-3c57269db844": {},
             "490abeeb-1841-8eb3-5c1a-cec079da0366": {},
             "5af90d2e-67ae-3641-cd62-66a793446ea6": {},
             "5fa9f3fa-081a-556c-b370-05cc03765f93": {},
             "a3a9f3fa-081a-556c-b370-05cc03765f93": {},
-            "cada794e-35d5-1284-8aca-b6fc56208fde": {}
+            "cada794e-35d5-1284-8aca-b6fc56208fde": {},
+            "dbf5323f-40c0-82ef-ab12-43e72d5af678": {},
+            "f1f7208b-7302-0b26-2ecb-06dfaf18252b": {}
         },
         "9c052395-cb92-6279-75d1-b3b8ec47337f": {
             "1b96ce38-0a3b-07ba-21ee-5cb990e86fa8": {},
@@ -231,7 +235,7 @@
                     "FCO_ID": "/1"
                 },
                 "usedAddOns": "",
-                "validDecorators": "ModelDecorator CircleDecorator MetaDecorator SVGDecorator UMLStateMachineDecorator DefaultDecorator",
+                "validDecorators": "ModelDecorator CircleDecorator MetaDecorator SVGDecorator UMLStateMachineDecorator DefaultDecorator CodeEditorDecorator",
                 "validPlugins": "MOCACodeGenerator",
                 "validVisualizers": "ModelEditor METAAspect"
             },
@@ -999,6 +1003,25 @@
             "sets": {},
             "constraints": {}
         },
+        "28057fa6-1a5a-74f1-bd24-f7008bcae93b": {
+            "attributes": {
+                "name": "Record1"
+            },
+            "base": "b32c6963-eaa1-6af6-afe5-135e74a46131",
+            "meta": {},
+            "parent": "3e57b729-bf11-bce5-3c6b-23c37852f26e",
+            "pointers": {
+                "base": "b32c6963-eaa1-6af6-afe5-135e74a46131"
+            },
+            "registry": {
+                "position": {
+                    "x": 739,
+                    "y": 170
+                }
+            },
+            "sets": {},
+            "constraints": {}
+        },
         "2e0b0c68-0e4a-0a3e-b9ee-910a7fa051e8": {
             "attributes": {},
             "base": "b09d7f8b-c8f7-474a-43a9-447e8bcb533a",
@@ -1051,6 +1074,25 @@
                 "position": {
                     "x": 400,
                     "y": 131
+                }
+            },
+            "sets": {},
+            "constraints": {}
+        },
+        "334dfe2e-0a9f-9ed1-6b90-3c57269db844": {
+            "attributes": {},
+            "base": "8514ddde-f699-62db-91cd-70a331bc44a2",
+            "meta": {},
+            "parent": "3e57b729-bf11-bce5-3c6b-23c37852f26e",
+            "pointers": {
+                "base": "8514ddde-f699-62db-91cd-70a331bc44a2",
+                "dst": "dbf5323f-40c0-82ef-ab12-43e72d5af678",
+                "src": "cada794e-35d5-1284-8aca-b6fc56208fde@/C"
+            },
+            "registry": {
+                "position": {
+                    "x": 100,
+                    "y": 100
                 }
             },
             "sets": {},
@@ -1188,7 +1230,7 @@
         "3e57b729-bf11-bce5-3c6b-23c37852f26e": {
             "attributes": {
                 "Driver": "FullFactorialDOE",
-                "Recorder": "Dump",
+                "Recorder": "Specific",
                 "name": "AdderProblem"
             },
             "base": "6fc170c7-2621-b530-173b-84bdfa257379",
@@ -1199,8 +1241,8 @@
             },
             "registry": {
                 "position": {
-                    "x": 653,
-                    "y": 95
+                    "x": 650,
+                    "y": 89
                 },
                 "validPlugins": ""
             },
@@ -1343,6 +1385,7 @@
             },
             "registry": {
                 "SVGIcon": "Icons/Component.png",
+                "decorator": "CodeEditorDecorator",
                 "isAbstract": false,
                 "position": {
                     "x": 162,
@@ -3118,6 +3161,25 @@
             "sets": {},
             "constraints": {}
         },
+        "dbf5323f-40c0-82ef-ab12-43e72d5af678": {
+            "attributes": {
+                "name": "Record2"
+            },
+            "base": "b32c6963-eaa1-6af6-afe5-135e74a46131",
+            "meta": {},
+            "parent": "3e57b729-bf11-bce5-3c6b-23c37852f26e",
+            "pointers": {
+                "base": "b32c6963-eaa1-6af6-afe5-135e74a46131"
+            },
+            "registry": {
+                "position": {
+                    "x": 738,
+                    "y": 302
+                }
+            },
+            "sets": {},
+            "constraints": {}
+        },
         "dc3d7496-9c91-08e6-9430-ba048008a2de": {
             "attributes": {
                 "name": "obj"
@@ -3340,6 +3402,25 @@
             "parent": "ed019ff6-f31b-75a0-4151-13d4d20efea2",
             "pointers": {},
             "registry": {},
+            "sets": {},
+            "constraints": {}
+        },
+        "f1f7208b-7302-0b26-2ecb-06dfaf18252b": {
+            "attributes": {},
+            "base": "8514ddde-f699-62db-91cd-70a331bc44a2",
+            "meta": {},
+            "parent": "3e57b729-bf11-bce5-3c6b-23c37852f26e",
+            "pointers": {
+                "base": "8514ddde-f699-62db-91cd-70a331bc44a2",
+                "dst": "28057fa6-1a5a-74f1-bd24-f7008bcae93b",
+                "src": "cada794e-35d5-1284-8aca-b6fc56208fde@/M"
+            },
+            "registry": {
+                "position": {
+                    "x": 100,
+                    "y": 100
+                }
+            },
             "sets": {},
             "constraints": {}
         },
@@ -3570,9 +3651,11 @@
         "1c5eb468-4bc5-eee3-c2a2-90ce0ce2724a": "F",
         "21076953-f983-77a2-1ad0-a6ec46c6ac09": "B",
         "2213eb15-76bb-4094-7c28-cfab3fadfa12": "U",
+        "28057fa6-1a5a-74f1-bd24-f7008bcae93b": "6",
         "2e0b0c68-0e4a-0a3e-b9ee-910a7fa051e8": "i",
         "301dadf3-3918-7e83-8d7b-32baf8e9892a": "k",
         "329c6adb-3371-193e-e04d-5075ae6b5aaa": "n",
+        "334dfe2e-0a9f-9ed1-6b90-3c57269db844": "C",
         "33a83f69-30a0-b4d3-2825-863e99ad91e0": "c",
         "38e54ad4-fdf9-2173-f53f-68173ade5b0d": "S",
         "39b0d3fb-de87-aae9-e7ab-f73da4295c6a": "6",
@@ -3659,6 +3742,7 @@
         "cada794e-35d5-1284-8aca-b6fc56208fde": "P",
         "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": "1",
         "d5a12a4b-aa23-93aa-8260-b3cc1769b6b8": "E",
+        "dbf5323f-40c0-82ef-ab12-43e72d5af678": "n",
         "dc3d7496-9c91-08e6-9430-ba048008a2de": "y",
         "dc589527-6e20-251e-306b-bfd36d1a9ba8": "a",
         "ddf28f41-d634-e809-7d20-259ea72396a3": "p",
@@ -3671,6 +3755,7 @@
         "ed019ff6-f31b-75a0-4151-13d4d20efea2": "4",
         "eff597d1-05b5-d38f-4bc8-62500187190f": "Y",
         "f1c1c7e2-d075-6724-2992-ad13b89f557e": "C",
+        "f1f7208b-7302-0b26-2ecb-06dfaf18252b": "7",
         "f2589527-6e20-251e-306b-bfd36d1a9ba8": "V",
         "f54f0580-6fc0-5672-875a-6df20d326e17": "N",
         "f87086f7-10dc-f9df-8052-bdc2d8c9efb9": "n",
