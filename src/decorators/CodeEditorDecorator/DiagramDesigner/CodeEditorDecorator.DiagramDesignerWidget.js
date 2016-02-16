@@ -58,7 +58,7 @@ define([
         ModelDecoratorDiagramDesignerWidget.prototype.on_addTo.apply(this, arguments);
 
         // Initialize dialog with EpicEditor.
-        this._initDialog();
+        this._initDialog(nodeObj.getAttribute('OutputFunction'));
 
         //render text-editor based META editing UI piece
         this._skinParts.$EditorBtn = TEXT_META_EDIT_BTN_BASE.clone();
@@ -69,6 +69,7 @@ define([
         this._skinParts.$EditorBtn.on('click', function () {
             if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true &&
                 nodeObj.getAttribute('OutputFunction') !== undefined) {
+                self.editorDialog.updateText(nodeObj.getAttribute('OutputFunction'));
                 self.editorDialog.show();
             }
             event.stopPropagation();
@@ -77,22 +78,20 @@ define([
 
     };
 
-    CodeEditorDecorator.prototype._initDialog = function () {
+    CodeEditorDecorator.prototype._initDialog = function (OutputFunctionText) {
         var self = this;
         var client = this._control._client;
         var nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
-        var OutputFunction = nodeObj.getAttribute('OutputFunction') || 'Click to enter Input(s) to Output(s) relation.';
+        // var OutputFunctionText = nodeObj.getAttribute('OutputFunction');
 
         // Initialize with OutputFunction attribute and save callback function
-        this.editorDialog.initialize(OutputFunction,
-            function (text) {
-                try {
-                    client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], 'OutputFunction', text);
-                } catch (e) {
-                    self.logger.error('Saving META failed... Either not JSON object or something else went wrong...');
-                }
+        this.editorDialog.initialize(OutputFunctionText, function (text) {
+            try {
+                client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], 'OutputFunction', text);
+            } catch (e) {
+                self.logger.error('Saving META failed... Either not JSON object or something else went wrong...');
             }
-        );
+        });
     };
 
     CodeEditorDecorator.prototype.destroy = function () {
