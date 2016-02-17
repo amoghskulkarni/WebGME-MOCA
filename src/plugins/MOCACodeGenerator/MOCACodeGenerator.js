@@ -181,6 +181,7 @@ define([
                 name: self.core.getAttribute(componentNode, 'name'),
                 type: self.core.getAttribute(componentNode, 'Type'),
                 force_fd: self.core.getAttribute(componentNode, 'ForceFD'),
+                outputFunction: self.core.getAttribute(componentNode, 'OutputFunction'),
                 parameters: [],
                 unknowns: []
             },
