@@ -25,8 +25,6 @@ define([
 
         ModelDecoratorDiagramDesignerWidget.apply(this, [opts]);
 
-        this.editorDialog = new DocumentEditorDialog();
-
         this._skinParts = {};
 
         // Use default marked options
@@ -57,9 +55,6 @@ define([
         //let the parent decorator class do its job first
         ModelDecoratorDiagramDesignerWidget.prototype.on_addTo.apply(this, arguments);
 
-        // Initialize dialog with EpicEditor.
-        this._initDialog(nodeObj.getAttribute('OutputFunction'));
-
         //render text-editor based META editing UI piece
         this._skinParts.$EditorBtn = TEXT_META_EDIT_BTN_BASE.clone();
         this.$el.append('<br>');
@@ -69,8 +64,7 @@ define([
         this._skinParts.$EditorBtn.on('click', function () {
             if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true &&
                 nodeObj.getAttribute('OutputFunction') !== undefined) {
-                self.editorDialog.updateText(nodeObj.getAttribute('OutputFunction'));
-                self.editorDialog.show();
+                self._showEditorDialog();
             }
             event.stopPropagation();
             event.preventDefault();
@@ -78,20 +72,24 @@ define([
 
     };
 
-    CodeEditorDecorator.prototype._initDialog = function (OutputFunctionText) {
+    CodeEditorDecorator.prototype._showEditorDialog = function () {
         var self = this;
         var client = this._control._client;
         var nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
-        // var OutputFunctionText = nodeObj.getAttribute('OutputFunction');
+        var OutputFunctionText = nodeObj.getAttribute('OutputFunction') || 'Click to enter equation.';
+
+        var editorDialog = new DocumentEditorDialog();
 
         // Initialize with OutputFunction attribute and save callback function
-        this.editorDialog.initialize(OutputFunctionText, function (text) {
+        editorDialog.initialize(OutputFunctionText, function (text) {
             try {
                 client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], 'OutputFunction', text);
             } catch (e) {
                 self.logger.error('Saving META failed... Either not JSON object or something else went wrong...');
             }
         });
+
+        editorDialog.show();
     };
 
     CodeEditorDecorator.prototype.destroy = function () {
@@ -109,7 +107,7 @@ define([
         if (nodeObj) {
             newDoc = nodeObj.getAttribute('OutputFunction') || '';
             // Update text in the editor when attribute "OutputFunction" changes
-            this.editorDialog.updateText(newDoc);
+            // this.editorDialog.updateText(newDoc);
         }
     };
 
