@@ -8,45 +8,46 @@ import groups
 # Dynamic imports
 <%
 if (driver === 'ScipyOptimizer') {
-%>
+-%>
 from openmdao.api import ScipyOptimizer
 <%
 } else if (driver === 'FullFactorialDOE') {
-%>
+-%>
 from openmdao.api import FullFactorialDriver
 <%
 }
-%>
+-%>
 <%
 if (recorder === 'Dump') {
-%>
+-%>
 from openmdao.api import DumpRecorder
 <%
 } else if (recorder === 'Specific') {
-%>
+-%>
 from openmdao.api import SqliteRecorder
 <%
 }
-%>
+-%>
 <%
 if (algebraicLoop) {
-%>
+-%>
 from openmdao.api import NLGaussSeidel, ScipyGMRES
 <%
 }
-%>
+-%>
 
 class RootGroup(Group):
     def __init__(self):
         super(RootGroup, self).__init__()
+
 <%
 // add() statements for design variables
 for (var i = 0; i < desvars.length; i++) {
-%>
+-%>
         self.add('<%= desvars[i].name %>', IndepVarComp('<%= desvars[i].connection[0].dst %>', 0.0))
 <%
 }
-%>
+-%>
 <%
 // Generate the code for add() statements for components -
 // add instances of components
@@ -57,11 +58,11 @@ for (var j = 0; j < compInstances.length; j++) {
         if (k != compInstances[j].promotes.length - 1)
             promotesString += ', ';
     }
-%>
+-%>
         self.add('<%= compInstances[j].name %>', components.<%= compInstances[j].base %>(), promotes=[<%- promotesString %>])
 <%
 }
-%>
+-%>
 <%
 // Generate the code for add() statements for groups -
 // add instances of groups
@@ -72,51 +73,54 @@ for (var j = 0; j < groupInstances.length; j++) {
         if (k != groupInstances[j].promotes.length - 1)
             promotesString += ', ';
     }
-%>
+-%>
         self.add('<%= groupInstances[j].name %>', groups.<%= groupInstances[j].base %>(), promotes=[<%- promotesString %>])
 <%
 }
-%>
+-%>
+
 <%
 // Generate the code for connect() statements for connections between ports
 for (var j = 0; j < connections.length; j++) {
-%>
+-%>
         self.connect('<%= connections[j].srcParent %>.<%= connections[j].src %>', '<%= connections[j].dstParent %>.<%= connections[j].dst %>')
 <%
 }
-%>
+-%>
 <%
 // Generate the code for connect() statements for connections
 // between IndepVarComps' ports and ports
 for (var j = 0; j < desvars.length; j++) {
-%>
+-%>
         self.connect('<%= desvars[j].name %>.<%= desvars[j].connection[0].dst %>', '<%= desvars[j].connection[0].dstParent %>.<%= desvars[j].connection[0].dst %>')
 <%
 }
-%>
+-%>
 <%
 // Change nl_solver and ln_driver in case of algebraic loop
 if (algebraicLoop) {
-%>
+-%>
+
         self.nl_solver = NLGaussSeidel()
         self.nl_solver.options['atol'] = 1.0e-12
-
         self.ln_solver = ScipyGMRES()
 <%
 }
-%>
-
+-%>
 
 class <%= name %>(Problem):
     def __init__(self):
         super(<%= name %>, self).__init__()
+
         self.root = RootGroup()
 <%
 // Driver settings
 if (driver === 'ScipyOptimizer') {
-%>
+-%>
+
         driver = ScipyOptimizer()
         driver.options['optimizer'] = 'SLSQP'
+
 <%
     for (var i = 0; i < constraints.length; i++) {
         limitsString = '';
@@ -136,22 +140,24 @@ if (driver === 'ScipyOptimizer') {
         }
         if (!constraints[i].enableLower && !constraints[i].enableUpper)
             break;
-%>
+-%>
         driver.add_constraint('<%= constraints[i].connection[0].srcParent %>.<%= constraints[i].connection[0].src %>', <%= limitsString %>)
 <%
     }
-%>
+-%>
 <%
 } else if (driver === 'FullFactorialDOE') {
-%>
+-%>
+
         driver = FullFactorialDriver(<%= doeSamples %>)
 <%
 }
-%>
+-%>
 <%
 // add recorder
 if (recorder === 'Dump') {
-%>
+-%>
+
         rec = DumpRecorder('<%= name %>_dumpfile')
         rec.options['record_params'] = True
         rec.options['record_unknowns'] = True
@@ -168,7 +174,8 @@ if (recorder === 'Dump') {
         }
         if (incString === "")
             incString = "'" + "*" + "'";
-%>
+-%>
+
         rec = SqliteRecorder('<%= name %>_sqlitefile')
         rec.options['record_params'] = True
         rec.options['record_unknowns'] = True
@@ -176,23 +183,26 @@ if (recorder === 'Dump') {
         driver.add_recorder(rec)
 <%
 }
-%>
+-%>
+
 <%
 // add_desvar() statements for design variables
 for (var i = 0; i < desvars.length; i++) {
-%>
+-%>
         driver.add_desvar('<%= desvars[i].name %>.<%= desvars[i].connection[0].dst %>', lower=<%= desvars[i].lower %>, upper=<%= desvars[i].upper %>)
 <%
 }
-%>
+-%>
+
 <%
 // add_objective() statements for objectives
 for (var i = 0; i < objectives.length; i++) {
-%>
+-%>
         driver.add_objective('<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>')
 <%
 }
-%>
+-%>
+
         self.driver = driver
         self.setup()
 
@@ -211,27 +221,27 @@ if __name__ == "__main__":
 <%
 // Print result in case of optimizer
 if (driver === 'ScipyOptimizer') {
-%>
+-%>
     print "\tObjective(s):"
     print "\t------------"
 <%
     for (var i = 0; i < objectives.length; i++) {
-%>
+-%>
     print("\t\t<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %> = %f" % (top['<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>']))
 <%
     }
-%>
+-%>
     print "\tDesign variable(s):"
     print "\t------------------"
 <%
     for (var i = 0; i < desvars.length; i++) {
-%>
+-%>
     print("\t\t<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %> = %f" % (top['<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %>']))
 <%
     }
 } else {
-%>
+-%>
     print "The DOE result is written in a file named <%= name %>_dumpfile or <%= name %>_sqlitefile in the parent folder."
 <%
 }
-%>
+-%>
