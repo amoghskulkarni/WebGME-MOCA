@@ -626,21 +626,33 @@ define([
 
         self.FILES.forEach(function (fileInfo) {
             if (fileInfo.name !== 'problems') {
-                var genFileName = 'MOCA_GeneratedCode/' + fileInfo.name + '.py';
+                var genFileName = 'MOCA_GeneratedCode/lib/' + fileInfo.name + '.py';
                 self.logger.debug(genFileName);
                 filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel);
             } else {
                 // If the filename is "problem" - use the template for problems
                 // additionally generate .bat file for that as well
                 for (var i = 0; i < dataModel.problems.length; i++) {
-                    var genFileName = 'MOCA_GeneratedCode/' + dataModel.problems[i].name + '.py';
-                    var genBatFile = 'MOCA_GeneratedCode/' + dataModel.problems[i].name + '.bat';
+                    var genFileName = 'MOCA_GeneratedCode/src/' + dataModel.problems[i].name + '.py',
+                        genBatFile = 'MOCA_GeneratedCode/' + dataModel.problems[i].name + '.bat';
                     self.logger.debug(genFileName);
                     filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]);
                     filesToAdd[genBatFile] = ejs.render(TEMPLATES[fileInfo.batfile], dataModel.problems[i]);
                 }
             }
         });
+
+        // Create __init__.py file in the lib and src directories each
+        var initFileNameInLib = 'MOCA_GeneratedCode/lib/__init__.py',
+            initFileNameInSrc = 'MOCA_GeneratedCode/src/__init__.py',
+            initFileContent = '# A boilerplate file to enable this directory to be imported as a module';
+        filesToAdd[initFileNameInLib] = initFileContent;
+        filesToAdd[initFileNameInSrc] = initFileContent;
+
+        // Create out directory for storing output files in case of recorders
+        // TODO: Create only directory (creating a dummy placeholder file for now)
+        var outDirName = 'MOCA_GeneratedCode/out/dummy.txt';
+        filesToAdd[outDirName] = '';
 
         //TODO Add the static files too.
         self.logger.info('Generated python files for MOCA');

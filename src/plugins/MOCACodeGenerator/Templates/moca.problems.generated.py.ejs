@@ -2,8 +2,8 @@
 
 # Static imports
 from openmdao.api import IndepVarComp, Group, Problem
-import components
-import groups
+import lib.components as components
+import lib.groups as groups
 
 # Dynamic imports
 <%
@@ -101,6 +101,7 @@ for (var j = 0; j < desvars.length; j++) {
 if (algebraicLoop) {
 -%>
 
+        # Special solvers for handling algebraic loops
         self.nl_solver = NLGaussSeidel()
         self.nl_solver.options['atol'] = 1.0e-12
         self.ln_solver = ScipyGMRES()
@@ -158,7 +159,7 @@ if (driver === 'ScipyOptimizer') {
 if (recorder === 'Dump') {
 -%>
 
-        rec = DumpRecorder('<%= name %>_dumpfile')
+        rec = DumpRecorder('out/<%= name %>_dumpfile')
         rec.options['record_params'] = True
         rec.options['record_unknowns'] = True
         driver.add_recorder(rec)
@@ -176,7 +177,7 @@ if (recorder === 'Dump') {
             incString = "'" + "*" + "'";
 -%>
 
-        rec = SqliteRecorder('<%= name %>_sqlitefile')
+        rec = SqliteRecorder('out/<%= name %>_sqlitefile')
         rec.options['record_params'] = True
         rec.options['record_unknowns'] = True
         rec.options[<%- incWord %>] = [<%- incString %>]
