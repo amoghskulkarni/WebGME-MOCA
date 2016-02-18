@@ -76,7 +76,7 @@ define([
         var self = this;
         var client = this._control._client;
         var nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
-        var OutputFunctionText = nodeObj.getAttribute('OutputFunction') || 'Click to enter equation.';
+        var OutputFunctionText = nodeObj.getAttribute('OutputFunction');
 
         var editorDialog = new DocumentEditorDialog();
 

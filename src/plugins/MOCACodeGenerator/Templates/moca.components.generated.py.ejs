@@ -47,9 +47,6 @@ class <%= comps[i].name %>(Component):
 -%>
 
     def solve_nonlinear(self, params, unknowns, resids):
-        # This is a dummy implementation of the method solve_nonlinear()
-        # This method should be implemented by the user as per the application
-
         # Assigning shorthand(s) to the parameter(s)
 <%
     // Generate statements for dummy implementation of the method
@@ -60,23 +57,50 @@ class <%= comps[i].name %>(Component):
     }
 -%>
 
-        # Assign value(s) to the unknown(s)
 <%
-    var dummyStatement = '';
-    for (var j = 0; j < comps[i].parameters.length; j++) {
-        dummyStatement += comps[i].parameters[j].name;
-        if (j != comps[i].parameters.length - 1)
-            dummyStatement += ' + ';
+    // Generate statements to give explicit equation between output(s) and input(s)
+    if (comps[i].outputFunction === '') {
+        // Print the dummy code snippet if the user hasn't given one
+        var dummyStatement = '';
+        for (var j = 0; j < comps[i].parameters.length; j++) {
+            dummyStatement += comps[i].parameters[j].name;
+            if (j != comps[i].parameters.length - 1)
+                dummyStatement += ' + ';
+        }
+        for (var j = 0; j < comps[i].unknowns.length; j++) {
+-%>
+        # Dummy function for the unknown <%= comps[i].unknowns[j].name %>
+        <%= comps[i].unknowns[j].name %> = <%= dummyStatement %>
+<%
+        }
+    } else {
+-%>
+        # This code snippet is defined by user using the embedded code editor in MOCA
+<%
+        // Print the user defined code snippet
+        lines = comps[i].outputFunction.split("\n");
+        for (var j = 0; j < lines.length; j++) {
+            if (lines[j] !== '') {
+-%>
+        <%= lines[j] %>
+<%
+            }
+        }
     }
+-%>
+
+        # Assign the value(s) to unknown(s)
+<%
     for (var j = 0; j < comps[i].unknowns.length; j++) {
 -%>
-        unknowns['<%= comps[i].unknowns[j].name %>'] = <%= dummyStatement %>
+        unknowns['<%= comps[i].unknowns[j].name %>'] = <%= comps[i].unknowns[j].name %>
 <%
     }
 -%>
 <%
     // If the component is implicit, generate code for apply_nonlinear()
     if (comps[i].type === 'Implicit') {
+        // TODO: Generate statements giving the values for residuals
 -%>
 
     def apply_nonlinear(self, params, unknowns, resids):
