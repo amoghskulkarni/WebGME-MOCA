@@ -5,6 +5,7 @@
    "metadata": {},
    "source": [
     "# <%= name %> Notebook\n",
+    "***",
     "\n",
     "## Execution\n",
     "\n",
@@ -69,9 +70,53 @@ if (recorder !== '(None)') {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "## Analysis\n",
+    "***",
     "\n",
-    "#### Optimization analysis"
+    "## Analysis\n"
+<%
+if (driver === 'ScipyOptimizer') {
+-%>
+    ,"\n"
+    ,"_**Optimization analysis**_\n"
+    ,"\n"
+    ,"**Objectives**"
+<%
+}
+-%>
+   ]
+  }
+<%
+if (driver === 'ScipyOptimizer') {
+-%>
+  ,{
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "# Print objectives' values"
+    ,"\n"
+<%
+    for (var i = 0; i < objectives.length; i++) {
+-%>
+    ,"print(\"<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %> = %f \" % (top['<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>']))"
+<%
+        if (i != objectives.length - 1) {
+-%>
+    ,"\n"
+<%
+        }
+    }
+-%>
+   ]
+  }
+  ,{
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**Design Variables**"
    ]
   }
   ,{
@@ -82,9 +127,25 @@ if (recorder !== '(None)') {
    },
    "outputs": [],
    "source": [
-    "# Print the values of parameter and objectives"
+    "# Print design variables' values"
+    ,"\n"
+<%
+    for (var i = 0; i < desvars.length; i++) {
+-%>
+    ,"print(\"<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %> = %f\" % (top['<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %>']))"
+<%
+        if (i != desvars.length - 1) {
+-%>
+    ,"\n"
+<%
+        }
+    }
+-%>
    ]
   }
+<%
+}
+-%>
 <%
 if (recorder !== '(None)') {
 -%>
@@ -92,7 +153,7 @@ if (recorder !== '(None)') {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "#### Design-of-experiment analysis"
+    "_**Design-of-experiment analysis**_"
    ]
   }
   ,{

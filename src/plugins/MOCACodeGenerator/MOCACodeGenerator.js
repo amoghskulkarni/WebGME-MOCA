@@ -657,7 +657,7 @@ define([
 
         // Create a batch file to launch ipython notebook
         var ipynbLaunchScriptName = 'MOCA_GeneratedCode/launch_iPythonNotebook.bat';
-        filesToAdd[ipynbLaunchScriptName] = 'ipython notebook --port=9999'
+        filesToAdd[ipynbLaunchScriptName] = 'echo off\nipython notebook --port=9999'
 
         //TODO Add the static files too.
         self.logger.info('Generated python files for MOCA');
