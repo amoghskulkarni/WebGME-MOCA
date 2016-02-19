@@ -642,12 +642,13 @@ define([
             }
         });
 
-        // Create __init__.py file in the lib and src directories each
-        var initFileNameInLib = 'MOCA_GeneratedCode/lib/__init__.py',
-            initFileNameInSrc = 'MOCA_GeneratedCode/src/__init__.py',
-            initFileContent = '# A boilerplate file to enable this directory to be imported as a module';
-        filesToAdd[initFileNameInLib] = initFileContent;
-        filesToAdd[initFileNameInSrc] = initFileContent;
+        // Create __init__.py file in the lib, src and util directories each
+        var subdirectories = ['lib', 'src', 'util'];
+        for (var i = 0; i < subdirectories.length; i++) {
+            var initFileName = 'MOCA_GeneratedCode/' + subdirectories[i] + '/__init__.py',
+                initFileContent = '# A boilerplate file to enable this directory to be imported as a module';
+            filesToAdd[initFileName] = initFileContent;
+        }
 
         // Create out directory for storing output files in case of recorders
         // TODO: Create only directory (creating a dummy placeholder file for now)
