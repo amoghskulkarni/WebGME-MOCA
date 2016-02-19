@@ -1,0 +1,144 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# <%= name %> Notebook\n",
+    "\n",
+    "## Execution\n",
+    "\n",
+    "Import the problem (and optionally the recording utility)."
+   ]
+  }
+  ,{
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "from src.<%= name %> import <%= name %>\n"
+<%
+if (recorder !== '(None)') {
+-%>
+    ,"# import the recording utility here"
+<%
+}
+-%>
+   ]
+  }
+  ,{
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Instantiate the problem."
+   ]
+  }
+  ,{
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "top = <%= name %>()"
+   ]
+  }
+  ,{
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Run the problem."
+   ]
+  }
+  ,{
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "top.run()"
+   ]
+  }
+  ,{
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Analysis\n",
+    "\n",
+    "#### Optimization analysis"
+   ]
+  }
+  ,{
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "# Print the values of parameter and objectives"
+   ]
+  }
+<%
+if (recorder !== '(None)') {
+-%>
+  ,{
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Design-of-experiment analysis"
+   ]
+  }
+  ,{
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+<%
+    if (recorder === 'Dump') {
+-%>
+    "# Give an example of using dump parser utility"
+<%
+    } else if (recorder === 'Specific') {
+-%>
+    "# Give an example of using sqlite parser utility"
+<%
+    }
+-%>
+   ]
+  }
+<%
+}
+-%>
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 2",
+   "language": "python",
+   "name": "python2"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.9"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}

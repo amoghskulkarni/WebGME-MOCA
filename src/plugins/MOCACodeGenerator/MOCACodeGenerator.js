@@ -44,7 +44,7 @@ define([
             {
                 name: 'problems',
                 template: 'moca.problems.generated.py.ejs',
-                batfile: 'moca.generated.bat.ejs'
+                ipynbfile: 'moca.problem.generated.ipynb.ejs'
             }
         ];
     };
@@ -634,10 +634,10 @@ define([
                 // additionally generate .bat file for that as well
                 for (var i = 0; i < dataModel.problems.length; i++) {
                     var genFileName = 'MOCA_GeneratedCode/src/' + dataModel.problems[i].name + '.py',
-                        genBatFile = 'MOCA_GeneratedCode/' + dataModel.problems[i].name + '.bat';
+                        genIpynbFile = 'MOCA_GeneratedCode/' + dataModel.problems[i].name + '.ipynb' ;
                     self.logger.debug(genFileName);
                     filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]);
-                    filesToAdd[genBatFile] = ejs.render(TEMPLATES[fileInfo.batfile], dataModel.problems[i]);
+                    filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.problems[i]);
                 }
             }
         });
@@ -653,6 +653,10 @@ define([
         // TODO: Create only directory (creating a dummy placeholder file for now)
         var outDirName = 'MOCA_GeneratedCode/out/dummy.txt';
         filesToAdd[outDirName] = '';
+
+        // Create a batch file to launch ipython notebook
+        var ipynbLaunchScriptName = 'MOCA_GeneratedCode/launch_iPythonNotebook.bat';
+        filesToAdd[ipynbLaunchScriptName] = 'ipython notebook --port=9999'
 
         //TODO Add the static files too.
         self.logger.info('Generated python files for MOCA');
