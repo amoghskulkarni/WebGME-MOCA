@@ -173,18 +173,19 @@ if (driver === 'ScipyOptimizer') {
     ,"# Wait for analysis to finish.\n"
     ,"top.cleanup()\n"
     ,"\n"
-    ,"# Get the list(s) of values which you wanted to record\n"
+    ,"# Get the list(s) of values which you wanted to record using SqliteParseUtils using -\n"
+    ,"# getParamValues(), getUnknownValues() or getTimestampValues()\n"
 <%
-        for (var i = 0; i < records.length; i++) {
+        // TODO: Confirm that the record you are going to use here is connected to
+        // a port of type "param"
+        if (records.length > 0) {
 -%>
-    ,"<%= records[i].connection[0].src %>_list = SqliteParseUtils.getParamValues(filename, '<%= records[i].connection[0].srcParent %>.<%= records[i].connection[0].src %>')"
+    ,"<%= records[0].connection[0].src %>_list = SqliteParseUtils.getParamValues(filename, '<%= records[0].connection[0].srcParent %>.<%= records[0].connection[0].src %>')"
 <%
-            if (i != records.length - 1) {
+        }
 -%>
     ,"\n"
 <%
-            }
-        }
     }
 -%>
    ]
