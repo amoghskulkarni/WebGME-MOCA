@@ -9,7 +9,7 @@
     "\n",
     "## Execution\n",
     "\n",
-    "Import the problem (and optionally the recording utility)."
+    "Import the problem (and optionally the parsing and/or plotting utilities)."
    ]
   }
   ,{
@@ -22,9 +22,9 @@
    "source": [
     "from src.<%= name %> import <%= name %>\n"
 <%
-if (recorder !== '(None)') {
+if (recorder === 'Specific') {
 -%>
-    ,"# import the recording utility here"
+    ,"from util.MOCAparseutils import SqliteParseUtils"
 <%
 }
 -%>
@@ -144,10 +144,7 @@ if (driver === 'ScipyOptimizer') {
    ]
   }
 <%
-}
--%>
-<%
-if (recorder !== '(None)') {
+} else if (driver === 'FullFactorialDOE' && recorder !== '(None)') {
 -%>
   ,{
    "cell_type": "markdown",
@@ -171,10 +168,35 @@ if (recorder !== '(None)') {
 <%
     } else if (recorder === 'Specific') {
 -%>
-    "# Give an example of using sqlite parser utility"
+    "# Get the database filename.\n"
+    ,"filename = top.driver.recorders._recorders[0].out.filename\n"
+    ,"# Wait for analysis to finish.\n"
+    ,"top.cleanup()\n"
+    ,"\n"
+    ,"# Get the list(s) of values which you wanted to record\n"
 <%
+        for (var i = 0; i < records.length; i++) {
+-%>
+    ,"<%= records[i].connection[0].src %>_list = SqliteParseUtils.getParamValues(filename, '<%= records[i].connection[0].srcParent %>.<%= records[i].connection[0].src %>')"
+<%
+            if (i != records.length - 1) {
+-%>
+    ,"\n"
+<%
+            }
+        }
     }
 -%>
+   ]
+  }
+<%
+} else {
+-%>
+  ,{
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "No analysis / recorder selected."
    ]
   }
 <%
