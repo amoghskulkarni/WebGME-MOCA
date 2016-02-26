@@ -87,10 +87,8 @@
         },
         "3e57b729-bf11-bce5-3c6b-23c37852f26e": {
             "14e9791c-c6ba-df67-0202-da54932c9dda": {},
-            "28057fa6-1a5a-74f1-bd24-f7008bcae93b": {},
             "3dd6eee6-1474-a269-830e-0c9f96b5eab7": {},
             "5fa9f3fa-081a-556c-b370-05cc03765f93": {},
-            "7e7a8368-1975-b695-b9c6-f5c759f21c81": {},
             "7ef598b7-7f36-518f-4887-be8b6f883383": {},
             "93d51fa4-fbeb-06a6-a698-a0f9544ff252": {},
             "a3a9f3fa-081a-556c-b370-05cc03765f93": {},
@@ -149,6 +147,10 @@
                 "70ad94d4-2edd-e3a3-082a-c0a8ae7d22d8": {},
                 "7dad94d4-2edd-e3a3-082a-c0a8ae7d22d8": {},
                 "b4e0f301-73c3-9c12-ca50-43f3abb22a16": {}
+            },
+            "fd239e17-a936-05c2-7794-faba7bdfb4e4": {
+                "13631da1-4bda-2a76-7f75-a663c8b4b1f6": {},
+                "dddd1e2f-da77-5d68-83e3-3ab95d8b5790": {}
             },
             "ff43f01c-806e-287b-cfa6-9015ad7615f4": {
                 "21076953-f983-77a2-1ad0-a6ec46c6ac09": {},
@@ -846,6 +848,25 @@
             "sets": {},
             "constraints": {}
         },
+        "13631da1-4bda-2a76-7f75-a663c8b4b1f6": {
+            "attributes": {
+                "name": "TestUnkn"
+            },
+            "base": "82274fcf-5fbd-d795-b54e-9efef6fdb253",
+            "meta": {},
+            "parent": "fd239e17-a936-05c2-7794-faba7bdfb4e4",
+            "pointers": {
+                "base": "82274fcf-5fbd-d795-b54e-9efef6fdb253"
+            },
+            "registry": {
+                "position": {
+                    "x": 729,
+                    "y": 220
+                }
+            },
+            "sets": {},
+            "constraints": {}
+        },
         "13f98249-fc04-e85e-8777-7ec786b246b8": {
             "attributes": {},
             "base": "c36da47a-d87e-fd89-b7c6-25ad874a0469",
@@ -898,8 +919,8 @@
             },
             "registry": {
                 "position": {
-                    "x": 653,
-                    "y": 295
+                    "x": 651,
+                    "y": 290
                 }
             },
             "sets": {},
@@ -965,6 +986,7 @@
         },
         "18168a1e-3cff-040c-1a7b-ea1b7e0fad88": {
             "attributes": {
+                "Jacobian": "",
                 "OutputFunction": "sum = a + b",
                 "name": "Adder"
             },
@@ -976,8 +998,8 @@
             },
             "registry": {
                 "position": {
-                    "x": 259,
-                    "y": 69
+                    "x": 261,
+                    "y": 70
                 }
             },
             "sets": {},
@@ -986,6 +1008,7 @@
         "1b920df2-18b1-9e02-e80b-8dc1ca620adb": {
             "attributes": {
                 "ForceFD": false,
+                "Jacobian": "J['f_xy', 'x'] = 2.0*x - 6.0 + y\r\nJ['f_xy', 'y'] = x + 2*y + 8",
                 "OutputFunction": "f_xy = (x-3.0)**2 + x*y + (y+4.0)**2 - 3\n\n",
                 "name": "Paraboloid"
             },
@@ -1085,7 +1108,8 @@
         "2213eb15-76bb-4094-7c28-cfab3fadfa12": {
             "attributes": {
                 "ForceFD": false,
-                "OutputFunction": "y1 = abs(y1) \ny2 = y1**.5 + z1 + z2",
+                "Jacobian": "J['y2', 'y1'] = .5*abs(y1)**-.5\r\nJ['y2', 'z1'] = 1.0\r\nJ['y2', 'z2'] = 1.0",
+                "OutputFunction": "# Note: this may cause some issues. However, y1 is constrained to be\r\n# above 3.16, so lets just let it converge, and the optimizer will\n# throw it out\ny1 = abs(y1) \ny2 = y1**.5 + z1 + z2",
                 "name": "SellarDiscipline2"
             },
             "base": "455abf2f-2a0d-7328-e324-759efbe90b8c",
@@ -1117,25 +1141,6 @@
                 "position": {
                     "x": 328,
                     "y": 144
-                }
-            },
-            "sets": {},
-            "constraints": {}
-        },
-        "28057fa6-1a5a-74f1-bd24-f7008bcae93b": {
-            "attributes": {
-                "name": "Record1"
-            },
-            "base": "b32c6963-eaa1-6af6-afe5-135e74a46131",
-            "meta": {},
-            "parent": "3e57b729-bf11-bce5-3c6b-23c37852f26e",
-            "pointers": {
-                "base": "b32c6963-eaa1-6af6-afe5-135e74a46131"
-            },
-            "registry": {
-                "position": {
-                    "x": 739,
-                    "y": 170
                 }
             },
             "sets": {},
@@ -1330,7 +1335,7 @@
         "3e57b729-bf11-bce5-3c6b-23c37852f26e": {
             "attributes": {
                 "Driver": "FullFactorialDOE",
-                "Recorder": "Dump",
+                "Recorder": "Specific",
                 "name": "AdderProblem"
             },
             "base": "6fc170c7-2621-b530-173b-84bdfa257379",
@@ -1485,6 +1490,7 @@
         "455abf2f-2a0d-7328-e324-759efbe90b8c": {
             "attributes": {
                 "ForceFD": true,
+                "Jacobian": "",
                 "OutputFunction": "",
                 "Type": "Explicit",
                 "name": "Component"
@@ -1492,8 +1498,11 @@
             "base": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045",
             "meta": {
                 "attributes": {
-                    "OutputFunction": {
+                    "Jacobian": {
                         "type": "string"
+                    },
+                    "ForceFD": {
+                        "type": "boolean"
                     },
                     "Type": {
                         "type": "string",
@@ -1502,8 +1511,8 @@
                             "Implicit"
                         ]
                     },
-                    "ForceFD": {
-                        "type": "boolean"
+                    "OutputFunction": {
+                        "type": "string"
                     }
                 },
                 "children": {
@@ -1841,6 +1850,7 @@
         },
         "5ffcba62-5f68-686a-99f6-7e2ed3a0f6cd": {
             "attributes": {
+                "ForceFD": false,
                 "OutputFunction": "y1 = z1**2 + z2 + x - 0.2*y2",
                 "name": "SellarD1"
             },
@@ -2049,6 +2059,7 @@
         },
         "698e9736-7009-f52d-8d5c-9a0b1b3fb9a1": {
             "attributes": {
+                "OutputFunction": "from math import exp\nobj = x**2 + z1 + y1 + exp(-y2)\n",
                 "name": "SellarObj"
             },
             "base": "ff43f01c-806e-287b-cfa6-9015ad7615f4",
@@ -2059,8 +2070,8 @@
             },
             "registry": {
                 "position": {
-                    "x": 547,
-                    "y": 53
+                    "x": 549,
+                    "y": 50
                 }
             },
             "sets": {},
@@ -2364,25 +2375,6 @@
                 "position": {
                     "x": 97,
                     "y": 241
-                }
-            },
-            "sets": {},
-            "constraints": {}
-        },
-        "7e7a8368-1975-b695-b9c6-f5c759f21c81": {
-            "attributes": {},
-            "base": "8514ddde-f699-62db-91cd-70a331bc44a2",
-            "meta": {},
-            "parent": "3e57b729-bf11-bce5-3c6b-23c37852f26e",
-            "pointers": {
-                "base": "8514ddde-f699-62db-91cd-70a331bc44a2",
-                "dst": "28057fa6-1a5a-74f1-bd24-f7008bcae93b",
-                "src": "7ef598b7-7f36-518f-4887-be8b6f883383@/Z"
-            },
-            "registry": {
-                "position": {
-                    "x": 100,
-                    "y": 100
                 }
             },
             "sets": {},
@@ -2895,6 +2887,7 @@
         },
         "9f30de6c-f354-039b-a722-4e963a25507f": {
             "attributes": {
+                "ForceFD": false,
                 "OutputFunction": "y1 = abs(y1) \ny2 = y1**.5 + z1 + z2",
                 "name": "SellarD2"
             },
@@ -2935,6 +2928,7 @@
         "a79b5fc8-38c1-2b39-51de-d20746d7b485": {
             "attributes": {
                 "ForceFD": false,
+                "Jacobian": "J['y1','y2'] = -0.2\r\nJ['y1', 'z1'] = 2 * z1\nJ['y1','z2'] = 1.0\r\nJ['y1','x'] = 1.0",
                 "OutputFunction": "y1 = z1**2 + z2 + x - 0.2*y2",
                 "name": "SellarDiscipline1"
             },
@@ -3657,6 +3651,25 @@
             "sets": {},
             "constraints": {}
         },
+        "dddd1e2f-da77-5d68-83e3-3ab95d8b5790": {
+            "attributes": {
+                "name": "TestParam"
+            },
+            "base": "9d708702-c1d0-0ccf-f625-c2a2ebd593e9",
+            "meta": {},
+            "parent": "fd239e17-a936-05c2-7794-faba7bdfb4e4",
+            "pointers": {
+                "base": "9d708702-c1d0-0ccf-f625-c2a2ebd593e9"
+            },
+            "registry": {
+                "position": {
+                    "x": 74,
+                    "y": 221
+                }
+            },
+            "sets": {},
+            "constraints": {}
+        },
         "ddf28f41-d634-e809-7d20-259ea72396a3": {
             "attributes": {},
             "base": "fdd864cd-b2c2-fa39-9c3d-12e79646386c",
@@ -3982,6 +3995,25 @@
             "sets": {},
             "constraints": {}
         },
+        "fd239e17-a936-05c2-7794-faba7bdfb4e4": {
+            "attributes": {
+                "name": "TestComp"
+            },
+            "base": "455abf2f-2a0d-7328-e324-759efbe90b8c",
+            "meta": {},
+            "parent": "bc1e31e1-048c-9e81-09f9-5b894158fefd",
+            "pointers": {
+                "base": "455abf2f-2a0d-7328-e324-759efbe90b8c"
+            },
+            "registry": {
+                "position": {
+                    "x": 732,
+                    "y": 238
+                }
+            },
+            "sets": {},
+            "constraints": {}
+        },
         "fdd864cd-b2c2-fa39-9c3d-12e79646386c": {
             "attributes": {
                 "name": "DesVarToInConn"
@@ -4034,7 +4066,7 @@
         },
         "ff43f01c-806e-287b-cfa6-9015ad7615f4": {
             "attributes": {
-                "OutputFunction": "from math import exp\nobj = x**2 + z[1] + y1 + exp(-y2)\n",
+                "OutputFunction": "from math import exp\nobj = x**2 + z1 + y1 + exp(-y2)\n",
                 "name": "SellarObjective"
             },
             "base": "455abf2f-2a0d-7328-e324-759efbe90b8c",
@@ -4062,6 +4094,7 @@
         "075255e6-3bdf-8c86-80c8-3306a0f3a107": "C",
         "10ae8359-ef53-0a0f-abf4-4430f6916c79": "s",
         "11680e37-f0d1-eb36-b327-ff63d7c520de": "4",
+        "13631da1-4bda-2a76-7f75-a663c8b4b1f6": "5",
         "13f98249-fc04-e85e-8777-7ec786b246b8": "f",
         "13fa8d12-c373-bb88-6766-75fa49d29816": "m",
         "149346ce-4241-6425-35c4-28029c3b912a": "r",
@@ -4076,7 +4109,6 @@
         "21076953-f983-77a2-1ad0-a6ec46c6ac09": "B",
         "2213eb15-76bb-4094-7c28-cfab3fadfa12": "U",
         "25f63765-f075-1708-39fb-86b2eb56d3e2": "O",
-        "28057fa6-1a5a-74f1-bd24-f7008bcae93b": "6",
         "2b0ac970-40ea-833e-5aff-86103daaf79d": "Q",
         "301dadf3-3918-7e83-8d7b-32baf8e9892a": "k",
         "319c2ef0-6776-e14b-7d84-cc38d9ec9e9f": "i",
@@ -4131,7 +4163,6 @@
         "749d9a7f-a490-6a4e-c282-eac522a6ca19": "C",
         "7a6c3748-a841-4253-b3e3-40fbb9caab64": "w",
         "7dad94d4-2edd-e3a3-082a-c0a8ae7d22d8": "3",
-        "7e7a8368-1975-b695-b9c6-f5c759f21c81": "c",
         "7ef598b7-7f36-518f-4887-be8b6f883383": "k",
         "82274fcf-5fbd-d795-b54e-9efef6fdb253": "j",
         "84a08a5d-783e-fdda-8ecc-ae7408d9ec95": "1",
@@ -4186,6 +4217,7 @@
         "dbf5323f-40c0-82ef-ab12-43e72d5af678": "n",
         "dc3d7496-9c91-08e6-9430-ba048008a2de": "y",
         "dc589527-6e20-251e-306b-bfd36d1a9ba8": "a",
+        "dddd1e2f-da77-5d68-83e3-3ab95d8b5790": "J",
         "ddf28f41-d634-e809-7d20-259ea72396a3": "p",
         "e2b598b4-eca5-5e06-d5d0-b7eafcddbb85": "8",
         "e2da5849-0574-6181-23f8-8b1dc698cb51": "x",
@@ -4203,6 +4235,7 @@
         "f87086f7-10dc-f9df-8052-bdc2d8c9efb9": "n",
         "fb93be3c-d19c-9fb6-8d51-5d821a786fdf": "b",
         "fc7086f7-10dc-f9df-8052-bdc2d8c9efb9": "E",
+        "fd239e17-a936-05c2-7794-faba7bdfb4e4": "B",
         "fdd864cd-b2c2-fa39-9c3d-12e79646386c": "4",
         "ff43f01c-806e-287b-cfa6-9015ad7615f4": "C"
     },

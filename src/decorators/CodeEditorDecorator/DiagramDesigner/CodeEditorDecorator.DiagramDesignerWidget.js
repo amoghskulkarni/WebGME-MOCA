@@ -18,7 +18,8 @@ define([
 
     var CodeEditorDecorator,
         DECORATOR_ID = 'CodeEditorDecorator',
-        TEXT_META_EDIT_BTN_BASE = $('<i class="glyphicon glyphicon-edit text-meta"/>');
+        EQN_EDIT_BTN_BASE = $('<i class="glyphicon glyphicon-edit text-meta"/>'),
+        JACOBIAN_EDIT_BTN_BASE = $('<i class="glyphicon glyphicon-unchecked text-meta"/>');
 
     CodeEditorDecorator = function (options) {
         var opts = _.extend({}, options);
@@ -56,34 +57,46 @@ define([
         ModelDecoratorDiagramDesignerWidget.prototype.on_addTo.apply(this, arguments);
 
         //render text-editor based META editing UI piece
-        this._skinParts.$EditorBtn = TEXT_META_EDIT_BTN_BASE.clone();
+        this._skinParts.$EqnEditorBtn = EQN_EDIT_BTN_BASE.clone();
+        this._skinParts.$JacobianEditorBtn = JACOBIAN_EDIT_BTN_BASE.clone();
         this.$el.append('<br>');
-        this.$el.append(this._skinParts.$EditorBtn);
+        this.$el.append(this._skinParts.$EqnEditorBtn);
+        this.$el.append('  ');
+        this.$el.append(this._skinParts.$JacobianEditorBtn);
 
-        // onClick listener for the button
-        this._skinParts.$EditorBtn.on('click', function () {
+        // onClick listener for the eqn button
+        this._skinParts.$EqnEditorBtn.on('click', function () {
             if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true &&
                 nodeObj.getAttribute('OutputFunction') !== undefined) {
-                self._showEditorDialog();
+                self._showEditorDialog('OutputFunction');
             }
             event.stopPropagation();
             event.preventDefault();
         });
 
+        // onClick listener for the jacobian button
+        this._skinParts.$JacobianEditorBtn.on('click', function() {
+            if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true &&
+                nodeObj.getAttribute('Jacobian') !== undefined) {
+                self._showEditorDialog('Jacobian');
+            }
+            event.stopPropagation();
+            event.preventDefault();
+        });
     };
 
-    CodeEditorDecorator.prototype._showEditorDialog = function () {
+    CodeEditorDecorator.prototype._showEditorDialog = function (attrName) {
         var self = this;
         var client = this._control._client;
         var nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
-        var OutputFunctionText = nodeObj.getAttribute('OutputFunction');
+        var attrText = nodeObj.getAttribute(attrName);
 
         var editorDialog = new DocumentEditorDialog();
 
         // Initialize with OutputFunction attribute and save callback function
-        editorDialog.initialize(OutputFunctionText, function (text) {
+        editorDialog.initialize(attrText, function (text) {
             try {
-                client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], 'OutputFunction', text);
+                client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], attrName, text);
             } catch (e) {
                 self.logger.error('Saving META failed... Either not JSON object or something else went wrong...');
             }
@@ -93,7 +106,7 @@ define([
     };
 
     CodeEditorDecorator.prototype.destroy = function () {
-        this._skinParts.$EditorBtn.off('click');
+        this._skinParts.$EqnEditorBtn.off('click');
         ModelDecoratorDiagramDesignerWidget.prototype.destroy.apply(this, arguments);
     };
 

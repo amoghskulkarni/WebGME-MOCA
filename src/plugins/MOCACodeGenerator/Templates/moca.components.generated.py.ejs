@@ -78,11 +78,11 @@ class <%= comps[i].name %>(Component):
         # This code snippet is defined by user using the embedded code editor in MOCA
 <%
         // Print the user defined code snippet
-        lines = comps[i].outputFunction.split("\n");
-        for (var j = 0; j < lines.length; j++) {
-            if (lines[j] !== '') {
+        var eqnLines = comps[i].outputFunction.split("\n");
+        for (var j = 0; j < eqnLines.length; j++) {
+            if (eqnLines[j] !== '') {
 -%>
-        <%= lines[j] %>
+        <%- eqnLines[j] %>
 <%
             }
         }
@@ -114,9 +114,33 @@ class <%= comps[i].name %>(Component):
 -%>
 
     def linearize(self, params, unknowns, resids):
-        print "Provide the Jacobian matrix in linearize() for <%= comps[i].name %>"
-        # If you don't want to provide the Jacobian, set "ForceFD" option to True
-        # in MOCA model (the default setting)
+        J = {}
+
+        # Assigning shorthand(s) to the parameter(s)
+<%
+        // Generate statements for dummy implementation of the method
+        for (var j = 0; j < comps[i].parameters.length; j++) {
+-%>
+        <%= comps[i].parameters[j].name %> = params['<%= comps[i].parameters[j].name %>']
+<%
+        }
+-%>
+
+        # This jecobian is defined by user using the embedded code editor in MOCA
+<%
+        // Print the user defined code snippet
+        var jecobianLines = comps[i].jacobian.split("\n");
+        for (var j = 0; j < jecobianLines.length; j++) {
+            if (jecobianLines[j] !== '') {
+-%>
+        <%- jecobianLines[j] %>
+<%
+            }
+        }
+-%>
+
+        # Return Jacobian (should not be empty)
+        return J
 <%
     }
 -%>

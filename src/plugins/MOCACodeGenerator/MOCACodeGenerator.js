@@ -45,6 +45,10 @@ define([
                 name: 'problems',
                 template: 'moca.problems.generated.py.ejs',
                 ipynbfile: 'moca.problem.generated.ipynb.ejs'
+            },
+            {
+                name: 'parsing utilities',
+                template: 'moca.parseutils.generated.py.ejs'
             }
         ];
     };
@@ -182,6 +186,7 @@ define([
                 type: self.core.getAttribute(componentNode, 'Type'),
                 force_fd: self.core.getAttribute(componentNode, 'ForceFD'),
                 outputFunction: self.core.getAttribute(componentNode, 'OutputFunction'),
+                jacobian: self.core.getAttribute(componentNode, 'Jacobian'),
                 parameters: [],
                 unknowns: []
             },
@@ -625,11 +630,11 @@ define([
         var self = this;
 
         self.FILES.forEach(function (fileInfo) {
-            if (fileInfo.name !== 'problems') {
+            if (fileInfo.name === 'components' || fileInfo.name === 'groups') {
                 var genFileName = 'MOCA_GeneratedCode/lib/' + fileInfo.name + '.py';
                 self.logger.debug(genFileName);
                 filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel);
-            } else {
+            } else if (fileInfo.name === 'problems') {
                 // If the filename is "problem" - use the template for problems
                 // additionally generate .bat file for that as well
                 for (var i = 0; i < dataModel.problems.length; i++) {
@@ -639,15 +644,22 @@ define([
                     filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]);
                     filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.problems[i]);
                 }
+            } else if (fileInfo.name === 'parsing utilities') {
+                // If the filename is utilities - use the template for utilities
+                // Template for utilities is not required to be populated with
+                // Application specific data
+                var genFileName = 'MOCA_GeneratedCode/util/MOCAparseutils.py'
+                filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], null);
             }
         });
 
-        // Create __init__.py file in the lib and src directories each
-        var initFileNameInLib = 'MOCA_GeneratedCode/lib/__init__.py',
-            initFileNameInSrc = 'MOCA_GeneratedCode/src/__init__.py',
-            initFileContent = '# A boilerplate file to enable this directory to be imported as a module';
-        filesToAdd[initFileNameInLib] = initFileContent;
-        filesToAdd[initFileNameInSrc] = initFileContent;
+        // Create __init__.py file in the lib, src and util directories each
+        var subdirectories = ['lib', 'src', 'util'];
+        for (var i = 0; i < subdirectories.length; i++) {
+            var initFileName = 'MOCA_GeneratedCode/' + subdirectories[i] + '/__init__.py',
+                initFileContent = '# A boilerplate file to enable this directory to be imported as a module';
+            filesToAdd[initFileName] = initFileContent;
+        }
 
         // Create out directory for storing output files in case of recorders
         // TODO: Create only directory (creating a dummy placeholder file for now)
@@ -656,7 +668,7 @@ define([
 
         // Create a batch file to launch ipython notebook
         var ipynbLaunchScriptName = 'MOCA_GeneratedCode/launch_iPythonNotebook.bat';
-        filesToAdd[ipynbLaunchScriptName] = 'ipython notebook --port=9999'
+        filesToAdd[ipynbLaunchScriptName] = 'echo off\nipython notebook --port=9999'
 
         //TODO Add the static files too.
         self.logger.info('Generated python files for MOCA');

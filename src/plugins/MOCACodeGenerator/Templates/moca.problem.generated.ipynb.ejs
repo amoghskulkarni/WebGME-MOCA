@@ -5,10 +5,11 @@
    "metadata": {},
    "source": [
     "# <%= name %> Notebook\n",
+    "***",
     "\n",
     "## Execution\n",
     "\n",
-    "Import the problem (and optionally the recording utility)."
+    "Import the problem (and optionally the parsing and/or plotting utilities)."
    ]
   }
   ,{
@@ -21,9 +22,9 @@
    "source": [
     "from src.<%= name %> import <%= name %>\n"
 <%
-if (recorder !== '(None)') {
+if (recorder === 'Specific') {
 -%>
-    ,"# import the recording utility here"
+    ,"from util.MOCAparseutils import SqliteParseUtils"
 <%
 }
 -%>
@@ -69,9 +70,53 @@ if (recorder !== '(None)') {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "## Analysis\n",
+    "***",
     "\n",
-    "#### Optimization analysis"
+    "## Analysis\n"
+<%
+if (driver === 'ScipyOptimizer') {
+-%>
+    ,"\n"
+    ,"_**Optimization analysis**_\n"
+    ,"\n"
+    ,"**Objectives**"
+<%
+}
+-%>
+   ]
+  }
+<%
+if (driver === 'ScipyOptimizer') {
+-%>
+  ,{
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "# Print objectives' values"
+    ,"\n"
+<%
+    for (var i = 0; i < objectives.length; i++) {
+-%>
+    ,"print(\"<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %> = %f \" % (top['<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>']))"
+<%
+        if (i != objectives.length - 1) {
+-%>
+    ,"\n"
+<%
+        }
+    }
+-%>
+   ]
+  }
+  ,{
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**Design Variables**"
    ]
   }
   ,{
@@ -82,17 +127,30 @@ if (recorder !== '(None)') {
    },
    "outputs": [],
    "source": [
-    "# Print the values of parameter and objectives"
+    "# Print design variables' values"
+    ,"\n"
+<%
+    for (var i = 0; i < desvars.length; i++) {
+-%>
+    ,"print(\"<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %> = %f\" % (top['<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %>']))"
+<%
+        if (i != desvars.length - 1) {
+-%>
+    ,"\n"
+<%
+        }
+    }
+-%>
    ]
   }
 <%
-if (recorder !== '(None)') {
+} else if (driver === 'FullFactorialDOE' && recorder !== '(None)') {
 -%>
   ,{
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "#### Design-of-experiment analysis"
+    "_**Design-of-experiment analysis**_"
    ]
   }
   ,{
@@ -110,10 +168,36 @@ if (recorder !== '(None)') {
 <%
     } else if (recorder === 'Specific') {
 -%>
-    "# Give an example of using sqlite parser utility"
+    "# Get the database filename.\n"
+    ,"filename = top.driver.recorders._recorders[0].out.filename\n"
+    ,"# Wait for analysis to finish.\n"
+    ,"top.cleanup()\n"
+    ,"\n"
+    ,"# Get the list(s) of values which you wanted to record using SqliteParseUtils using -\n"
+    ,"# getParamValues(), getUnknownValues() or getTimestampValues()\n"
+<%
+        // TODO: Confirm that the record you are going to use here is connected to
+        // a port of type "param"
+        if (records.length > 0) {
+-%>
+    ,"<%= records[0].connection[0].src %>_list = SqliteParseUtils.getParamValues(filename, '<%= records[0].connection[0].srcParent %>.<%= records[0].connection[0].src %>')"
+<%
+        }
+-%>
+    ,"\n"
 <%
     }
 -%>
+   ]
+  }
+<%
+} else {
+-%>
+  ,{
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "No analysis / recorder selected."
    ]
   }
 <%
