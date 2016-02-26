@@ -20,10 +20,11 @@
    },
    "outputs": [],
    "source": [
-    "from src.<%= name %> import <%= name %>\n"
+    "from src.<%= name %> import <%= name %>"
 <%
 if (recorder === 'Specific') {
 -%>
+    ,"\n"
     ,"from util.MOCAparseutils import SqliteParseUtils"
 <%
 }
