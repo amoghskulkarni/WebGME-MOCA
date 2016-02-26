@@ -186,6 +186,7 @@ define([
                 type: self.core.getAttribute(componentNode, 'Type'),
                 force_fd: self.core.getAttribute(componentNode, 'ForceFD'),
                 outputFunction: self.core.getAttribute(componentNode, 'OutputFunction'),
+                jacobian: self.core.getAttribute(componentNode, 'Jacobian'),
                 parameters: [],
                 unknowns: []
             },
