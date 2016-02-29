@@ -43,8 +43,12 @@ class RootGroup(Group):
 <%
 // add() statements for design variables
 for (var i = 0; i < desvars.length; i++) {
+    var valueString = desvars[i].value.toString();
+    if (valueString.indexOf('.') === -1) {
+        valueString += '.0';
+    }
 -%>
-        self.add('<%= desvars[i].name %>', IndepVarComp('<%= desvars[i].connection[0].dst %>', 0.0))
+        self.add('<%= desvars[i].name %>', IndepVarComp('<%= desvars[i].connection[0].dst %>', <%= valueString %>))
 <%
 }
 -%>

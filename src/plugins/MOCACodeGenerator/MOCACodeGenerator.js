@@ -483,6 +483,7 @@ define([
                 name: null,
                 upper: null,
                 lower: null,
+                value: null,
                 connection: [
                     // dst
                     // dstParent
@@ -495,6 +496,7 @@ define([
                 designvariableData.name = self.core.getAttribute(designvariableNode, 'name');
                 designvariableData.upper = self.core.getAttribute(designvariableNode, 'Upper');
                 designvariableData.lower = self.core.getAttribute(designvariableNode, 'Lower');
+                designvariableData.value = self.core.getAttribute(designvariableNode, 'Value');
                 connectionPromises.push(self.getConnectionData(desvarToInConnNode));
 
                 return Q.all(connectionPromises);
