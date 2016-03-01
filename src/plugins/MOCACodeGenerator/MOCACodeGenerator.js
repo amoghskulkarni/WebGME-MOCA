@@ -49,6 +49,10 @@ define([
             {
                 name: 'parsing utilities',
                 template: 'moca.parseutils.generated.py.ejs'
+            },
+            {
+                name: 'plotting utilities',
+                template: 'moca.plotutils.generated.py.ejs'
             }
         ];
     };
@@ -657,10 +661,16 @@ define([
                     filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.problems[i]);
                 }
             } else if (fileInfo.name === 'parsing utilities') {
-                // If the filename is utilities - use the template for utilities
+                // If the filename is parsing utilities - use the template for utilities
                 // Template for utilities is not required to be populated with
                 // Application specific data
                 var genFileName = 'MOCA_GeneratedCode/util/MOCAparseutils.py'
+                filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], null);
+            } else if (fileInfo.name === 'plotting utilities') {
+                // If the filename is plotting utilities - use the template for utilities
+                // Template for utilities is not required to be populated with
+                // Application specific data
+                var genFileName = 'MOCA_GeneratedCode/util/MOCAplotutils.py'
                 filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], null);
             }
         });
