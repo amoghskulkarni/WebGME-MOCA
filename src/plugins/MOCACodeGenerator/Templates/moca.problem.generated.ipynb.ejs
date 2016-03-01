@@ -9,7 +9,7 @@
     "\n",
     "## Execution\n",
     "\n",
-    "Import the problem (and optionally the parsing and/or plotting utilities)."
+    "Import the problem."
    ]
   }
   ,{
@@ -21,14 +21,6 @@
    "outputs": [],
    "source": [
     "from src.<%= name %> import <%= name %>"
-<%
-if (recorder === 'Specific') {
--%>
-    ,"\n"
-    ,"from util.MOCAparseutils import SqliteParseUtils"
-<%
-}
--%>
    ]
   }
   ,{
@@ -169,25 +161,23 @@ if (driver === 'ScipyOptimizer') {
 <%
     } else if (recorder === 'Specific') {
 -%>
-    "# Get the database filename.\n"
-    ,"filename = top.driver.recorders._recorders[0].out.filename\n"
-    ,"# Wait for analysis to finish.\n"
-    ,"top.cleanup()\n"
+    "# First, import the utility and initialize it.\n"
+    ,"from util.MOCAparseutils import SqliteParseUtils\n"
+    ,"parseutils = SqliteParseUtils(top)\n"
     ,"\n"
-    ,"# Get the list(s) of values which you wanted to record using SqliteParseUtils using -\n"
+    ,"# Then, get the list(s) of values which you wanted to record using SqliteParseUtils using -\n"
     ,"# getParamValues(), getUnknownValues() or getTimestampValues()\n"
 <%
         // if (records.length > 0) {
         for (var i = 0; i < records.length; i++) {
 -%>
     ,"<%= records[i].connection[0].srcParent %>_<%= records[i].connection[0].src %>__values = "
-    ,"SqliteParseUtils.get<%= records[i].type %>Values(filename, "
-    ,"'<%= records[i].connection[0].srcParent %>.<%= records[i].connection[0].src %>')"
+    ,"parseutils.get<%= records[i].type %>Values('<%= records[i].connection[0].srcParent %>.<%= records[i].connection[0].src %>')"
     ,"\n"
 <%
         }
 -%>
-    ,"timestamps = SqliteParseUtils.getTimestampValues(filename)"
+    ,"timestamps = parseutils.getTimestampValues()"
 <%
     }
 -%>
