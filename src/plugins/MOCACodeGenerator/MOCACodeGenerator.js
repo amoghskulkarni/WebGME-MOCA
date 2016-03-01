@@ -537,6 +537,7 @@ define([
         var self = this,
             recordData = {
                 name: null,
+                type: null,
                 connection: [
                     // src
                     // srcParent
@@ -553,6 +554,15 @@ define([
             })
             .then(function(connectionData) {
                 recordData.connection = connectionData;
+                return self.core.loadPointer(portToRecConnNode, 'src');
+            })
+            .then(function(srcNode) {
+                var srcType = self.core.getAttribute(self.getMetaType(srcNode) , 'name');
+                if (srcType === 'Unknown' || srcType === 'OutPromote') {
+                    recordData.type = 'Unknown';
+                } else if (srcType === 'Parameter' || srcType === 'InPromote') {
+                    recordData.type = 'Param';
+                }
                 return recordData;
             });
     }

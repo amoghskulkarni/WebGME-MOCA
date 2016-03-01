@@ -31,5 +31,5 @@ class SqliteParseUtils:
         return SqliteParseUtils.__getValues(filename, 'Unknowns', unknownname)
 
     @staticmethod
-    def getTimestampValues(self, filename):
-        return SqliteParseUtils.__getValues(filename, 'timestamps')
+    def getTimestampValues(filename):
+        return SqliteParseUtils.__getValues(filename, 'timestamp', None)
