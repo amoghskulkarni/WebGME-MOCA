@@ -43,8 +43,12 @@ class RootGroup(Group):
 <%
 // add() statements for design variables
 for (var i = 0; i < desvars.length; i++) {
+    var valueString = desvars[i].value.toString();
+    if (valueString.indexOf('.') === -1) {
+        valueString += '.0';
+    }
 -%>
-        self.add('<%= desvars[i].name %>', IndepVarComp('<%= desvars[i].connection[0].dst %>', 0.0))
+        self.add('<%= desvars[i].name %>', IndepVarComp('<%= desvars[i].connection[0].dst %>', <%= valueString %>))
 <%
 }
 -%>
@@ -189,8 +193,16 @@ if (recorder === 'Dump') {
 <%
 // add_desvar() statements for design variables
 for (var i = 0; i < desvars.length; i++) {
+    var upperString = desvars[i].upper.toString(),
+        lowerString = desvars[i].lower.toString();
+    if (upperString.indexOf('.') === -1) {
+        upperString += '.0';
+    }
+    if (lowerString.indexOf('.') === -1) {
+        lowerString += '.0';
+    }
 -%>
-        driver.add_desvar('<%= desvars[i].name %>.<%= desvars[i].connection[0].dst %>', lower=<%= desvars[i].lower %>, upper=<%= desvars[i].upper %>)
+        driver.add_desvar('<%= desvars[i].name %>.<%= desvars[i].connection[0].dst %>', lower=<%= lowerString %>, upper=<%= upperString %>)
 <%
 }
 -%>
