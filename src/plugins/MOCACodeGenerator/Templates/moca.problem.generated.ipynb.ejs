@@ -262,8 +262,10 @@ if (driver === 'ScipyOptimizer') {
     },
     "outputs": [],
     "source": [
-      "x_axis_limits = [0, 1]\n"
-      ,"y_axis_limits = [0, 1]\n"
+      "x_axis_values = <%= records[0].connection[0].srcParent %>_<%= records[0].connection[0].src %>__values\n"
+      ,"y_axis_values = <%= records[1].connection[0].srcParent %>_<%= records[1].connection[0].src %>__values\n"
+      ,"x_axis_limits = [min(x_axis_values), max(x_axis_values)]\n"
+      ,"y_axis_limits = [min(y_axis_values), max(y_axis_values)]\n"
       ,"x_axis_label = '<%= records[0].connection[0].srcParent %>.<%= records[0].connection[0].src %>'\n"
       ,"y_axis_label = '<%= records[1].connection[0].srcParent %>.<%= records[1].connection[0].src %>'"
     ]
@@ -283,9 +285,9 @@ if (driver === 'ScipyOptimizer') {
     },
     "outputs": [],
     "source": [
-      "plotutils.plot2D(<%= records[0].connection[0].srcParent %>_<%= records[0].connection[0].src %>__values, "
-      ,"<%= records[1].connection[0].srcParent %>_<%= records[1].connection[0].src %>__values, "
-      ,"x_axis_limits, y_axis_limits, x_axis_label, y_axis_label)"
+      "plotutils.plot2D(x_axis_values, y_axis_values, "
+      ,"x_axis_limits, y_axis_limits, "
+      ,"x_axis_label, y_axis_label)"
     ]
   }
 <%
