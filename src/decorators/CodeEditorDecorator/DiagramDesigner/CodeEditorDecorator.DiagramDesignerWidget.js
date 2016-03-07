@@ -86,15 +86,22 @@ define([
     };
 
     CodeEditorDecorator.prototype._showEditorDialog = function (attrName) {
-        var self = this;
-        var client = this._control._client;
-        var nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
-        var attrText = nodeObj.getAttribute(attrName);
+        var self = this,
+            client = this._control._client,
+            nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]),
+            attrText = nodeObj.getAttribute(attrName),
+            title = '<title>';
 
         var editorDialog = new DocumentEditorDialog();
 
+        if (attrName === 'OutputFunction') {
+            title = 'Enter the input-output relation';
+        } else if (attrName === 'Jacobian') {
+            title = 'Enter the Jacobian matrix';
+        }
+
         // Initialize with OutputFunction attribute and save callback function
-        editorDialog.initialize(attrText, function (text) {
+        editorDialog.initialize(title, attrText, function (text) {
             try {
                 client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], attrName, text);
             } catch (e) {

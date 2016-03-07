@@ -27,6 +27,7 @@ define(['js/util',
             // Get element nodes
             this._el = this._dialog.find('.modal-body').first();
             this._btnSave = this._dialog.find('.btn-save').first();
+            this._title = this._dialog.find('.modal-header').first();
             this._pMeta = this._el.find('#pMeta').first();
             this._content = this._pMeta.find('div.controls').first();
 
@@ -57,12 +58,15 @@ define(['js/util',
          * @param  {Function}   saveCallback   Callback function after click save button
          * @return {void}
          */
-        DocumentEditorDialog.prototype.initialize = function (text, saveCallback) {
+        DocumentEditorDialog.prototype.initialize = function (title, text, saveCallback) {
             var self = this;
             this.text = text; // Initial text from Attribute documentation
 
             // Initialize Modal and append it to main DOM
             this._dialog.modal({ show: false});
+
+            // Initialize the title
+            this._title.find('#title').text(title);
 
             // Event listener on click for SAVE button
             this._btnSave.on('click', function (event) {
