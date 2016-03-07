@@ -126,8 +126,6 @@ define([
 
         if (nodeObj) {
             newDoc = nodeObj.getAttribute('OutputFunction') || '';
-            // Update text in the editor when attribute "OutputFunction" changes
-            // this.editorDialog.updateText(newDoc);
         }
     };
 
