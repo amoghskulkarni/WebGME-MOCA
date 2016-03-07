@@ -4,11 +4,13 @@
 
 define(['js/util',
     '../Libs/EpicEditor/js/epiceditor',
+    '../Libs/CodeMirror/js/codemirror',
     'text!./DocumentEditorDialog.html',
     'css!./DocumentEditorDialog.css',
     'css!../Libs/EpicEditor/themes/base/epiceditor.css'],
     function(Util,
         marked,
+        codemirror,
         DocumentEditorDialogTemplate){
         'use strict';
 
@@ -35,7 +37,8 @@ define(['js/util',
              * invoked in callback function when container is rendered on DOM */
             var editorOptions = {
                 container: this._content.get(0), // Get raw DOM element
-                basePath: 'decorators/DocumentDecorator/Libs/EpicEditor/',
+                basePath: 'decorators/CodeEditorDecorator/Libs/EpicEditor/',
+                // basePath: 'decorators/DocumentDecorator/Libs/EpicEditor/',
                 autogrow: {
                     minHeight: 300,
                 },
@@ -43,6 +46,7 @@ define(['js/util',
                     fullscreen: true,
                 },
                 parser: marked,
+                // parser: codemirror,
             };
             this.editor = new EpicEditor(editorOptions);
             this.text = ''; // Keep track modified text in editor
@@ -84,9 +88,7 @@ define(['js/util',
             // Listener on event when dialog is shown
             // Use callback to show editor after Modal window is shown.
             this._dialog.on('shown.bs.modal', function () {
-                // if (!self.editor.is('loaded')) { // Load editor only once
-                    self.editor.load();
-                // }
+                self.editor.load();
                 // Render text from params into Editor and store it in local storage
                 self.editor.importFile('epiceditor', self.text);
             });
