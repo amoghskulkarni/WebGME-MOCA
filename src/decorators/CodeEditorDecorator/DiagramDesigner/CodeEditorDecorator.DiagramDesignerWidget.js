@@ -4,14 +4,12 @@
 define([
     'js/RegistryKeys',
     'js/Constants',
-    '../Libs/EpicEditor/js/epiceditor',
-    './DocumentEditorDialog',
+    './CodeEditorDialog',
     'decorators/ModelDecorator/DiagramDesigner/ModelDecorator.DiagramDesignerWidget'
   ], function (
     REGISTRY_KEYS,
     CONSTANTS,
-    marked,
-    DocumentEditorDialog,
+    CodeEditorDialog,
     ModelDecoratorDiagramDesignerWidget) {
 
     'use strict';
@@ -27,17 +25,6 @@ define([
         ModelDecoratorDiagramDesignerWidget.apply(this, [opts]);
 
         this._skinParts = {};
-
-        // Use default marked options
-        marked.setOptions({
-            gfm: true,
-            tables: true,
-            breaks: false,
-            pedantic: false,
-            sanitize: true,
-            smartLists: true,
-            smartypants: false
-        });
 
         this.logger.debug('CodeEditorDecorator ctor');
     };
@@ -86,15 +73,22 @@ define([
     };
 
     CodeEditorDecorator.prototype._showEditorDialog = function (attrName) {
-        var self = this;
-        var client = this._control._client;
-        var nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
-        var attrText = nodeObj.getAttribute(attrName);
+        var self = this,
+            client = this._control._client,
+            nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]),
+            attrText = nodeObj.getAttribute(attrName),
+            title = '<title>';
 
-        var editorDialog = new DocumentEditorDialog();
+        var editorDialog = new CodeEditorDialog();
+
+        if (attrName === 'OutputFunction') {
+            title = 'Enter the input-output relation';
+        } else if (attrName === 'Jacobian') {
+            title = 'Enter the Jacobian matrix';
+        }
 
         // Initialize with OutputFunction attribute and save callback function
-        editorDialog.initialize(attrText, function (text) {
+        editorDialog.initialize(title, attrText, function (text) {
             try {
                 client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], attrName, text);
             } catch (e) {
@@ -119,8 +113,6 @@ define([
 
         if (nodeObj) {
             newDoc = nodeObj.getAttribute('OutputFunction') || '';
-            // Update text in the editor when attribute "OutputFunction" changes
-            // this.editorDialog.updateText(newDoc);
         }
     };
 
