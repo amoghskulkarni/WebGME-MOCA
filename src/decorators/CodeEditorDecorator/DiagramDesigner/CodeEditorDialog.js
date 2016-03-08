@@ -48,6 +48,7 @@ define(['js/util',
             this.editor = CodeMirror.fromTextArea(
                               this._codearea.get(0),
                               codemirrorEditorOptions);
+            this.editor.setSize(null, 150);
             this.text = ''; // Keep track modified text in editor
         };
 
