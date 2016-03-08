@@ -4,13 +4,11 @@
 define([
     'js/RegistryKeys',
     'js/Constants',
-    // '../Libs/EpicEditor/js/epiceditor',
     './CodeEditorDialog',
     'decorators/ModelDecorator/DiagramDesigner/ModelDecorator.DiagramDesignerWidget'
   ], function (
     REGISTRY_KEYS,
     CONSTANTS,
-    // marked,
     CodeEditorDialog,
     ModelDecoratorDiagramDesignerWidget) {
 
@@ -27,17 +25,6 @@ define([
         ModelDecoratorDiagramDesignerWidget.apply(this, [opts]);
 
         this._skinParts = {};
-
-        // Use default marked options
-        // marked.setOptions({
-        //     gfm: true,
-        //     tables: true,
-        //     breaks: false,
-        //     pedantic: false,
-        //     sanitize: true,
-        //     smartLists: true,
-        //     smartypants: false
-        // });
 
         this.logger.debug('CodeEditorDecorator ctor');
     };

@@ -3,15 +3,12 @@
  */
 
 define(['js/util',
-    // '../Libs/EpicEditor/js/epiceditor',
     '../Libs/CodeMirror/lib/codemirror',
     '../Libs/CodeMirror/mode/python/python',
     'text!./CodeEditorDialog.html',
     'css!./CodeEditorDialog.css',
-    // 'css!../Libs/EpicEditor/themes/base/epiceditor.css',
     'css!../Libs/CodeMirror/js/codemirror.css'],
     function(Util,
-        // marked,
         CodeMirror,
         CodeMirrorModePython,
         CodeEditorDialogTemplate){
@@ -30,27 +27,11 @@ define(['js/util',
             this._dialog.appendTo($(document.body));
 
             // Get element nodes
-            // this._el = this._dialog.find('.modal-body').first();
             this._btnSave = this._dialog.find('.btn-save').first();
             this._title = this._dialog.find('.modal-header').first();
             this._codearea = this._dialog.find('#codearea').first();
-            // this._pMeta = this._el.find('#pMeta').first();
-            // this._content = this._pMeta.find('div.controls').first();
 
-            /* Create Markdown Editor with options, but load() function should be
-             * invoked in callback function when container is rendered on DOM */
-            // var mdeditorOptions = {
-            //     container: this._content.get(0), // Get raw DOM element
-            //     basePath: 'decorators/CodeEditorDecorator/Libs/EpicEditor/',
-            //     autogrow: {
-            //         minHeight: 300,
-            //     },
-            //     button: {
-            //         fullscreen: true,
-            //     },
-            //     parser: marked,
-            // };
-            // this.editor = new EpicEditor(mdeditorOptions);
+            /* Create CodeMirror Editor with options */
             var codemirrorEditorOptions = {
                 lineNumbers: true,
                 viewportMargin: Infinity,
@@ -105,9 +86,6 @@ define(['js/util',
             // Listener on event when dialog is shown
             // Use callback to show editor after Modal window is shown.
             this._dialog.on('shown.bs.modal', function () {
-                // self.editor.load();
-                // Render text from params into Editor and store it in local storage
-                // self.editor.importFile('epiceditor', self.text);
                 self.editor.setOption('value', self.text);
             });
 
@@ -115,7 +93,6 @@ define(['js/util',
             this._dialog.on('hidden.bs.modal', function () {
                 self._dialog.empty();
                 self._dialog.remove();
-                // self.editor.remove();
             });
         };
 
