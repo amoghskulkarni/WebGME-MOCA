@@ -4,14 +4,14 @@
 define([
     'js/RegistryKeys',
     'js/Constants',
-    '../Libs/EpicEditor/js/epiceditor',
-    './DocumentEditorDialog',
+    // '../Libs/EpicEditor/js/epiceditor',
+    './CodeEditorDialog',
     'decorators/ModelDecorator/DiagramDesigner/ModelDecorator.DiagramDesignerWidget'
   ], function (
     REGISTRY_KEYS,
     CONSTANTS,
-    marked,
-    DocumentEditorDialog,
+    // marked,
+    CodeEditorDialog,
     ModelDecoratorDiagramDesignerWidget) {
 
     'use strict';
@@ -29,15 +29,15 @@ define([
         this._skinParts = {};
 
         // Use default marked options
-        marked.setOptions({
-            gfm: true,
-            tables: true,
-            breaks: false,
-            pedantic: false,
-            sanitize: true,
-            smartLists: true,
-            smartypants: false
-        });
+        // marked.setOptions({
+        //     gfm: true,
+        //     tables: true,
+        //     breaks: false,
+        //     pedantic: false,
+        //     sanitize: true,
+        //     smartLists: true,
+        //     smartypants: false
+        // });
 
         this.logger.debug('CodeEditorDecorator ctor');
     };
@@ -92,7 +92,7 @@ define([
             attrText = nodeObj.getAttribute(attrName),
             title = '<title>';
 
-        var editorDialog = new DocumentEditorDialog();
+        var editorDialog = new CodeEditorDialog();
 
         if (attrName === 'OutputFunction') {
             title = 'Enter the input-output relation';
