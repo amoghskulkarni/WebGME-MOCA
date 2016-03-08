@@ -7,7 +7,7 @@ define(['js/util',
     '../Libs/CodeMirror/mode/python/python',
     'text!./CodeEditorDialog.html',
     'css!./CodeEditorDialog.css',
-    'css!../Libs/CodeMirror/js/codemirror.css'],
+    'css!../Libs/CodeMirror/lib/codemirror.css'],
     function(Util,
         CodeMirror,
         CodeMirrorModePython,
@@ -34,8 +34,9 @@ define(['js/util',
             /* Create CodeMirror Editor with options */
             var codemirrorEditorOptions = {
                 lineNumbers: true,
-                viewportMargin: Infinity,
-                path: 'decorators/CodeEditorDecorator/Libs/CodeMirror/js/',
+                viewPortMargin: Infinity,
+                gutters: ['CodeMirror-linenumbers'],
+                path: 'decorators/CodeEditorDecorator/Libs/CodeMirror/lib/',
                 mode: {
                     name: "python",
                     version: 2,
@@ -86,7 +87,8 @@ define(['js/util',
             // Listener on event when dialog is shown
             // Use callback to show editor after Modal window is shown.
             this._dialog.on('shown.bs.modal', function () {
-                self.editor.setOption('value', self.text);
+                self.editor.setValue(self.text);
+                self.editor.refresh();
             });
 
             // Listener on event when dialog is hidden
