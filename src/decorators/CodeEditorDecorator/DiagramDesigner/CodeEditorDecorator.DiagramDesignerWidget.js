@@ -27,6 +27,8 @@ define([
         this._skinParts = {};
 
         this.logger.debug('CodeEditorDecorator ctor');
+
+        var temp = require(['n3']);
     };
 
     CodeEditorDecorator.prototype = Object.create(ModelDecoratorDiagramDesignerWidget.prototype);
