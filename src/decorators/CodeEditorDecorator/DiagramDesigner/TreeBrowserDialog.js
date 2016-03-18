@@ -19,7 +19,8 @@ define(['js/util',
          * Insert dialog modal into body and initialize editor with
          * customized options
          */
-        TreeBrowserDialog = function () {
+        TreeBrowserDialog = function (id) {
+            var self = this;
             // Get Modal Template node for Editor Dialog and append it to body
             this._dialog = $(TreeBrowserDialogTemplate);
             this._dialog.appendTo($(document.body));
@@ -83,8 +84,12 @@ define(['js/util',
 
             this._treearea.on('ready.jstree', function (e, data) {
                 if (self.ontologyElementID !== '') {
-                    var selectedNode = self._treearea.jstree(true).get_node(self.ontologyElementID);
-                    self._treearea.jstree(true).select_node(selectedNode);
+                    var container = self._treearea.jstree(true).get_container();
+                    // rebuild the actual node ID which jsTree stores the nodes with
+                    var jsTreeNameOfNode = container[0].getAttribute("aria-activedescendant").split("_")[0]
+                                            + "_" + self.ontologyElementID;
+                    var nodeToBeSelected = self._treearea.jstree(true).get_node(jsTreeNameOfNode);
+                    self._treearea.jstree(true).select_node(nodeToBeSelected);
                 }
             });
 
@@ -100,20 +105,16 @@ define(['js/util',
                 // Invoke callback to deal with modified text, like save it in client.
                 if (saveCallback) {
                     var selectedNodes = self._treearea.jstree(true).get_selected(true);
-                    saveCallback.call(null, selectedNodes[0].id);
+                    // Only store the last part of the ID that jsTree stores the node with
+                    // This eliminates the problem created because of multiple instances of jsTree
+                    // TODO: Change this brute force method to use actual unique ID of a node, possibly maintain a table
+                    saveCallback.call(null, selectedNodes[0].id.split('_')[1]);
                 }
 
                 // Close dialog
                 self._dialog.modal('hide');
                 event.stopPropagation();
                 event.preventDefault();
-            });
-
-
-            // Listener on event when dialog is hidden
-            this._dialog.on('hidden.bs.modal', function () {
-                self._dialog.empty();
-                self._dialog.remove();
             });
         };
 

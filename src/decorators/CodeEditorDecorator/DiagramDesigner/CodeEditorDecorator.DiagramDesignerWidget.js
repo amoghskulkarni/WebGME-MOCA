@@ -29,6 +29,7 @@ define([
 
         this._skinParts = {};
 
+        this.treeBrowserDialog = null;
         this.treeBrowserDialogInitialized = false;
 
         this.logger.debug('CodeEditorDecorator ctor');
@@ -99,7 +100,11 @@ define([
             nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]),
             attrText = nodeObj.getAttribute('OntologyElementID');
 
-        this.treeBrowserDialog = new TreeBrowserDialog();
+        // Create only once
+        if (!this.treeBrowserDialogInitialized){
+            this.treeBrowserDialog = new TreeBrowserDialog(attrText);
+            this.treeBrowserDialogInitialized = true;
+        }
 
         this.treeBrowserDialog.initialize(attrText, function(text){
             try {
@@ -141,6 +146,8 @@ define([
 
     CodeEditorDecorator.prototype.destroy = function () {
         this._skinParts.$EqnEditorBtn.off('click');
+        this._skinParts.$JacobianEditorBtn.off('click');
+        this._skinParts.$OntologyBrowserBtn.off('click');
         ModelDecoratorDiagramDesignerWidget.prototype.destroy.apply(this, arguments);
     };
 
