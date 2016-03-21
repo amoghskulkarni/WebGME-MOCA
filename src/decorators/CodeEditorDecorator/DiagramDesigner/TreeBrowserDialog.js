@@ -31,30 +31,168 @@ define(['js/util',
             this._treearea = this._dialog.find('#treearea').first();
 
             // Default JSON data
+            //var jsonData = {
+            //    'data' : [
+            //        {
+            //            "text" : "Expanded tree (because initially selected)",
+            //            "state" : { "opened" : true },
+            //            "children" : [
+            //                {
+            //                    //"text" : "Initially selected leaf",
+            //                    //"state" : { "selected" : true }
+            //                    "text" : "Leaf"
+            //                },
+            //                {
+            //                    "text" : "Initially open tree",
+            //                    "children" : [
+            //                        "Leaf",
+            //                        "Another leaf"
+            //                    ]
+            //                }
+            //            ]
+            //        },
+            //        {
+            //            "text" : "Another collapsed tree",
+            //            "children" : [
+            //                "Leaf"
+            //            ]
+            //        }
+            //    ]
+            //};
+
             var jsonData = {
                 'data' : [
                     {
-                        "text" : "Expanded tree (because initially selected)",
-                        "state" : { "opened" : true },
+                        "text" : "AM-Process-Concepts",
                         "children" : [
                             {
-                                //"text" : "Initially selected leaf",
-                                //"state" : { "selected" : true }
-                                "text" : "Leaf"
-                            },
-                            {
-                                "text" : "Initially open tree",
-                                "children" : [
-                                    "Leaf",
-                                    "Another leaf"
+                                "text" : "ElementOfAdditiveManufacturingProcess",
+                                "children" :[
+                                    {
+                                        "text" : "AdditiveManufacturingProcessVariable",
+                                        "children" : [
+                                            {
+                                                "text" : "ObservableVariable",
+                                                "children" : [
+                                                    "MeltpoolShape",
+                                                    "MeltpoolTemperature",
+                                                    "ScanTrackQuality",
+                                                    "ScanTrack"
+                                                ]
+                                            },
+                                            {
+                                                "text" : "DesiredVariable",
+                                                "children" : [
+                                                    "CoolingTime",
+                                                    "StressDistribution",
+                                                    "TemperatureHistory",
+                                                    "TemperatureDistribution",
+                                                    "SolidificationMaps",
+                                                    "MeltpoolDepth",
+                                                    "ThermalStress",
+                                                    "ThermalGradient"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "text" : "PhysicalPhenomenon",
+                                        "children" : [
+                                            "MarangoniEffects",
+                                            "Porosity",
+                                            "BuoyancyEffects",
+                                            "RadiationInPowders",
+                                            "Distortion",
+                                            "Convection",
+                                            "Colliding",
+                                            "HeatTransfer",
+                                            "Sintering"
+                                        ]
+                                    },
+                                    {
+                                        "text" : "AdditiveManufacturingMaterial",
+                                        "children" : [
+                                            {
+                                                "text" : "Polymer",
+                                                "children" : [
+                                                    "PolymerBasedPowder"
+                                                ]
+                                            },
+                                            {
+                                                "text" : "Plastic"
+                                            },
+                                            {
+                                                "text" : "Metal",
+                                                "children" : [
+                                                    "MetalBasedPowder"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "text" : "ElementOfPowderBedFusion",
+                                        "children" : [
+                                            {
+                                                "text" : "PowderBedFusionPhase",
+                                                "children" : [
+                                                    "MeltingOfPowderParticles",
+                                                    "ResolidificationOfMeltpool",
+                                                    "Solidification",
+                                                    "HeatingOfPowderParticles",
+                                                    "ScanningByEnergSource",
+                                                    "Cooling"
+                                                ]
+                                            },
+                                            {
+                                                "text" : "FusionMechanism",
+                                                "children" : [
+                                                    "ChemicallyInducedBinding",
+                                                    "SoldiStateSintering",
+                                                    "FullMelting",
+                                                    "LiquidPhaseSintering"
+                                                ]
+                                            },
+                                            {
+                                                "text" : "PowderBedFusionResource",
+                                                "children" : [
+                                                    "RecotingBlade",
+                                                    "DispenserPlatform",
+                                                    "BuildChamber",
+                                                    "BuildPlatform",
+                                                    "ElementOfPowderBed"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "text" : "AdditiveManufacturingProcessParameter",
+                                        "children" : [
+                                            {
+                                                "text" : "ProcssInputParameter",
+                                                "children" : [
+                                                    "PredefinedInputParameter",
+                                                    "ControllableInputParameter"
+                                                ]
+                                            },
+                                            {
+                                                "text" : "ProcessOutputParameter"
+                                            },
+                                            {
+                                                "text" : "ProcessEnvironmentParameter",
+                                                "children" : [
+                                                    "Inert_Gas_Flow"
+                                                ]
+                                            }
+                                        ]
+                                    }
                                 ]
                             }
                         ]
                     },
                     {
-                        "text" : "Another collapsed tree",
+                        "text" : "AM-Model-Concepts",
                         "children" : [
-                            "Leaf"
+                            "..."
                         ]
                     }
                 ]
