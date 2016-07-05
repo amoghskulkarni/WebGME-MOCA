@@ -123,8 +123,8 @@ class <%= name %>(Problem):
 if (driver === 'ScipyOptimizer') {
 -%>
 
-        driver = ScipyOptimizer()
-        driver.options['optimizer'] = 'SLSQP'
+        self.driver = ScipyOptimizer()
+        self.driver.options['optimizer'] = 'SLSQP'
 
 <%
     for (var i = 0; i < constraints.length; i++) {
@@ -146,7 +146,7 @@ if (driver === 'ScipyOptimizer') {
         if (!constraints[i].enableLower && !constraints[i].enableUpper)
             break;
 -%>
-        driver.add_constraint('<%= constraints[i].connection[0].srcParent %>.<%= constraints[i].connection[0].src %>', <%= limitsString %>)
+        self.driver.add_constraint('<%= constraints[i].connection[0].srcParent %>.<%= constraints[i].connection[0].src %>', <%= limitsString %>)
 <%
     }
 -%>
@@ -154,7 +154,7 @@ if (driver === 'ScipyOptimizer') {
 } else if (driver === 'FullFactorialDOE') {
 -%>
 
-        driver = FullFactorialDriver(<%= doeSamples %>)
+        self.driver = FullFactorialDriver(<%= doeSamples %>)
 <%
 }
 -%>
@@ -166,7 +166,7 @@ if (recorder === 'Dump') {
         rec = DumpRecorder('out/<%= name %>_dumpfile')
         rec.options['record_params'] = True
         rec.options['record_unknowns'] = True
-        driver.add_recorder(rec)
+        self.driver.add_recorder(rec)
 <%
 } else if (recorder === 'Specific') {
         var incWord = "'" + "includes" + "'";
@@ -185,7 +185,7 @@ if (recorder === 'Dump') {
         rec.options['record_params'] = True
         rec.options['record_unknowns'] = True
         rec.options[<%- incWord %>] = [<%- incString %>]
-        driver.add_recorder(rec)
+        self.driver.add_recorder(rec)
 <%
 }
 -%>
@@ -202,21 +202,18 @@ for (var i = 0; i < desvars.length; i++) {
         lowerString += '.0';
     }
 -%>
-        driver.add_desvar('<%= desvars[i].name %>.<%= desvars[i].connection[0].dst %>', lower=<%= lowerString %>, upper=<%= upperString %>)
+        self.driver.add_desvar('<%= desvars[i].name %>.<%= desvars[i].connection[0].dst %>', lower=<%= lowerString %>, upper=<%= upperString %>)
 <%
 }
 -%>
-
 <%
 // add_objective() statements for objectives
 for (var i = 0; i < objectives.length; i++) {
 -%>
-        driver.add_objective('<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>')
+        self.driver.add_objective('<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>')
 <%
 }
 -%>
-
-        self.driver = driver
         self.setup()
 
 
