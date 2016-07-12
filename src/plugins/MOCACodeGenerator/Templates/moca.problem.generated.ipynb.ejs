@@ -9,7 +9,7 @@
       "\n",
       "## Instantiation and execution\n",
       "\n",
-      "1. Import the problem."
+      "Import the problem."
    ]
   }
   ,{
@@ -27,7 +27,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-      "2. Instantiate the problem."
+      "Instantiate the problem."
    ]
   }
   ,{
@@ -45,7 +45,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-      "3. Run the problem."
+      "Run the problem."
    ]
   }
   ,{
@@ -152,6 +152,37 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
 -%>
    ]
   }
+  ,{
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+      "**Recorded/Monitored variables**"
+   ]
+  }
+  ,{
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+      "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+      "# Print recorded/monitored variables' values"
+      ,"\n"
+<%
+    for (var i = 0; i < records.length; i++) {
+-%>
+      ,"print(\"<%= records[i].connection[0].srcParent %>.<%= records[i].connection[0].src %> = %f\" % (top['<%= records[i].connection[0].srcParent %>.<%= records[i].connection[0].src %>']))"
+<%
+        if (i != records.length - 1) {
+-%>
+      ,"\n"
+<%
+        }
+    }
+-%>
+   ]
+  }
 <%
 } else if (driver === 'FullFactorialDOE' && recorder !== '(None)') {
 -%>
@@ -231,6 +262,15 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
       ,"parseutils.get<%= records[i].type %>Values('<%= records[i].connection[0].srcParent %>.<%= records[i].connection[0].src %>')"
       ,"\n"
 <%
+        }
+        for (var i = 0; i < desvars.length; i++) {
+            if (desvars[i].setByDriver) {
+-%>
+      ,"<%= desvars[i].connection[0].dstParent %>_<%= desvars[i].connection[0].dst %>__values = "
+      ,"parseutils.getParamValues('<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %>')"
+      ,"\n"
+<%
+            }
         }
 -%>
       ,"timestamps = parseutils.getTimestampValues()"
