@@ -96,6 +96,7 @@ if (driver === 'ScipyOptimizer') {
   }
 <%
 if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
+    if (driver === 'ScipyOptimizer') {
 -%>
   ,{
    "cell_type": "code",
@@ -108,19 +109,22 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
       "# Print objectives' values"
       ,"\n"
 <%
-    for (var i = 0; i < objectives.length; i++) {
+        for (var i = 0; i < objectives.length; i++) {
 -%>
       ,"print(\"<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %> = %f \" % (top['<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>']))"
 <%
-        if (i != objectives.length - 1) {
+            if (i != objectives.length - 1) {
 -%>
       ,"\n"
 <%
+            }
         }
-    }
 -%>
    ]
   }
+<%
+    }
+-%>
   ,{
    "cell_type": "markdown",
    "metadata": {},
