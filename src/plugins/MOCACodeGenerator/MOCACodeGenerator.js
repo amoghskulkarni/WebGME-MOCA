@@ -673,7 +673,7 @@ define([
                 // Template for utilities is not required to be populated with
                 // Application specific data
                 var genFileName = 'MOCA_GeneratedCode/util/MOCAplotutils.py'
-                filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], null);
+                filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel);
             }
         });
 

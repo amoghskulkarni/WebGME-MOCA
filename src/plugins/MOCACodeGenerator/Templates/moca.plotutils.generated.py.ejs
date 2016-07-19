@@ -2,12 +2,214 @@ __author__ = 'Amogh'
 __doc__ = 'The utility class defined in this file gives the methods to plot' \
           'the data points saved in the list on 2D and 3D plots.'
 
-import matplotlib.pyplot as plt
+from bokeh.models import ColumnDataSource, HoverTool
+from bokeh.plotting import figure, show, output_notebook
 
-class PlotUtils:
-    def plot2D (self, x_list, y_list, x_lims, y_lims, x_label, y_label):
-        plt.plot(x_list, y_list, 'ro')
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
-        plt.axis([x_lims[0], x_lims[1], y_lims[0], y_lims[1]])
-        plt.show()
+from ipywidgets import interact
+import ipywidgets as widgets
+
+<%
+for (var i = 0; i < problems.length; i++) {
+if (problems[i].driver === 'FullFactorialDOE') {
+-%>
+
+class <%= problems[i].name %>_PlotUtils:
+    def __init__(self, parseutils):
+        self.timestamps = parseutils.getTimestampValues()
+<%
+    for (var j = 0; j < problems[i].records.length; j++) {
+-%>
+        self.<%= problems[i].records[j].connection[0].srcParent %>_<%= problems[i].records[j].connection[0].src %>__values = parseutils.getUnknownValues('<%= problems[i].records[j].connection[0].srcParent %>.<%= problems[i].records[j].connection[0].src %>')
+<%
+    }
+    for (var j = 0; j < problems[i].desvars.length; j++) {
+        if (problems[i].desvars[j].setByDriver) {
+-%>
+        self.<%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values = parseutils.getParamValues('<%= problems[i].desvars[j].connection[0].dstParent %>.<%= problems[i].desvars[j].connection[0].dst %>')
+<%
+        }
+    }
+-%>
+        # step calculation
+<%
+    for (var j = 0; j < problems[i].desvars.length; j++) {
+        if (problems[i].desvars[j].setByDriver) {
+-%>
+        <%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values__sorted = sorted(self.<%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values)
+        self.<%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__step = <%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values__sorted[<%= problems[i].doeSamples %>] - <%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values__sorted[0]
+<%
+        }
+    }
+-%>
+
+        # bokeh init
+        output_notebook()
+
+        # axes configuration
+<%
+    for (var j = 0; j < problems[i].desvars.length; j++) {
+        if (problems[i].desvars[j].setByDriver) {
+-%>
+        x_axis_values = self.<%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values
+        x_axis_label = '<%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>'
+<%
+            break;
+        }
+    }
+-%>
+        y_axis_values = self.<%= problems[i].records[0].connection[0].srcParent %>_<%= problems[i].records[0].connection[0].src %>__values
+        y_axis_label = '<%= problems[i].records[0].connection[0].srcParent %>.<%= problems[i].records[0].connection[0].src %>'
+
+        # bokeh config
+        self.source = ColumnDataSource(data=dict(x=x_axis_values, y=y_axis_values))
+        self.p = figure(title='<%= problems[i].name %>')
+        self.p.add_tools(HoverTool())
+        self.p.circle(x_axis_values, y_axis_values, size=3, source=self.source, alpha=0.5)
+        self.p.xaxis.axis_label = x_axis_label
+        self.p.yaxis.axis_label = y_axis_label
+<%
+    var slider_desvars = [];
+    for (var j = 0; j < problems[i].desvars.length; j++) {
+//        var desvar_data = [];
+        if (problems[i].desvars[j].setByDriver) {
+//            desvar_data.append(desvars[i].connection[0].dstParent);
+//            desvar_data.append(desvars[i].connection[0].dst);
+            slider_desvars.push({
+                dstParent: problems[i].desvars[j].connection[0].dstParent,
+                dst: problems[i].desvars[j].connection[0].dst,
+                upper: problems[i].desvars[j].upper,
+                lower: problems[i].desvars[j].lower,
+                value: problems[i].desvars[j].value
+            });
+        }
+    }
+    // This string should include all the desvars for which sliders are to be generated
+    var desvar_function_signature_string = "";
+    for (var j = 0; j < slider_desvars.length; j++) {
+        var substring = slider_desvars[j].dst + "_slider, " + slider_desvars[j].dst + "_all";
+        desvar_function_signature_string += substring;
+        if (j < slider_desvars.length - 1)
+            desvar_function_signature_string += ", ";
+    }
+-%>
+
+    def update(self, x, y, <%= desvar_function_signature_string %>):
+        lists_of_indices = []
+        indices = []
+        x_vals = []
+        y_vals = []
+<%
+    for (var j = 0; j < slider_desvars.length; j++) {
+-%>
+        <%= slider_desvars[j].dst %>_indices = []
+<%
+    }
+-%>
+
+<%
+    // These two statements are for each slider_desvar, which check tick-box for it
+    for (var j = 0; j < slider_desvars.length; j++) {
+-%>
+        if not <%= slider_desvars[j].dst %>_all:
+            <%= slider_desvars[j].dst %>_indices = [i<%= j %> for i<%= j %>, j<%= j %> in enumerate(self.<%= slider_desvars[j].dstParent %>_<%= slider_desvars[j].dst %>__values) if abs(j<%= j %> - <%= slider_desvars[j].dst %>_slider) < 0.00001]
+<%
+    }
+-%>
+
+<%
+    // This string is for for including non-self desvars in list_of_indices
+    var slider_desvars_list_string = "";
+    for (var j = 0; j < slider_desvars.length; j++) {
+        slider_desvars_list_string += (slider_desvars[j].dst + "_indices");
+        if (j < slider_desvars.length - 1) {
+            slider_desvars_list_string += ", ";
+        }
+    }
+    var x_and_y = ['x', 'y'];
+    for (var k = 0; k < x_and_y.length; k++) {
+        var xy = x_and_y[k];
+        for (var j = 0; j < problems[i].records.length; j++) {
+-%>
+        if <%= xy %> == '<%= problems[i].records[j].connection[0].srcParent %>.<%= problems[i].records[j].connection[0].src %>':
+            <%= xy %>_vals = self.<%= problems[i].records[j].connection[0].srcParent %>_<%= problems[i].records[j].connection[0].src %>__values
+            lists_of_indices = [<%= slider_desvars_list_string %>]
+<%
+    }
+-%>
+<%
+        for (var j = 0; j < slider_desvars.length; j++) {
+            // This string is for for including non-self desvars in list_of_indices
+            var non_self_string = "";
+            for (var m = 0; m < slider_desvars.length; m++) {
+                if (j != m) {
+                    non_self_string += (slider_desvars[m].dst + "_indices");
+                    if (m < slider_desvars.length - 1) {
+                        non_self_string += ", ";
+                    }
+                }
+            }
+-%>
+        if <%= xy %> == '<%= slider_desvars[j].dstParent %>.<%= slider_desvars[j].dst %>':
+            <%= xy %>_vals = self.<%= slider_desvars[j].dstParent %>_<%= slider_desvars[j].dst %>__values
+            lists_of_indices = [<%= non_self_string %>]
+<%
+        }
+-%>
+
+        for index_list in lists_of_indices:
+            if index_list != []:
+                if indices != []:
+                    indices = list(set(indices).intersection(set(index_list)))
+                else:
+                    indices = index_list
+
+<%
+    }
+-%>
+        if indices != []:
+            x_vals = list(x_vals[i] for i in indices)
+            y_vals = list(y_vals[i] for i in indices)
+
+        self.source.data['x'] = x_vals
+        self.source.data['y'] = y_vals
+        self.source.push_notebook()
+
+    def plot (self):
+        show(self.p)
+<%
+    var options_string = "";
+    for (var j = 0; j < problems[i].records.length; j++) {
+        var substring = "'" + problems[i].records[j].connection[0].srcParent + '.' + problems[i].records[j].connection[0].src + "'";
+        options_string += substring;
+        options_string += ", ";
+    }
+
+    for (var j = 0; j < slider_desvars.length; j++) {
+        var substring = "'" + slider_desvars[j].dstParent + '.' + slider_desvars[j].dst + "'";
+        options_string += substring;
+        if (j < slider_desvars.length - 1) {
+            options_string += ", ";
+        }
+    }
+-%>
+
+    def show_widgets(self):
+        options = [<%- options_string %>]
+        interact(self.update,
+            x=widgets.Dropdown(options=options,value=options[0],description='x'),
+            y=widgets.Dropdown(options=options,value=options[1],description='y'),
+<%
+    for (var j = 0; j < slider_desvars.length; j++) {
+        var trailing_character;
+        if (j < slider_desvars.length - 1)
+            trailing_character = ",";
+        else
+            trailing_character = ")";
+-%>
+            <%= slider_desvars[j].dst %>_slider=widgets.FloatSlider(value=<%= slider_desvars[j].value %>, min=<%= slider_desvars[j].lower %>, max=<%= slider_desvars[j].upper %>, step=self.<%= slider_desvars[j].dstParent %>_<%= slider_desvars[j].dst %>__step, description='<%= slider_desvars[j].dst %>'),
+            <%= slider_desvars[j].dst %>_all=widgets.Checkbox(description='<%= slider_desvars[j].dst %> (all values)', value=True)<%= trailing_character %>
+<%
+    }
+}
+}
+-%>
