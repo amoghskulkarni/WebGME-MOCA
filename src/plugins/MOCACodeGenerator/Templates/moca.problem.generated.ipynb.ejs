@@ -217,7 +217,7 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-      "First, import the parsing utility and initialize it.\n"
+      "Import the parsing utility and initialize it.\n"
     ]
   }
   ,{
@@ -230,15 +230,32 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
    "source": [
       "from util.MOCAparseutils import SqliteParseUtils\n"
       ,"parseutils = SqliteParseUtils(top)"
-    ]
+   ]
   }
   ,{
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-      "Then, get the list(s) of values which you wanted to record using SqliteParseUtils i.e. -\n"
-      ,"\n"
-      ,"`getParamValues()`, `getUnknownValues()` or `getTimestampValues()`"
+      "Then, import the plotting utilities using the initialized parsing utilities."
+   ]
+  }
+  ,{
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+      "from util.MOCAplotutils import <%= name %>_PlotUtils\n",
+      "plotutils = <%= name %>_PlotUtils(parseutils)"
+   ]
+  }
+  ,{
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+      "After importing, use the utils to plot the graph."
     ]
   }
   ,{
@@ -249,109 +266,28 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
    },
    "outputs": [],
    "source": [
-<%
-        if (records.length > 0) {
-            // The following section creates problem if moved into for loop below,
-            // because of an extra preceding comma. However, this should only execute
-            // if there is at least 1 record in the model.
--%>
-      "<%= records[0].connection[0].srcParent %>_<%= records[0].connection[0].src %>__values = "
-      ,"parseutils.get<%= records[0].type %>Values('<%= records[0].connection[0].srcParent %>.<%= records[0].connection[0].src %>')"
-      ,"\n"
-<%
-        }
-        for (var i = 1; i < records.length; i++) {
--%>
-      ,"<%= records[i].connection[0].srcParent %>_<%= records[i].connection[0].src %>__values = "
-      ,"parseutils.get<%= records[i].type %>Values('<%= records[i].connection[0].srcParent %>.<%= records[i].connection[0].src %>')"
-      ,"\n"
-<%
-        }
-        for (var i = 0; i < desvars.length; i++) {
-            if (desvars[i].setByDriver) {
--%>
-      ,"<%= desvars[i].connection[0].dstParent %>_<%= desvars[i].connection[0].dst %>__values = "
-      ,"parseutils.getParamValues('<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %>')"
-      ,"\n"
-<%
-            }
-        }
--%>
-      ,"timestamps = parseutils.getTimestampValues()"
+    "plotutils.plot()"
+   ]
+  }
+  ,{
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "After plotting, use the widgets to interact with the plot."
+   ]
+  }
+  ,{
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "plotutils.show_widgets()"
    ]
   }
 <%
-        if (records.length > 1) {
--%>
-  ,{
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-      "*Visualization*\n"
-      ,"\n"
-      ,"First, import the plotting utility and initialize it."
-    ]
-  }
-  ,{
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {
-    "collapsed": true
-   },
-   "outputs": [],
-   "source": [
-      "%matplotlib inline\n"
-      ,"from util.MOCAplotutils import <%= name %>_PlotUtils\n"
-      ,"plotutils = <%= name %>_PlotUtils()"
-    ]
-  }
-  ,{
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-      "Then, configure the plot according to your need.\n"
-      ,"\n"
-      ,"The parameters which can be configured are - limits and labels of both the axes."
-    ]
-  }
-  ,{
-    "cell_type": "code",
-    "execution_count": null,
-    "metadata": {
-     "collapsed": true
-    },
-    "outputs": [],
-    "source": [
-      "x_axis_values = <%= records[0].connection[0].srcParent %>_<%= records[0].connection[0].src %>__values\n"
-      ,"y_axis_values = <%= records[1].connection[0].srcParent %>_<%= records[1].connection[0].src %>__values\n"
-      ,"x_axis_limits = [min(x_axis_values), max(x_axis_values)]\n"
-      ,"y_axis_limits = [min(y_axis_values), max(y_axis_values)]\n"
-      ,"x_axis_label = '<%= records[0].connection[0].srcParent %>.<%= records[0].connection[0].src %>'\n"
-      ,"y_axis_label = '<%= records[1].connection[0].srcParent %>.<%= records[1].connection[0].src %>'"
-    ]
-  }
-  ,{
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "After configuration, plot the graph."
-    ]
-  }
-  ,{
-    "cell_type": "code",
-    "execution_count": null,
-    "metadata": {
-     "collapsed": true
-    },
-    "outputs": [],
-    "source": [
-      "plotutils.plot2D(x_axis_values, y_axis_values, "
-      ,"x_axis_limits, y_axis_limits, "
-      ,"x_axis_label, y_axis_label)"
-    ]
-  }
-<%
-        } // if (records.length > 1) --- If the model has more than 1 record components in the model
     } // if the model has "specific" recorder (sqlite)
 } else { // if the recorder is neither "dump" nor "specific"
 -%>
