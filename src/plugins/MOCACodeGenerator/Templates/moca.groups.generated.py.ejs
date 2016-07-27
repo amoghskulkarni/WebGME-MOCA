@@ -7,8 +7,10 @@ import sys
 
 # Dynamic imports
 <%
+var algebraicLoopImport = false;
 for (var i = 0; i < groups.length; i++) {
-    if (groups[i].algebraicLoop) {
+    if (groups[i].algebraicLoop && !algebraicLoopImport) {
+        algebraicLoopImport = true;
 -%>
 from openmdao.api import NLGaussSeidel, ScipyGMRES
 <%
@@ -20,6 +22,7 @@ from openmdao.api import NLGaussSeidel, ScipyGMRES
 <%
 // Generate the code for all the groups
 for (var i = 0; i < groups.length; i++) {
+    var promotedPorts = [];
 -%>
 class <%= groups[i].name %>(Group):
     def __init__(self):
@@ -32,6 +35,7 @@ class <%= groups[i].name %>(Group):
         promotesString = '';
         for (var k = 0; k < groups[i].compInstances[j].promotes.length; k++) {
             promotesString += "'" + groups[i].compInstances[j].promotes[k] + "'";
+            promotedPorts.push(groups[i].compInstances[j].name + "." + groups[i].compInstances[j].promotes[k]);
             if (k != groups[i].compInstances[j].promotes.length - 1)
                 promotesString += ', ';
         }
@@ -48,6 +52,7 @@ class <%= groups[i].name %>(Group):
         var promotesString = '';
         for (var k = 0; k < groups[i].groupInstances[j].promotes.length; k++) {
             promotesString += "'" + groups[i].groupInstances[j].promotes[k] + "'";
+            promotedPorts.push(groups[i].groupInstances[j].name + "." + groups[i].groupInstances[j].promotes[k]);
             if (k != groups[i].groupInstances[j].promotes.length - 1)
                 promotesString += ', ';
         }
@@ -60,8 +65,15 @@ class <%= groups[i].name %>(Group):
 <%
     // Generate the code for connect() statements for connections between ports
     for (var j = 0; j < groups[i].connections.length; j++) {
+        var srcConnectString = groups[i].connections[j].srcParent + "." + groups[i].connections[j].src;
+        var dstConnectString = groups[i].connections[j].dstParent + "." + groups[i].connections[j].dst;
+        // Check whether these strings are in promotedPorts list, i.e. whether these ports are connected
+        if (promotedPorts.indexOf(srcConnectString) != -1)
+            srcConnectString = srcConnectString.split('.')[1];
+        if (promotedPorts.indexOf(dstConnectString) != -1)
+            dstConnectString = dstConnectString.split('.')[1];
 -%>
-        self.connect('<%= groups[i].connections[j].srcParent %>.<%= groups[i].connections[j].src %>', '<%= groups[i].connections[j].dstParent %>.<%= groups[i].connections[j].dst %>')
+        self.connect('<%= srcConnectString %>', '<%= dstConnectString %>')
 <%
     }
 -%>

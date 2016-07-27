@@ -216,7 +216,7 @@ define([
                 componentData.unknowns = unknownsData;
                 return componentData;
             });
-    }
+    };
 
 
     MOCACodeGenerator.prototype.getParameterData = function(parameterNode) {
@@ -298,7 +298,7 @@ define([
                 groupData.connections = connectionsData;
                 return groupData;
             });
-    }
+    };
 
 
     MOCACodeGenerator.prototype.getCompInstanceData = function (compInstanceNode) {
@@ -478,7 +478,7 @@ define([
                 problemData.constraints = constraintsData;
                 return problemData;
             });
-    }
+    };
 
 
     MOCACodeGenerator.prototype.getDesignVariableData = function (desvarToInConnNode) {
@@ -488,6 +488,7 @@ define([
                 upper: null,
                 lower: null,
                 value: null,
+                setByDriver: null,
                 connection: [
                     // dst
                     // dstParent
@@ -501,6 +502,7 @@ define([
                 designvariableData.upper = self.core.getAttribute(designvariableNode, 'Upper');
                 designvariableData.lower = self.core.getAttribute(designvariableNode, 'Lower');
                 designvariableData.value = self.core.getAttribute(designvariableNode, 'Value');
+                designvariableData.setByDriver = self.core.getAttribute(designvariableNode, 'SetByDriver');
                 connectionPromises.push(self.getConnectionData(desvarToInConnNode));
 
                 return Q.all(connectionPromises);
@@ -509,7 +511,7 @@ define([
                 designvariableData.connection = connectionData;
                 return designvariableData;
             });
-    }
+    };
 
 
     MOCACodeGenerator.prototype.getObjectiveData = function (outToObjConnNode) {
@@ -534,7 +536,7 @@ define([
                 objectiveData.connection = connectionData;
                 return objectiveData;
             });
-    }
+    };
 
 
     MOCACodeGenerator.prototype.getRecordData = function (portToRecConnNode) {
@@ -569,7 +571,7 @@ define([
                 }
                 return recordData;
             });
-    }
+    };
 
 
     MOCACodeGenerator.prototype.getConstraintData = function (portToConstraintConnNode) {
@@ -671,7 +673,7 @@ define([
                 // Template for utilities is not required to be populated with
                 // Application specific data
                 var genFileName = 'MOCA_GeneratedCode/util/MOCAplotutils.py'
-                filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], null);
+                filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel);
             }
         });
 
