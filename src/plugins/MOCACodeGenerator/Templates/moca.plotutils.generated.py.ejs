@@ -54,22 +54,18 @@ class <%= problems[i].name %>_PlotUtils:
         if (problems[i].desvars[j].setByDriver) {
 -%>
         x_axis_values = self.<%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values
-        x_axis_label = '<%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>'
 <%
             break;
         }
     }
 -%>
         y_axis_values = self.<%= problems[i].records[0].connection[0].srcParent %>_<%= problems[i].records[0].connection[0].src %>__values
-        y_axis_label = '<%= problems[i].records[0].connection[0].srcParent %>.<%= problems[i].records[0].connection[0].src %>'
 
         # bokeh config
         self.source = ColumnDataSource(data=dict(x=x_axis_values, y=y_axis_values))
         self.p = figure(title='<%= problems[i].name %>')
         self.p.add_tools(HoverTool())
         self.p.circle(x_axis_values, y_axis_values, size=3, source=self.source, alpha=0.5)
-        self.p.xaxis.axis_label = x_axis_label
-        self.p.yaxis.axis_label = y_axis_label
 <%
     var slider_desvars = [];
     for (var j = 0; j < problems[i].desvars.length; j++) {
