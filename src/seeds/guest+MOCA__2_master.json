@@ -5073,19 +5073,19 @@
         },
         "2f552c22-f12b-03d8-8672-128541c0facb": {
             "attributes": {
-                "Value": 3.14,
-                "name": "ImmersionAngle_D"
+                "Value": 0.002,
+                "name": "DepthOfCut_A"
             },
             "base": "9d708702-c1d0-0ccf-f625-c2a2ebd593e9",
             "meta": {},
-            "parent": "c8eb848c-08a1-3cbd-73b5-0682f9879115",
+            "parent": "ffeb848c-08a1-3cbd-73b5-0682f9879115",
             "pointers": {
                 "base": "9d708702-c1d0-0ccf-f625-c2a2ebd593e9"
             },
             "registry": {
                 "position": {
-                    "x": 49,
-                    "y": 393
+                    "x": 47,
+                    "y": 121
                 }
             },
             "sets": {},
@@ -5288,8 +5288,8 @@
             "registry": {
                 "isAbstract": true,
                 "position": {
-                    "x": 416,
-                    "y": 118
+                    "x": 420,
+                    "y": 109
                 }
             },
             "sets": {},
@@ -10293,8 +10293,8 @@
             },
             "registry": {
                 "position": {
-                    "x": 577,
-                    "y": 368
+                    "x": 579,
+                    "y": 333
                 }
             },
             "sets": {},
@@ -20113,7 +20113,7 @@
         "2f168a1e-3cff-040c-1a7b-ea1b7e0fad88": "f",
         "2f286c40-e7e6-af23-b840-0abd991af8a0": "Oq",
         "2f2b4236-a951-72a7-db90-9f364af34ce2": "q",
-        "2f552c22-f12b-03d8-8672-128541c0facb": "A",
+        "2f552c22-f12b-03d8-8672-128541c0facb": "h",
         "2fb7b5a3-62ff-4f5c-a6b6-187437d4b2bb": "D",
         "301dadf3-3918-7e83-8d7b-32baf8e9892a": "k",
         "308e9b4e-e0af-dd29-5e07-eeb59faf2ef9": "d",
