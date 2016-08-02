@@ -391,7 +391,9 @@
             "3e9a73a3-ae89-8435-6423-90e8d966285e": {},
             "4aba8a7e-f206-bc99-98ba-79fa59a0ce18": {},
             "5333be18-56cf-17e9-2acd-7c463b2630ed": {},
-            "55a42aa9-0306-6c4b-9a43-96d91e8bcafd": {},
+            "55a42aa9-0306-6c4b-9a43-96d91e8bcafd": {
+                "586531c1-d204-0233-cb79-1bf2a1ba9bb4": {}
+            },
             "5b1bdb99-b07e-deb3-d560-7a2563f4b4cf": {},
             "5d33be18-56cf-17e9-2acd-7c463b2630ed": {},
             "626472c2-fc6b-c0e4-ce18-32f0b28964b3": {},
@@ -4978,19 +4980,19 @@
         },
         "2f552c22-f12b-03d8-8672-128541c0facb": {
             "attributes": {
-                "Value": 3.14,
-                "name": "ImmersionAngle_D"
+                "Value": 0.002,
+                "name": "DepthOfCut_A"
             },
             "base": "9d708702-c1d0-0ccf-f625-c2a2ebd593e9",
             "meta": {},
-            "parent": "c8eb848c-08a1-3cbd-73b5-0682f9879115",
+            "parent": "ffeb848c-08a1-3cbd-73b5-0682f9879115",
             "pointers": {
                 "base": "9d708702-c1d0-0ccf-f625-c2a2ebd593e9"
             },
             "registry": {
                 "position": {
-                    "x": 47,
-                    "y": 440
+                    "x": 50,
+                    "y": 52
                 }
             },
             "sets": {},
@@ -8196,6 +8198,23 @@
                 "position": {
                     "x": 100,
                     "y": 100
+                }
+            },
+            "sets": {},
+            "constraints": {}
+        },
+        "586531c1-d204-0233-cb79-1bf2a1ba9bb4": {
+            "attributes": {
+                "OntologyElementID": "http://siam.nist.gov/Model-Ontology#TimeScaleAssumption, http://siam.nist.gov/Model-Ontology#MaterialPropertyAssumption, http://siam.nist.gov/Model-Ontology#Deterministic"
+            },
+            "base": "cef5ba05-3c27-633c-47b9-4fa3f81b9a56",
+            "meta": {},
+            "parent": "55a42aa9-0306-6c4b-9a43-96d91e8bcafd",
+            "pointers": {},
+            "registry": {
+                "position": {
+                    "x": 430,
+                    "y": 80
                 }
             },
             "sets": {},
@@ -17582,6 +17601,7 @@
         },
         "e1d82913-cea9-c885-ad56-5b8855b40ca0": {
             "attributes": {
+                "OntologyElementID": "5",
                 "name": "depth_of_cut"
             },
             "base": "9d708702-c1d0-0ccf-f625-c2a2ebd593e9",
@@ -19781,7 +19801,7 @@
         "2f168a1e-3cff-040c-1a7b-ea1b7e0fad88": "f",
         "2f286c40-e7e6-af23-b840-0abd991af8a0": "Oq",
         "2f2b4236-a951-72a7-db90-9f364af34ce2": "q",
-        "2f552c22-f12b-03d8-8672-128541c0facb": "A",
+        "2f552c22-f12b-03d8-8672-128541c0facb": "h",
         "2fb7b5a3-62ff-4f5c-a6b6-187437d4b2bb": "D",
         "301dadf3-3918-7e83-8d7b-32baf8e9892a": "k",
         "308e9b4e-e0af-dd29-5e07-eeb59faf2ef9": "d",
@@ -19945,6 +19965,7 @@
         "58219426-cb7f-7f85-4e14-5c3c2b2e7e15": "F",
         "582997b7-d7e0-35ad-e005-e4d12e2a1d40": "2",
         "58429df6-6f72-3ce2-baec-90131ea5ea46": "sN",
+        "586531c1-d204-0233-cb79-1bf2a1ba9bb4": "I",
         "5938f58a-a116-4fca-0242-8ec85a803f25": "t",
         "5939b683-1b94-91a9-49d4-60e6e2aa4d59": "T",
         "598816be-3561-e2b9-6dc9-801e780ea326": "P",
