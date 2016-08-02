@@ -52,6 +52,17 @@ define(['js/util',
 
             $.getJSON('http://localhost:3000/users/data', function (data) {
                 self._options = {
+                    interaction: {
+                        multiselect: true
+                    },
+                    nodes: {
+                        color: {
+                            highlight: {
+                                border: "#CC0000",
+                                background: "#FF3333"
+                            }
+                        }
+                    },
                     layout: {
                         hierarchical: {
                             direction: "LR",
@@ -82,7 +93,7 @@ define(['js/util',
                 async: true
             });
 
-            this.ontologyElementID = ''; // Keep track modified text in editor
+            this.ontologyElementIDs = []; // Keep track modified text in editor
         };
 
         /**
@@ -95,9 +106,9 @@ define(['js/util',
          * @param  {Function}   saveCallback   Callback function after click save button
          * @return {void}
          */
-        GraphBrowserDialog.prototype.initialize = function (id, saveCallback) {
+        GraphBrowserDialog.prototype.initialize = function (ids, saveCallback) {
             var self = this;
-            this.ontologyElementID = id; // Initial text from Attribute documentation
+            this.ontologyElementIDs = ids.split(', '); // Initial text from Attribute documentation
 
             // Initialize Modal and append it to main DOM
             this._dialog.modal({ show: false });
@@ -106,13 +117,24 @@ define(['js/util',
             this._title.find('#title').text('Ontology browser');
 
             // Initialize the network
-            self._network = new vis.Network(self._grapharea[0], self._d, self._options);
+            this._ontologyGraph = new vis.Network(self._grapharea[0], self._d, self._options);
+            this._ontologyGraph.selectNodes(this.ontologyElementIDs);
 
             // Event listener on click for SAVE button
             this._btnSave.on('click', function (event) {
+                // Get selected node's ID
+                var ids = self._ontologyGraph.getSelectedNodes();
+                var string_to_save = "";
+                for (var i = 0; i < ids.length; i++) {
+                    string_to_save += ids[i];
+                    if (i < ids.length - 1) {
+                        string_to_save += ", ";
+                    }
+                }
+
                 // Invoke callback to deal with modified text, like save it in client.
                 if (saveCallback) {
-                    saveCallback.call(null, self.ontologyElementID);
+                    saveCallback.call(null, string_to_save);
                 }
 
                 // Close dialog
@@ -130,7 +152,7 @@ define(['js/util',
          */
         GraphBrowserDialog.prototype.show = function () {
             this._dialog.modal('show');
-            this._network.redraw();
+            this._ontologyGraph.redraw();
         };
 
         return GraphBrowserDialog;
