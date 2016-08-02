@@ -5,13 +5,13 @@ define([
     'js/RegistryKeys',
     'js/Constants',
     './CodeEditorDialog',
-    './TreeBrowserDialog',
+    './GraphBrowserDialog',
     'decorators/ModelDecorator/DiagramDesigner/ModelDecorator.DiagramDesignerWidget'
   ], function (
     REGISTRY_KEYS,
     CONSTANTS,
     CodeEditorDialog,
-    TreeBrowserDialog,
+    GraphBrowserDialog,
     ModelDecoratorDiagramDesignerWidget) {
 
     'use strict';
@@ -29,8 +29,8 @@ define([
 
         this._skinParts = {};
 
-        this.treeBrowserDialog = null;
-        this.treeBrowserDialogInitialized = false;
+        this.graphBrowserDialog = null;
+        this.graphBrowserDialogInitialized = false;
 
         this.logger.debug('CodeEditorDecorator ctor');
     };
@@ -115,12 +115,12 @@ define([
             attrText = nodeObj.getAttribute('OntologyElementID');
 
         // Create only once
-        if (!this.treeBrowserDialogInitialized){
-            this.treeBrowserDialog = new TreeBrowserDialog(attrText);
-            this.treeBrowserDialogInitialized = true;
+        if (!this.graphBrowserDialogInitialized){
+            this.graphBrowserDialog = new GraphBrowserDialog();
+            this.graphBrowserDialogInitialized = true;
         }
 
-        this.treeBrowserDialog.initialize(attrText, function(text){
+        this.graphBrowserDialog.initialize(attrText, function(text){
             try {
                 client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], 'OntologyElementID', text);
             } catch (e) {
@@ -128,7 +128,7 @@ define([
             }
         });
 
-        this.treeBrowserDialog.show();
+        this.graphBrowserDialog.show();
     };
 
     CodeEditorDecorator.prototype._showEditorDialog = function (attrName) {
