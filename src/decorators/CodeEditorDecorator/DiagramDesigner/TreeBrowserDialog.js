@@ -30,36 +30,6 @@ define(['js/util',
             this._title = this._dialog.find('.modal-header').first();
             this._treearea = this._dialog.find('#treearea').first();
 
-            // Default JSON data
-            //var jsonData = {
-            //    'data' : [
-            //        {
-            //            "text" : "Expanded tree (because initially selected)",
-            //            "state" : { "opened" : true },
-            //            "children" : [
-            //                {
-            //                    //"text" : "Initially selected leaf",
-            //                    //"state" : { "selected" : true }
-            //                    "text" : "Leaf"
-            //                },
-            //                {
-            //                    "text" : "Initially open tree",
-            //                    "children" : [
-            //                        "Leaf",
-            //                        "Another leaf"
-            //                    ]
-            //                }
-            //            ]
-            //        },
-            //        {
-            //            "text" : "Another collapsed tree",
-            //            "children" : [
-            //                "Leaf"
-            //            ]
-            //        }
-            //    ]
-            //};
-
             var jsonData = {
                 'data' : [
                     {
