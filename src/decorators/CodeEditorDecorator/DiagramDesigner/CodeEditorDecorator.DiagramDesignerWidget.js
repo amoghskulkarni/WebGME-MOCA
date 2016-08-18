@@ -45,11 +45,11 @@ define([
         var self = this,
             client = this._control._client,
             nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
-        //try {
-        //    var metaTypeNodeObj = client.getNode(nodeObj.getMetaTypeId());
-        //} catch (e) {
-        //    self.logger.error("...");
-        //}
+        try {
+            var metaTypeNodeObj = client.getNode(nodeObj.getMetaTypeId());
+        } catch (e) {
+            self.logger.error("...");
+        }
 
         //let the parent decorator class do its job first
         try {
@@ -58,7 +58,7 @@ define([
             self.logger.error("...");
         }
 
-        //if (metaTypeNodeObj.getAttribute('name') === 'Component') {
+        if (metaTypeNodeObj.getAttribute('name') === 'Component') {
             //render text-editor based META editing UI piece
             this._skinParts.$EqnEditorBtn = EQN_EDIT_BTN_BASE.clone();
             this._skinParts.$JacobianEditorBtn = JACOBIAN_EDIT_BTN_BASE.clone();
@@ -68,14 +68,14 @@ define([
             this.$el.append('<br>');
             this.$el.append(this._skinParts.$JacobianEditorBtn);
             this.$el.append('  Jacobian');
-        //}
+        }
 
         this._skinParts.$OntologyBrowserBtn = ONTOLOGY_BROWSE_BTN_BASE.clone();
         this.$el.append('<br>');
         this.$el.append(this._skinParts.$OntologyBrowserBtn);
         this.$el.append('  Ontology');
 
-        //if (metaTypeNodeObj.getAttribute('name') === 'Component') {
+        if (metaTypeNodeObj.getAttribute('name') === 'Component') {
             // onClick listener for the eqn button
             this._skinParts.$EqnEditorBtn.on('click', function () {
                 if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true &&
@@ -95,7 +95,7 @@ define([
                 event.stopPropagation();
                 event.preventDefault();
             });
-        //}
+        }
 
         // onClick listener for the ontology button
         this._skinParts.$OntologyBrowserBtn.on('click', function () {
@@ -138,12 +138,14 @@ define([
             attrText = nodeObj.getAttribute(attrName),
             title = '<title>';
 
+        var nodeName = nodeObj.getAttribute('name');
+
         var editorDialog = new CodeEditorDialog();
 
         if (attrName === 'OutputFunction') {
-            title = 'Enter the input-output relation';
+            title = 'Input-output relation (business logic) for ' + nodeName + ' component';
         } else if (attrName === 'Jacobian') {
-            title = 'Enter the Jacobian matrix';
+            title = 'Jacobian matrix (analytical derivatives) for ' + nodeName + ' component';
         }
 
         // Initialize with OutputFunction attribute and save callback function
@@ -168,10 +170,10 @@ define([
         //    self.logger.error("...");
         //}
         //if (metaTypeNodeObj.getAttribute('name') === 'Component') {
-            this._skinParts.$EqnEditorBtn.off('click');
-            this._skinParts.$JacobianEditorBtn.off('click');
+        //    this._skinParts.$EqnEditorBtn.off('click');
+        //    this._skinParts.$JacobianEditorBtn.off('click');
         //}
-        this._skinParts.$OntologyBrowserBtn.off('click');
+        //this._skinParts.$OntologyBrowserBtn.off('click');
         ModelDecoratorDiagramDesignerWidget.prototype.destroy.apply(this, arguments);
     };
 

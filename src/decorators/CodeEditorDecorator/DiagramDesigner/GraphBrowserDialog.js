@@ -29,21 +29,6 @@ define(['js/util',
             this._title = this._dialog.find('.modal-header').first();
             this._grapharea = this._dialog.find('#grapharea').first();
 
-            //var nodes = new vis.DataSet([
-            //    {id: 1, label: 'Node 1'},
-            //    {id: 2, label: 'Node 2'},
-            //    {id: 3, label: 'Node 3'},
-            //    {id: 4, label: 'Node 4'},
-            //    {id: 5, label: 'Node 5'}
-            //]);
-            //
-            //// create an array with edges
-            //var edges = new vis.DataSet([
-            //    {from: 1, to: 3},
-            //    {from: 1, to: 2},
-            //    {from: 2, to: 4},
-            //    {from: 2, to: 5}
-            //]);
 
             // TODO: This is very crude - the GET request is handled synchronously (blocking call). Make it async.
             $.ajaxSetup({
@@ -66,7 +51,8 @@ define(['js/util',
                     layout: {
                         hierarchical: {
                             direction: "LR",
-                            levelSeparation: 400
+                            levelSeparation: 400,
+                            sortMethod: 'directed'
                         }
                     },
                     physics: false
@@ -76,7 +62,16 @@ define(['js/util',
                 var edgesList = [];
 
                 for (var i = 0; i < data.nodes.length; i++) {
-                    nodesList.push({id: data.nodes[i], label: data.nodes[i].split("#")[1]});
+                    var label = "";
+                    var nodeName = data.nodes[i].split("#");
+                    if (label[0] == data.nodes[i]) {
+                        // there is no # character in the name - it is a blank node
+                        label = nodeName[0];
+                    }
+                    else {
+                        label = nodeName[1];
+                    }
+                    nodesList.push({id: data.nodes[i], label: label});
                 }
 
                 for (var i = 0; i < data.edges.length; i++) {
@@ -118,7 +113,12 @@ define(['js/util',
 
             // Initialize the network
             this._ontologyGraph = new vis.Network(self._grapharea[0], self._d, self._options);
-            this._ontologyGraph.selectNodes(this.ontologyElementIDs);
+            // Sanity check
+            for (var i = 0; i < this.ontologyElementIDs.length; i++) {
+                if (this.ontologyElementIDs[i] != "") {
+                    this._ontologyGraph.selectNodes(this.ontologyElementIDs);
+                }
+            }
 
             // Event listener on click for SAVE button
             this._btnSave.on('click', function (event) {

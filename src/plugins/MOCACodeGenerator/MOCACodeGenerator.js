@@ -6,7 +6,7 @@
  */
 
 // Test "require", for testing server side execution
-var config = require('../../../config/config.default');
+// var config = require('../../../config/config.default');
 
 define([
     'plugin/PluginConfig',
