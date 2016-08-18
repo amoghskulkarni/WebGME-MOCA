@@ -192,8 +192,8 @@ class <%= problems[i].name %>_PlotUtils:
     def show_widgets(self):
         options = [<%- options_string %>]
         interact(self.update,
-            x=widgets.Dropdown(options=options,value=options[0],description='x'),
-            y=widgets.Dropdown(options=options,value=options[1],description='y'),
+            x=widgets.Dropdown(options=options,value=options[0],description='domain'),
+            y=widgets.Dropdown(options=options,value=options[1],description='range'),
 <%
     for (var j = 0; j < slider_desvars.length; j++) {
         var trailing_character;
@@ -202,8 +202,8 @@ class <%= problems[i].name %>_PlotUtils:
         else
             trailing_character = ")";
 -%>
-            <%= slider_desvars[j].dst %>_slider=widgets.FloatSlider(value=<%= slider_desvars[j].value %>, min=<%= slider_desvars[j].lower %>, max=<%= slider_desvars[j].upper %>, step=self.<%= slider_desvars[j].dstParent %>_<%= slider_desvars[j].dst %>__step, description='<%= slider_desvars[j].dst %>'),
-            <%= slider_desvars[j].dst %>_all=widgets.Checkbox(description='<%= slider_desvars[j].dst %> (all values)', value=True)<%= trailing_character %>
+            <%= slider_desvars[j].dst %>_slider=widgets.FloatSlider(value=<%= slider_desvars[j].value %>, min=<%= slider_desvars[j].lower %>, max=<%= slider_desvars[j].upper %>, step=self.<%= slider_desvars[j].dstParent %>_<%= slider_desvars[j].dst %>__step, description='<%= slider_desvars[j].dstParent %>.<%= slider_desvars[j].dst %>'),
+            <%= slider_desvars[j].dst %>_all=widgets.Checkbox(description='<%= slider_desvars[j].dstParent %>.<%= slider_desvars[j].dst %> (all values)', value=True)<%= trailing_character %>
 <%
     }
 }

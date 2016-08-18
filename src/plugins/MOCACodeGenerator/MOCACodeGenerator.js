@@ -382,8 +382,10 @@ define([
             connectionData = {
                 src: null,
                 srcParent: null,
+                srcOnto: "",
                 dst: null,
-                dstParent: null
+                dstParent: null,
+                dstOnto: ""
             };
 
         self.core.loadPointer(connectionNode, 'src', function (err, srcNode) {
@@ -392,12 +394,24 @@ define([
             } else {
                 connectionData.src = self.core.getAttribute(srcNode, 'name');
                 connectionData.srcParent = self.core.getAttribute(self.core.getParent(srcNode), 'name');
+                if (self.core.getAttribute(self.getMetaType(connectionNode), 'name') == 'DataConn') {
+                    var srcMetaType = self.core.getAttribute(self.getMetaType(srcNode), 'name');
+                    if (srcMetaType === 'Unknown' || srcMetaType === 'Parameter') {
+                        connectionData.srcOnto = self.core.getAttribute(srcNode, 'OntologyElementID');
+                    }
+                }
                 self.core.loadPointer(connectionNode, 'dst', function (err, dstNode) {
                     if (err) {
                         deferred.reject(new Error(err));
                     } else {
                         connectionData.dst = self.core.getAttribute(dstNode, 'name');
                         connectionData.dstParent = self.core.getAttribute(self.core.getParent(dstNode), 'name');
+                        if (self.core.getAttribute(self.getMetaType(connectionNode), 'name') == 'DataConn') {
+                            var dstMetaType = self.core.getAttribute(self.getMetaType(dstNode), 'name');
+                            if (dstMetaType === 'Unknown' || dstMetaType === 'Parameter') {
+                                connectionData.dstOnto = self.core.getAttribute(dstNode, 'OntologyElementID');
+                            }
+                        }
                         deferred.resolve(connectionData);
                     }
                 });
@@ -624,6 +638,31 @@ define([
             timeStamp: (new Date()).toISOString(),
             pluginVersion: self.getVersion()
         }, null, 2);
+
+        // parse dataModel for mismatching ontology link
+        // TODO: Do this with the help of validator framework
+        for (var i = 0; i < dataModel.groups.length; i++) {
+            // for every group, check every data connection
+            for (var j = 0; j < dataModel.groups[i].connections.length; j++) {
+                if (dataModel.groups[i].connections[j].srcOnto !== dataModel.groups[i].connections[j].dstOnto) {
+                    alert('WARNING: In Group ' + dataModel.groups[i].name
+                        + ', port ' + dataModel.groups[i].connections[j].src + ' of ' + dataModel.groups[i].connections[j].srcParent
+                        + ' is associated to different ontological element than that of '
+                        + 'port ' + dataModel.groups[i].connections[j].dst + ' of ' + dataModel.groups[i].connections[j].dstParent);
+                }
+            }
+        }
+        for (var i = 0; i < dataModel.problems.length; i++) {
+            // for every group, check every data connection
+            for (var j = 0; j < dataModel.problems[i].connections.length; j++) {
+                if (dataModel.problems[i].connections[j].srcOnto !== dataModel.problems[i].connections[j].dstOnto) {
+                    alert('WARNING: In Problem ' + dataModel.problems[i].name
+                        + ', port ' + dataModel.problems[i].connections[j].src + ' of ' + dataModel.problems[i].connections[j].srcParent
+                        + ' is associated to different ontological element than that of '
+                        + 'port ' + dataModel.problems[i].connections[j].dst + ' of ' + dataModel.problems[i].connections[j].dstParent);
+                }
+            }
+        }
 
         self.addPythonSourceFiles(filesToAdd, dataModel);
 
