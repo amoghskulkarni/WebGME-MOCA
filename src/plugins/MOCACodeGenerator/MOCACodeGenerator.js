@@ -102,14 +102,6 @@ define([
             nodeObject;
         nodeObject = self.activeNode;
 
-        if (typeof window === 'undefined') {
-            // Test for whether the plugin is executed on server or client
-            // (if you're inside this block, the plugin is executed on server)
-
-            // Test "require", for testing server side execution
-            var fs = require('fs');
-        }
-
         if (self.core.getParent(nodeObject) === null &&
             self.core.getAttribute(nodeObject, 'name') !== "ROOT") {
             callback(new Error('The plugin has to be executed from ROOT.'), self.result);
@@ -785,29 +777,21 @@ define([
             }
         }*/
 
-        self.addPythonSourceFiles(filesToAdd, dataModel);
+        if (typeof window === 'undefined') {
+            // Test for whether the plugin is executed on server or client
+            // (if you're inside this block, the plugin is executed on server)
 
-        artifact.addFiles(filesToAdd, function (err) {
-            if (err) {
-                deferred.reject(new Error(err));
-                return;
-            }
-            self.blobClient.saveAllArtifacts(function (err, hashes) {
-                if (err) {
-                    deferred.reject(new Error(err));
-                    return;
-                }
+            // Test "require", for testing server side execution
+            var fs = require('fs');
+        }
 
-                self.result.addArtifact(hashes[0]);
-                deferred.resolve();
-            });
-        });
+        self.savePythonSourceFiles(filesToAdd, dataModel, artifact);
 
         return deferred.promise;
     };
 
 
-    MOCACodeGenerator.prototype.addPythonSourceFiles = function (filesToAdd, dataModel) {
+    MOCACodeGenerator.prototype.savePythonSourceFiles = function (filesToAdd, dataModel, artifact) {
         var self = this;
 
         self.FILES.forEach(function (fileInfo) {
@@ -859,6 +843,22 @@ define([
 
         //TODO Add the static files too.
         self.logger.info('Generated python files for MOCA');
+
+        artifact.addFiles(filesToAdd, function (err) {
+            if (err) {
+                deferred.reject(new Error(err));
+                return;
+            }
+            self.blobClient.saveAllArtifacts(function (err, hashes) {
+                if (err) {
+                    deferred.reject(new Error(err));
+                    return;
+                }
+
+                self.result.addArtifact(hashes[0]);
+                deferred.resolve();
+            });
+        });
     };
 
     return MOCACodeGenerator;
