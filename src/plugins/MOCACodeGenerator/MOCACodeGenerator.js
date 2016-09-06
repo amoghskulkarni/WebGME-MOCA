@@ -103,21 +103,28 @@ define([
         nodeObject = self.activeNode;
 
         if (typeof window === 'undefined') {
+            // Test for whether the plugin is executed on server or client
+            // (if you're inside this block, the plugin is executed on server)
+
             // Test "require", for testing server side execution
             var fs = require('fs');
         }
 
         if (self.core.getParent(nodeObject) === null &&
-            self.core.getAttribute(nodeObject, 'name') !== "ROOT" &&
-            self.core.getAttribute(self.getMetaType(nodeObject), 'name') !== "Problem") {
+            self.core.getAttribute(nodeObject, 'name') !== "ROOT") {
             callback(new Error('The plugin has to be executed from ROOT.'), self.result);
             return;
         }
 
         self.generateDataModel(nodeObject)
             .then(function (dataModel) {
-                self.logger.info(JSON.stringify(dataModel, null, 4));
-                return self.generateArtifact(dataModel);
+                // Create JSON files for the models only if the plugin is invoked at the ROOT
+                if (self.getMetaType(nodeObject) === null) {
+                    self.logger.info(JSON.stringify(dataModel, null, 4));
+                    return self.generateArtifact('ROOT', dataModel);
+                }
+                else
+                    return self.generateArtifact('Problem', dataModel);
             })
             .then(function () {
                 self.result.setSuccess(true);
@@ -146,53 +153,107 @@ define([
             groupPromises = [],
             problemPromises = [];
 
+        // If the code generator is invoked from ROOT
+        if (self.getMetaType(rootNode) === null) {
+            // Load all the children of the ROOT
+            return self.core.loadChildren(rootNode)
+                .then(function (children) {
+                    // Process them all according to their type
+                    for (var i = 0; i < children.length; i++) {
+                        // If it is ComponentLibrary..
+                        if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'ComponentLibrary') {
+                            // Load it's children (use ComponentLibraryPromises for that) and then get their componentData
+                            componentLibraryPromises.push(self.core.loadChildren(children[i])
+                                .then(function (comps) {
+                                    for (var j = 0; j < comps.length; j++) {
+                                        componentPromises.push(self.getComponentData(comps[j]));
+                                    }
+                                })
+                            );
+                        }
+                        // If it is GroupLibrary..
+                        else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'GroupLibrary') {
+                            // Load it's children (use GroupLibraryPromises for that) and then get their groupData
+                            groupLibraryPromises.push(self.core.loadChildren(children[i])
+                                .then(function (groups) {
+                                    for (var j = 0; j < groups.length; j++) {
+                                        groupPromises.push(self.getGroupData(groups[j]));
+                                    }
+                                })
+                            );
+                        }
+                        // If it is a Problem..
+                        else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Problem') {
+                            // Get its problemData
+                            problemPromises.push(self.getProblemData(children[i]));
+                        }
+                    }
 
-        return self.core.loadChildren(rootNode)
-            .then(function (children) {
-                for (var i = 0; i < children.length; i++) {
-                    if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'ComponentLibrary') {
-                        componentLibraryPromises.push(self.core.loadChildren(children[i])
-                            .then(function (comps) {
-                                for (var j = 0; j < comps.length; j++) {
-                                    componentPromises.push(self.getComponentData(comps[j]));
-                                }
-                            })
-                        );
+                    return Q.all(componentLibraryPromises);
+                })
+                .then(function () {
+                    return Q.all(groupLibraryPromises);
+                })
+                .then(function () {
+                    return Q.all(componentPromises);
+                })
+                .then(function (componentsData) {
+                    dataModel.comps = componentsData;
+                    return Q.all(groupPromises);
+                })
+                .then(function (groupsData) {
+                    dataModel.groups = groupsData;
+                    return Q.all(problemPromises);
+                })
+                .then(function (problemsData) {
+                    dataModel.problems = problemsData;
+                    return dataModel;
+                });
+        }
+        // If the code generator is invoked from a problem
+        else if (self.core.getAttribute(self.getMetaType(rootNode), 'name') == 'Problem') {
+            // Load all the children of the problem
+            return self.core.loadChildren(rootNode)
+                .then(function (children){
+                    // Process them all according to their type
+                    for (var i = 0; i < children.length; i++) {
+                        // If it is a Component..
+                        if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'Component') {
+                            // Traverse to its base class through the instance tree
+                            var base = self.core.getBase(children[i]);
+                            while (self.core.getAttribute(self.core.getParent(base), 'name') != 'ComponentLibrary'
+                                || self.core.getAttribute(self.core.getBase(base), 'name') != 'Component')
+                                base = self.core.getBase(base);
+                            componentPromises.push(self.getComponentData(base));
+                        }
+                        // If it is a Group..
+                        else if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'Group') {
+                            // Traverse to its base class through the instance tree
+                            var base = self.core.getBase(children[i]);
+                            while (self.core.getAttribute(self.core.getParent(base), 'name') != 'GroupLibrary'
+                                || self.core.getAttribute(self.core.getBase(base), 'name') != 'Group')
+                                base = self.core.getBase(base);
+                            groupPromises.push(self.getGroupData(base));
+                        }
                     }
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'GroupLibrary') {
-                        groupLibraryPromises.push(self.core.loadChildren(children[i])
-                            .then(function (groups) {
-                                for (var j = 0; j < groups.length; j++) {
-                                    groupPromises.push(self.getGroupData(groups[j]));
-                                }
-                            })
-                        );
-                    }
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Problem') {
-                        problemPromises.push(self.getProblemData(children[i]));
-                    }
-                }
 
-                return Q.all(componentLibraryPromises);
-            })
-            .then(function () {
-                return Q.all(groupLibraryPromises);
-            })
-            .then(function () {
-                return Q.all(componentPromises);
-            })
-            .then(function (componentsData) {
-                dataModel.comps = componentsData;
-                return Q.all(groupPromises);
-            })
-            .then(function (groupsData) {
-                dataModel.groups = groupsData;
-                return Q.all(problemPromises);
-            })
-            .then(function (problemsData) {
-                dataModel.problems = problemsData;
-                return dataModel;
-            });
+                    return Q.all(componentPromises);
+                })
+                .then(function (componentsData) {
+                    dataModel.comps = componentsData;
+                    return Q.all(groupPromises);
+                })
+                .then(function (groupsData) {
+                    dataModel.groups = groupsData;
+                    // Get its problemData
+                    problemPromises.push(self.getProblemData(rootNode));
+                    return Q.all(problemPromises);
+                })
+                .then(function (problemData) {
+                    dataModel.problems = problemData;
+                    return dataModel;
+                })
+        }
     };
 
 
@@ -634,24 +695,30 @@ define([
     };
 
 
-    MOCACodeGenerator.prototype.generateArtifact = function (dataModel) {
+    MOCACodeGenerator.prototype.generateArtifact = function (pluginInvocation, dataModel) {
         var self = this,
             filesToAdd = {},
-            deferred = new Q.defer(),
+            deferred = new Q.defer();
+        var artifact = null;
+        if (pluginInvocation == 'ROOT')
             artifact = self.blobClient.createArtifact('MOCA');
+        else
+            artifact = self.blobClient.createArtifact(dataModel.problems[0].name);
 
-        filesToAdd['MOCA.json'] = JSON.stringify(dataModel, null, 2);
-        filesToAdd['MOCA_metadata.json'] = JSON.stringify({
-            projectId: self.projectId,
-            commitHash: self.commitHash,
-            branchName: self.branchName,
-            timeStamp: (new Date()).toISOString(),
-            pluginVersion: self.getVersion()
-        }, null, 2);
+        if (pluginInvocation == 'ROOT') {
+            filesToAdd['MOCA.json'] = JSON.stringify(dataModel, null, 2);
+            filesToAdd['MOCA_metadata.json'] = JSON.stringify({
+                projectId: self.projectId,
+                commitHash: self.commitHash,
+                branchName: self.branchName,
+                timeStamp: (new Date()).toISOString(),
+                pluginVersion: self.getVersion()
+            }, null, 2);
+        }
 
         // parse dataModel for mismatching ontology link
         // TODO: Do this with the help of validator framework
-        for (var i = 0; i < dataModel.groups.length; i++) {
+        /*for (var i = 0; i < dataModel.groups.length; i++) {
             // for every group, check every data connection
             for (var j = 0; j < dataModel.groups[i].connections.length; j++) {
                 if (dataModel.groups[i].connections[j].srcOnto !== dataModel.groups[i].connections[j].dstOnto) {
@@ -661,8 +728,9 @@ define([
                         + 'port ' + dataModel.groups[i].connections[j].dst + ' of ' + dataModel.groups[i].connections[j].dstParent);
                 }
             }
-        }
-        for (var i = 0; i < dataModel.problems.length; i++) {
+        }*/
+
+        /*for (var i = 0; i < dataModel.problems.length; i++) {
             // for every group, check every data connection
             for (var j = 0; j < dataModel.problems[i].connections.length; j++) {
                 if (dataModel.problems[i].connections[j].srcOnto !== dataModel.problems[i].connections[j].dstOnto) {
@@ -672,7 +740,7 @@ define([
                         + 'port ' + dataModel.problems[i].connections[j].dst + ' of ' + dataModel.problems[i].connections[j].dstParent);
                 }
             }
-        }
+        }*/
 
         self.addPythonSourceFiles(filesToAdd, dataModel);
 
