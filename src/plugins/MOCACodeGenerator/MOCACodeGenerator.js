@@ -212,6 +212,7 @@ define([
         }
         // If the code generator is invoked from a problem
         else if (self.core.getAttribute(self.getMetaType(rootNode), 'name') == 'Problem') {
+            var recursivePromises = [];
             // Load all the children of the problem
             return self.core.loadChildren(rootNode)
                 .then(function (children){
@@ -220,23 +221,19 @@ define([
                         // If it is a Component..
                         if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'Component') {
                             // Traverse to its base class through the instance tree
-                            var base = self.core.getBase(children[i]);
-                            while (self.core.getAttribute(self.core.getParent(base), 'name') != 'ComponentLibrary'
-                                || self.core.getAttribute(self.core.getBase(base), 'name') != 'Component')
-                                base = self.core.getBase(base);
-                            componentPromises.push(self.getComponentData(base));
+                            self.getOriginalBase('Component', componentPromises, children[i]);
                         }
                         // If it is a Group..
                         else if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'Group') {
-                            // Traverse to its base class through the instance tree
-                            var base = self.core.getBase(children[i]);
-                            while (self.core.getAttribute(self.core.getParent(base), 'name') != 'GroupLibrary'
-                                || self.core.getAttribute(self.core.getBase(base), 'name') != 'Group')
-                                base = self.core.getBase(base);
-                            groupPromises.push(self.getGroupData(base));
+                            // Call a recursive function which in turn populates the promise lists.
+                            // Had to use a recursive function because a group can contain groups and the hierarchy
+                            // can be arbitrarily deep.
+                            recursivePromises.push(self.recursivelyPopulateGroupContents(componentPromises, groupPromises, children[i]));
                         }
                     }
-
+                    return Q.all(recursivePromises);
+                })
+                .then(function () {
                     return Q.all(componentPromises);
                 })
                 .then(function (componentsData) {
@@ -253,6 +250,52 @@ define([
                     dataModel.problems = problemData;
                     return dataModel;
                 })
+        }
+    };
+
+
+    // This is a recursive function which goes through a group and populates the lists groupPromises and componentPromises
+    MOCACodeGenerator.prototype.recursivelyPopulateGroupContents = function(componentPromises, groupPromises, groupNode) {
+        var self = this,
+            recursivePromises = [];
+
+        // Traverse to its base class through the instance tree
+        self.getOriginalBase('Group', groupPromises, groupNode);
+
+        return self.core.loadChildren(groupNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    // If it is a Component..
+                    if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'Component') {
+                        // Traverse to its base class through the instance tree
+                        self.getOriginalBase('Component', componentPromises, children[i]);
+                    }
+                    // If it is a Group (be careful here!)..
+                    else if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'Group') {
+                        recursivePromises.push(self.recursivelyPopulateGroupContents(componentPromises, groupPromises, children[i]));
+                    }
+                }
+                return recursivePromises;
+            });
+    };
+
+
+    MOCACodeGenerator.prototype.getOriginalBase = function(compOrGroup, promiseList, node) {
+        var self = this,
+            baseToPush = null;
+        if (compOrGroup == 'Component') {
+            baseToPush = self.core.getBase(node);
+            while (self.core.getAttribute(self.core.getParent(baseToPush), 'name') != 'ComponentLibrary'
+            || self.core.getAttribute(self.core.getBase(baseToPush), 'name') != 'Component')
+                baseToPush = self.core.getBase(baseToPush);
+            promiseList.push(self.getComponentData(baseToPush));
+        }
+        else if (compOrGroup == 'Group') {
+            baseToPush = self.core.getBase(node);
+            while (self.core.getAttribute(self.core.getParent(baseToPush), 'name') != 'GroupLibrary'
+            || self.core.getAttribute(self.core.getBase(baseToPush), 'name') != 'Group')
+                baseToPush = self.core.getBase(baseToPush);
+            promiseList.push(self.getGroupData(baseToPush));
         }
     };
 
