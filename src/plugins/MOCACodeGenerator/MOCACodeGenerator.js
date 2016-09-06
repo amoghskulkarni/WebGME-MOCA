@@ -8,6 +8,7 @@
 define([
     'plugin/PluginConfig',
     'plugin/PluginBase',
+    'text!./metadata.json',
     'common/util/ejs',
     'common/util/xmljsonconverter',
     'plugin/MOCACodeGenerator/MOCACodeGenerator/Templates/Templates',
@@ -15,11 +16,14 @@ define([
 ], function (
     PluginConfig,
     PluginBase,
+    pluginMetadata,
     ejs,
     Converter,
     TEMPLATES,
     Q) {
     'use strict';
+
+    pluginMetadata = JSON.parse(pluginMetadata);
 
     /**
      * Initializes a new instance of MOCACodeGenerator.
@@ -31,6 +35,7 @@ define([
     var MOCACodeGenerator = function () {
         // Call base class' constructor.
         PluginBase.call(this);
+        this.pluginMetadata = pluginMetadata;
 
         this.FILES = [
             {
@@ -56,6 +61,8 @@ define([
             }
         ];
     };
+
+    MOCACodeGenerator.metadata = pluginMetadata;
 
     // Prototypal inheritance from PluginBase.
     MOCACodeGenerator.prototype = Object.create(PluginBase.prototype);
@@ -86,7 +93,7 @@ define([
      * - Do NOT put any user interaction logic UI, etc. inside this method.
      * - callback always has to be called even if error happened.
      *
-     * @param {function(string, plugin.PluginResult)} callback - the result callback
+     * @param {function(string|Error, plugin.PluginResult)} callback - the result callback
      */
     MOCACodeGenerator.prototype.main = function (callback) {
         // Use self to access core, project, result, logger etc from PluginBase.

@@ -1,0 +1,14 @@
+{
+  "id": "MOCACodeGenerator",
+  "name": "MOCA Code Generator",
+  "version": "2.0.0",
+  "description": "Generates python source code for MOCA models which uses OpenMDAO as a simulation engine.",
+  "icon": {
+    "src": "",
+    "class": "glyphicon glyphicon-list-alt"
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": false,
+  "writeAccessRequired": false,
+  "configStructure": []
+}
