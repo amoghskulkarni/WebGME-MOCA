@@ -785,13 +785,13 @@ define([
             var fs = require('fs');
         }
 
-        self.savePythonSourceFiles(filesToAdd, dataModel, artifact);
+        self.savePythonSourceFiles(filesToAdd, dataModel, deferred, artifact);
 
         return deferred.promise;
     };
 
 
-    MOCACodeGenerator.prototype.savePythonSourceFiles = function (filesToAdd, dataModel, artifact) {
+    MOCACodeGenerator.prototype.savePythonSourceFiles = function (filesToAdd, dataModel, deferred, artifact) {
         var self = this;
 
         self.FILES.forEach(function (fileInfo) {
