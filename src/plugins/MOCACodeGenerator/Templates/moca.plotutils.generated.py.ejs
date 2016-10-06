@@ -17,20 +17,21 @@ class <%= problems[i].name %>_PlotUtils:
     def __init__(self, parseutils):
         self.timestamps = parseutils.getTimestampValues()
 <%
-    // generate __values statements for all the records, according to their types (Param or Unknown)
+    // generate __values statements for all the records connected to Unknowns only
     for (var j = 0; j < problems[i].records.length; j++) {
+        if (problems[i].records[j].type === "Unknown") {
 -%>
-        self.<%= problems[i].records[j].connection[0].srcParent %>_<%= problems[i].records[j].connection[0].src %>__values = parseutils.get<%= problems[i].records[j].type %>Values('<%= problems[i].records[j].connection[0].srcParent %>.<%= problems[i].records[j].connection[0].src %>')
-<%
-    }
-    // generate __values statements for all the desvars (these statements can clash with __values statements generated in the step above
-    // if some port is connected to a desvar AND a record)
-    for (var j = 0; j < problems[i].desvars.length; j++) {
-        if (problems[i].desvars[j].setByDriver) {
--%>
-        self.<%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values = parseutils.getParamValues('<%= problems[i].desvars[j].connection[0].dstParent %>.<%= problems[i].desvars[j].connection[0].dst %>')
+        self.<%= problems[i].records[j].connection[0].srcParent %>_<%= problems[i].records[j].connection[0].src %>__values = parseutils.getUnknownValues('<%= problems[i].records[j].connection[0].srcParent %>.<%= problems[i].records[j].connection[0].src %>')
 <%
         }
+    }
+    // generate __values statements for all the desvars
+    // all desvars are recorded by default, and we access their values by taking the values of IndepVarComps
+    // Since, all IndepVarComps' outputs are Unknowns, we are using getUnknownValues
+    for (var j = 0; j < problems[i].desvars.length; j++) {
+-%>
+        self.<%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values = parseutils.getUnknownValues('<%= problems[i].desvars[j].name %>.<%= problems[i].desvars[j].connection[0].dst %>')
+<%
     }
 -%>
         # step calculation

@@ -165,33 +165,35 @@ if (recorder === 'Dump') {
 
         rec = DumpRecorder('out/<%= name %>_dumpfile')
         rec.options['record_params'] = True
-        rec.options['record_unknowns'] = True
+        rec.options['record_metadata'] = True
         self.driver.add_recorder(rec)
 <%
 } else if (recorder === 'Specific') {
-        var incWord = "'" + "includes" + "'";
-        var incString = '';
-        for (var i = 0; i < desvars.length; i++) {
-            if (desvars[i].setByDriver) {
-                // construct incString
-                incString += "'" + desvars[i].connection[0].dstParent + "." + desvars[i].connection[0].dst + "'";
-                incString += ", ";
-            }
-        }
-        for (var i = 0; i < records.length; i++) {
-            // construct incString
-            incString += "'" + records[i].connection[0].srcParent + "." + records[i].connection[0].src + "'";
-            if (i != records.length - 1)
-                incString += ", ";
-        }
-        if (incString === "")
-            incString = "'" + "*" + "'";
+//        var incWord = "'" + "includes" + "'";
+//        var incString = '';
+//        for (var i = 0; i < desvars.length; i++) {
+//            if (desvars[i].setByDriver) {
+//                // construct incString
+//                incString += "'" + desvars[i].connection[0].dstParent + "." + desvars[i].connection[0].dst + "'";
+//                incString += ", ";
+//            }
+//        }
+//        for (var i = 0; i < records.length; i++) {
+//            // construct incString
+//            incString += "'" + records[i].connection[0].srcParent + "." + records[i].connection[0].src + "'";
+//            if (i != records.length - 1)
+//                incString += ", ";
+//        }
+//        if (incString === "")
+//            incString = "'" + "*" + "'";
+
+//        Add this to the generated code block if the above code is to be uncommented
+//        rec.options[ %= incWord % ] = [ %= incString % ]
 -%>
 
         rec = SqliteRecorder('out/<%= name %>_sqlitefile')
         rec.options['record_params'] = True
-        rec.options['record_unknowns'] = True
-        rec.options[<%- incWord %>] = [<%- incString %>]
+        rec.options['record_metadata'] = True
         self.driver.add_recorder(rec)
 <%
 }

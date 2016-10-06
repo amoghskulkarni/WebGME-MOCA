@@ -41,7 +41,8 @@ class <%= comps[i].name %>(Component):
     // Generate statement configuring force_fd
     if (comps[i].force_fd === true) {
 -%>
-        self.fd_options['force_fd'] = True
+        # self.fd_options['force_fd'] = True            # For openmdao v1.5.0
+        self.deriv_options['type'] = 'fd'
 <%
     }
 -%>
