@@ -11,13 +11,10 @@ var config = require('webgme/config/config.default'),
 config.plugin.basePaths.push('src/plugins');
 config.visualization.decoratorPaths.push('src/decorators');
 
-
 // Visualizer descriptors
 
 // Add requirejs paths
 
-config.core.enableCustomConstraints = true
-
-config.mongo.uri = 'mongodb://127.0.0.1:27017/moca_2';
+//config.mongo.uri = 'mongodb://127.0.0.1:27017/moca_2';
 validateConfig(config);
 module.exports = config;
