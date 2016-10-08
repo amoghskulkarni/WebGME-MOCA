@@ -31,3 +31,7 @@ bower_components
 tmp/
 blob-local-storage/
 .idea
+
+# Added by - Amogh
+config/config.default.js
+
