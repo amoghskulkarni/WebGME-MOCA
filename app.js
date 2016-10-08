@@ -1,6 +1,8 @@
 // jshint node: true
 'use strict';
 
+process.chdir(__dirname)
+
 var gmeConfig = require('./config'),
     webgme = require('webgme'),
     myServer;
