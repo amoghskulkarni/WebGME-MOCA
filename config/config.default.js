@@ -15,7 +15,7 @@ config.plugin.allowBrowserExecution = true;
 
 // Seeds
 config.seedProjects.enable = true;
-//config.seedProjects.defaultProject = 'MOCA';
+config.seedProjects.defaultProject = 'MOCA';
 config.seedProjects.basePaths.push("./src/seeds");
 
 config.visualization.svgDirs = ['./Icons/png'];
