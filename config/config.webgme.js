@@ -16,7 +16,7 @@ config.visualization.decoratorPaths.push('src/decorators');
 
 // Add requirejs paths
 
-
+config.core.enableCustomConstraints = true
 
 config.mongo.uri = 'mongodb://127.0.0.1:27017/moca_2';
 validateConfig(config);
