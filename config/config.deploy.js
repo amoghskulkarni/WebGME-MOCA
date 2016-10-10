@@ -19,9 +19,9 @@ config.seedProjects.basePaths.push("./src/seeds");
 config.visualization.svgDirs = ['./Icons/png'];
 
 // User authentication
-// config.authentication.enable = true;
-// config.authentication.jwt.privateKey = path.join(__dirname, '..', '..', 'WebGME-MOCA-2_RSAKeys', 'private_key');
-// config.authentication.jwt.publicKey = path.join(__dirname, '..', '..', 'WebGME-MOCA-2_RSAKeys', 'public_key');
+config.authentication.enable = true;
+config.authentication.jwt.privateKey = path.join(__dirname, '..', '..', 'token_keys', 'private_key');
+config.authentication.jwt.publicKey = path.join(__dirname, '..', '..', 'token_keys', 'public_key');
 
 config.authentication.allowGuests = true;
 config.authentication.guestAccount = 'guest';

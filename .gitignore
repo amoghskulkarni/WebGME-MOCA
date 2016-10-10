@@ -33,4 +33,5 @@ blob-local-storage/
 .idea
 
 # Added by - Amogh
-config/config.default.js
+# config/config.default.js -- changed with NODE_ENV for the service started
+
