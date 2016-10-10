@@ -9,7 +9,9 @@
   "version": "1.0.0",
   "dependencies": {
     "bower": "^1.7.7",
-    "webgme": "latest"
+    "webgme": "latest",
+    "http-proxy": "latest",
+    "express-http-proxy": "latest"
   },
   "devDependencies": {
     "mocha": "^2.2.5",
