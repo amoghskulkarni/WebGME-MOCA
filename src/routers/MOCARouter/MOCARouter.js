@@ -38,21 +38,25 @@ function initialize(middlewareOpts) {
     logger.debug('initializing ...');
 
     // Ensure authenticated can be used only after this rule.
-    router.use('*', function (req, res, next) {
-        // TODO: set all headers, check rate limit, etc.
-
-        // This header ensures that any failures with authentication won't redirect.
-        res.setHeader('X-WebGME-Media-Type', 'webgme.v1');
+    //router.use('*', function (req, res, next) {
+    //    // TODO: set all headers, check rate limit, etc.
+    //
+    //    // This header ensures that any failures with authentication won't redirect.
+    //    res.setHeader('X-WebGME-Media-Type', 'webgme.v1');
+    //    next();
+    //});
+    //
+    //// Use ensureAuthenticated if the routes require authentication. (Can be set explicitly for each route.)
+    //router.use('*', ensureAuthenticated);
+    router.get('/', function(req, res, next) {
+        console.log('From router.. Accessing the root');
         next();
     });
 
-    // Use ensureAuthenticated if the routes require authentication. (Can be set explicitly for each route.)
-    router.use('*', ensureAuthenticated);
-
-    router.get('/getExample', function (req, res/*, next*/) {
-        var userId = getUserId(req);
-
-        res.json({userId: userId, message: 'get request was handled'});
+    router.get('/a', function (req, res/*, next*/) {
+        //var userId = getUserId(req);
+        //res.json({userId: userId, message: 'get request was handled'});
+        console.log('From router.. Accessing /a');
     });
 
     router.patch('/patchExample', function (req, res/*, next*/) {
@@ -80,6 +84,7 @@ function initialize(middlewareOpts) {
  * @param {function} callback
  */
 function start(callback) {
+    console.log('From router.. In start()');
     callback();
 }
 
