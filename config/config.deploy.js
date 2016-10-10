@@ -27,8 +27,8 @@ config.authentication.allowGuests = true;
 config.authentication.guestAccount = 'guest';
 config.authentication.allowUserRegistration = true;
 
-// config.authentication.logInUrl = '/profile/login';
-// config.authentication.logOutUrl = '/profile/login';
+config.authentication.logInUrl = '/profile/login';
+config.authentication.logOutUrl = '/profile/login';
 
 validateConfig(config);
 module.exports = config;
