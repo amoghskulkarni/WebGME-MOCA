@@ -54,9 +54,12 @@ function initialize(middlewareOpts) {
     });
 
     router.get('/a', function (req, res/*, next*/) {
+        console.log('From router.. Accessing /a');
+
+        res.send('In /a');
+
         //var userId = getUserId(req);
         //res.json({userId: userId, message: 'get request was handled'});
-        console.log('From router.. Accessing /a');
     });
 
     router.patch('/patchExample', function (req, res/*, next*/) {
