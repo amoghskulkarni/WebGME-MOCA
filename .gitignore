@@ -34,4 +34,5 @@ blob-local-storage/
 
 # Added by - Amogh
 config/config.default.js
+config/config.webgme.js
 
