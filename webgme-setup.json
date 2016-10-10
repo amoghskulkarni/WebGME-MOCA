@@ -14,7 +14,13 @@
       }
     },
     "seeds": {},
-    "visualizers": {}
+    "visualizers": {},
+    "routers": {
+      "MOCARouter": {
+        "src": "src/routers/MOCARouter",
+        "mount": "routers/MOCARouter"
+      }
+    }
   },
   "dependencies": {
     "addons": {},
@@ -22,6 +28,7 @@
     "layouts": {},
     "plugins": {},
     "seeds": {},
-    "visualizers": {}
+    "visualizers": {},
+    "routers": {}
   }
 }
