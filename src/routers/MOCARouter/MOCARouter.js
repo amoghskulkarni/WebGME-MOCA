@@ -14,7 +14,8 @@
 
 // http://expressjs.com/en/guide/routing.html
 var express = require('express'),
-    router = express.Router();
+    router = express.Router(),
+    proxy = require('express-http-proxy');
 
 /**
  * Called when the server is created but before it starts to listening to incoming requests.
@@ -38,16 +39,17 @@ function initialize(middlewareOpts) {
     logger.debug('initializing ...');
 
     // Ensure authenticated can be used only after this rule.
-    //router.use('*', function (req, res, next) {
-    //    // TODO: set all headers, check rate limit, etc.
-    //
-    //    // This header ensures that any failures with authentication won't redirect.
-    //    res.setHeader('X-WebGME-Media-Type', 'webgme.v1');
-    //    next();
-    //});
-    //
-    //// Use ensureAuthenticated if the routes require authentication. (Can be set explicitly for each route.)
-    //router.use('*', ensureAuthenticated);
+    router.use('*', function (req, res, next) {
+        // TODO: set all headers, check rate limit, etc.
+
+        // This header ensures that any failures with authentication won't redirect.
+        res.setHeader('X-WebGME-Media-Type', 'webgme.v1');
+        next();
+    });
+
+    // Use ensureAuthenticated if the routes require authentication. (Can be set explicitly for each route.)
+    router.use('*', ensureAuthenticated);
+
     router.get('/', function(req, res, next) {
         console.log('From router.. Accessing the root');
         next();
@@ -56,16 +58,26 @@ function initialize(middlewareOpts) {
     router.get('/a', function (req, res/*, next*/) {
         console.log('From router.. Accessing /a');
 
-        res.send('In /a');
-
-        //var userId = getUserId(req);
-        //res.json({userId: userId, message: 'get request was handled'});
+        var userId = getUserId(req);
+        res.json({userId: userId, message: 'get request was handled'});
     });
+
+    router.get('/b', function (req, res/*, next*/) {
+        console.log('From router.. Accessing /b');
+        res.send('In /b');
+    });
+
+    //router.use('/c', proxy('www.google.com', {
+    //    forwardPath: function(req, res) {
+    //        return require('url').parse(req.url).path;
+    //    }
+    //}));
+
+    router.use('/c', proxy('http://localhost:9999/tree'));
 
     router.patch('/patchExample', function (req, res/*, next*/) {
         res.sendStatus(200);
     });
-
 
     router.post('/postExample', function (req, res/*, next*/) {
         res.sendStatus(201);
