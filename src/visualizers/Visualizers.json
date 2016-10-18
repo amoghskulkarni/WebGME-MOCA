@@ -1,0 +1,8 @@
+[
+  {
+    "id": "MOCANotebookVisualizer",
+    "title": "MOCANotebookVisualizer",
+    "panel": "panels/MOCANotebookVisualizer/MOCANotebookVisualizerPanel",
+    "DEBUG_ONLY": false
+  }
+]
