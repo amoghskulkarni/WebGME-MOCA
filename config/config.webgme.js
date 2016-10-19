@@ -15,7 +15,7 @@ config.visualization.decoratorPaths.push(__dirname + '/../src/decorators');
 config.visualization.panelPaths.push(__dirname + '/../src/visualizers/panels');
 
 
-config.rest.components['routers/MOCARouter'] = __dirname + '/../src/routers/MOCARouter/MOCARouter.js';
+config.rest.components[''] = __dirname + '/../src/routers/MOCARouter/MOCARouter.js';
 
 // Visualizer descriptors
 config.visualization.visualizerDescriptors.push(__dirname + '/../src/visualizers/Visualizers.json');

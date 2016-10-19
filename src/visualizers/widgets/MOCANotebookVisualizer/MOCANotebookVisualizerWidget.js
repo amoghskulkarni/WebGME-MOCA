@@ -20,6 +20,8 @@ define(['css!./styles/MOCANotebookVisualizerWidget.css'], function () {
         this._initialize();
 
         this._logger.debug('ctor finished');
+
+        this.notebookIframe = null;
     };
 
     MOCANotebookVisualizerWidget.prototype._initialize = function () {
@@ -28,16 +30,18 @@ define(['css!./styles/MOCANotebookVisualizerWidget.css'], function () {
             self = this;
 
         // set widget class
-        this._el.addClass(WIDGET_CLASS);
+        //this._el.addClass(WIDGET_CLASS);
 
         // Create a dummy header 
         //this._el.append('<h3>MOCANotebookVisualizer Events:</h3>');
         var notebookIframe = document.createElement('iframe');
+        notebookIframe.name = "notebook";
         notebookIframe.style.height = "100%";
         notebookIframe.style.width = "100%";
-        notebookIframe.src = "routers/MOCARouter/ipython";
-        //notebookIframe.src = "routers/MOCARouter/b";
+        notebookIframe.src = "ipython";
         this._el.append(notebookIframe);
+
+        this.notebookIframe = notebookIframe;
 
         // Registering to events can be done with jQuery (as normal)
         this._el.on('dblclick', function (event) {
@@ -51,23 +55,29 @@ define(['css!./styles/MOCANotebookVisualizerWidget.css'], function () {
         this._logger.debug('Widget is resizing...');
     };
 
+    MOCANotebookVisualizerWidget.prototype.changeIframeSrc = function (dsec) {
+        if (desc) {
+            this.notebookIframe.src = "ipython/notebooks/" + desc.name + ".ipynb";
+        }
+    };
+
     // Adding/Removing/Updating items
     MOCANotebookVisualizerWidget.prototype.addNode = function (desc) {
         if (desc) {
             // Add node to a table of nodes
-            //var node = document.createElement('div'),
-            //    label = 'children';
-            //
-            //if (desc.childrenIds.length === 1) {
-            //    label = 'child';
-            //}
-            //
-            //this.nodes[desc.id] = desc;
-            //node.innerHTML = 'Adding node "' + desc.name + '" (click to view). It has ' +
-            //    desc.childrenIds.length + ' ' + label + '.';
-            //
-            //this._el.append(node);
-            //node.onclick = this.onNodeClick.bind(this, desc.id);
+            var node = document.createElement('div'),
+                label = 'children';
+
+            if (desc.childrenIds.length === 1) {
+                label = 'child';
+            }
+
+            this.nodes[desc.id] = desc;
+            node.innerHTML = 'Adding node "' + desc.name + '" (click to view). It has ' +
+                desc.childrenIds.length + ' ' + label + '.';
+
+            this._el.append(node);
+            node.onclick = this.onNodeClick.bind(this, desc.id);
         }
     };
 

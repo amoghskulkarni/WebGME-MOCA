@@ -65,7 +65,8 @@
             self._selfPatterns = {};
             self._selfPatterns[nodeId] = {children: 0};  // Territory "rule"
 
-            self._widget.setTitle(desc.name.toUpperCase());
+            //self._widget.setTitle(desc.name.toUpperCase());
+            //self._widget.changeIframeSrc(desc);
 
             if (typeof desc.parentId === 'string') {
                 self.$btnModelHierarchyUp.show();
@@ -137,6 +138,7 @@
     MOCANotebookVisualizerControl.prototype._onLoad = function (gmeId) {
         var description = this._getObjectDescriptor(gmeId);
         //this._widget.addNode(description);
+        //this._widget.changeIframeSrc(description);
     };
 
     MOCANotebookVisualizerControl.prototype._onUpdate = function (gmeId) {
