@@ -18,17 +18,17 @@ config.seedProjects.basePaths.push("./src/seeds");
 
 config.visualization.svgDirs = ['./Icons/png'];
 
-// User authentication
-config.authentication.enable = true;
-config.authentication.jwt.privateKey = path.join(__dirname, '..', '..', 'token_keys', 'private_key');
-config.authentication.jwt.publicKey = path.join(__dirname, '..', '..', 'token_keys', 'public_key');
+// User authentication -- disabled in the default config, enabled in the deploy config
+//config.authentication.enable = true;
+//config.authentication.jwt.privateKey = path.join(__dirname, '..', '..', 'token_keys', 'private_key');
+//config.authentication.jwt.publicKey = path.join(__dirname, '..', '..', 'token_keys', 'public_key');
 
 config.authentication.allowGuests = true;
 config.authentication.guestAccount = 'guest';
 config.authentication.allowUserRegistration = true;
 
-config.authentication.logInUrl = '/profile/login';
-config.authentication.logOutUrl = '/profile/login';
+//config.authentication.logInUrl = '/profile/login';
+//config.authentication.logOutUrl = '/profile/login';
 
 validateConfig(config);
 module.exports = config;

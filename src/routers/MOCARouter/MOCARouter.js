@@ -14,7 +14,8 @@
 
 // http://expressjs.com/en/guide/routing.html
 var express = require('express'),
-    router = express.Router();
+    router = express.Router(),
+    proxy = require('express-http-proxy');
 
 /**
  * Called when the server is created but before it starts to listening to incoming requests.
@@ -49,16 +50,39 @@ function initialize(middlewareOpts) {
     // Use ensureAuthenticated if the routes require authentication. (Can be set explicitly for each route.)
     router.use('*', ensureAuthenticated);
 
-    router.get('/getExample', function (req, res/*, next*/) {
-        var userId = getUserId(req);
-
-        res.json({userId: userId, message: 'get request was handled'});
+    //router.get('/', function(req, res, next) {
+    //    console.log('From router.. Accessing the root');
+    //    next();
+    //});
+    //
+    //router.get('/a', function (req, res/*, next*/) {
+    //    console.log('From router.. Accessing /a');
+    //
+    //    var userId = getUserId(req);
+    //    res.json({userId: userId, message: 'get request was handled'});
+    //});
+    //
+    router.get('/b', function (req, res/*, next*/) {
+        console.log('From router.. Accessing /b');
+        res.send('In /b');
     });
+
+    //router.use('/c', proxy('http://localhost:9999/tree', {
+    //    intercept: function(rsp, data, req, res, callback) {
+    //        return callback(null, data);
+    //    }
+    //}));
+
+    router.use('/ipython', proxy('http://localhost:9999/', {
+        forwardPath: function(req, res) {
+            console.log(req);
+            return req.originalUrl;
+        }
+    }));
 
     router.patch('/patchExample', function (req, res/*, next*/) {
         res.sendStatus(200);
     });
-
 
     router.post('/postExample', function (req, res/*, next*/) {
         res.sendStatus(201);
@@ -80,6 +104,7 @@ function initialize(middlewareOpts) {
  * @param {function} callback
  */
 function start(callback) {
+    console.log('From router.. In start()');
     callback();
 }
 

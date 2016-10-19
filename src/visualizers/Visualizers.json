@@ -1,0 +1,8 @@
+[
+  {
+    "id": "MOCANotebookVisualizer",
+    "title": "ipython Notebook",
+    "panel": "panels/MOCANotebookVisualizer/MOCANotebookVisualizerPanel",
+    "DEBUG_ONLY": false
+  }
+]

@@ -14,11 +14,19 @@
       }
     },
     "seeds": {},
-    "visualizers": {},
+    "visualizers": {
+      "MOCANotebookVisualizer": {
+        "src": "panels/MOCANotebookVisualizer/MOCANotebookVisualizerPanel",
+        "title": "MOCANotebookVisualizer",
+        "panel": "src/visualizers/panels/MOCANotebookVisualizer",
+        "secondary": false,
+        "widget": "src/visualizers/widgets/MOCANotebookVisualizer"
+      }
+    },
     "routers": {
       "MOCARouter": {
         "src": "src/routers/MOCARouter",
-        "mount": "routers/MOCARouter"
+        "mount": ""
       }
     }
   },

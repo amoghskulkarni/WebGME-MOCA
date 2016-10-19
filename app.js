@@ -11,5 +11,5 @@ webgme.addToRequireJsPaths(gmeConfig);
 
 myServer = new webgme.standaloneServer(gmeConfig);
 myServer.start(function () {
-    //console.log('server up');
+    // console.log('server up');
 });
