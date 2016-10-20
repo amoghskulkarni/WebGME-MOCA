@@ -1,0 +1,31 @@
+# This file goes into /etc/systemd/system directory
+# After being placed, it needs to be enabled and registered as a startup service
+# For this, following commands are used as root -
+# $ systemctl daemon-reload
+# $ systemctl enable <service name>
+# $ systemctl start <service name>
+# Then use 'sudo service <service name> start/stop/restart/status' to do the respective actions
+
+# This includes the configuration for webgme service
+
+[Unit]
+Description=WebGME Server for MOCA
+#Requires mongodb service to be run first
+Requires=mongod.service
+Wants=mongod.service
+After=mongod.service
+
+[Service]
+ExecStart=/usr/bin/node /isis/home/kulkaras/WebGME-MOCA-2/app.js
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=webgme-moca-service
+User=root
+Group=root
+Environment=NODE_ENV=deploy
+
+[Install]
+WantedBy=multi-user.target
+
