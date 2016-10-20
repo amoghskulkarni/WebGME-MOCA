@@ -24,13 +24,18 @@ define(['css!./styles/MOCANotebookVisualizerWidget.css'], function () {
         this.notebookIframe = null;
     };
 
-    MOCANotebookVisualizerWidget.prototype._initialize = function () {
+    MOCANotebookVisualizerWidget.prototype._initialize = function (nodeData) {
         var width = this._el.width(),
             height = this._el.height(),
             self = this;
 
+        if (!nodeData) {
+            console.log('nodeData is empty. Something is wrong!');
+            return;
+        }
+
         // set widget class
-        //this._el.addClass(WIDGET_CLASS);
+        this._el.addClass(WIDGET_CLASS);
 
         // Create a dummy header 
         //this._el.append('<h3>MOCANotebookVisualizer Events:</h3>');
@@ -38,7 +43,8 @@ define(['css!./styles/MOCANotebookVisualizerWidget.css'], function () {
         notebookIframe.name = "notebook";
         notebookIframe.style.height = "100%";
         notebookIframe.style.width = "100%";
-        notebookIframe.src = "ipython";
+        //notebookIframe.src = "ipython";
+        notebookIframe.src = this.getNotebookUrl(nodeData);
         this._el.append(notebookIframe);
 
         this.notebookIframe = notebookIframe;
@@ -55,10 +61,8 @@ define(['css!./styles/MOCANotebookVisualizerWidget.css'], function () {
         this._logger.debug('Widget is resizing...');
     };
 
-    MOCANotebookVisualizerWidget.prototype.changeIframeSrc = function (dsec) {
-        if (desc) {
-            this.notebookIframe.src = "ipython/notebooks/" + desc.name + ".ipynb";
-        }
+    MOCANotebookVisualizerWidget.prototype.getNotebookUrl = function (desc) {
+         return "http://localhost:9999/ipython/notebooks/" + desc.name + ".ipynb";
     };
 
     // Adding/Removing/Updating items
@@ -107,6 +111,7 @@ define(['css!./styles/MOCANotebookVisualizerWidget.css'], function () {
 
     /* * * * * * * * Visualizer life cycle callbacks * * * * * * * */
     MOCANotebookVisualizerWidget.prototype.destroy = function () {
+        // TODO: Remove iframe here
     };
 
     MOCANotebookVisualizerWidget.prototype.onActivate = function () {
