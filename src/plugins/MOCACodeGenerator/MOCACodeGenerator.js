@@ -735,6 +735,7 @@ define([
             filesToAdd = {},
             deferred = new Q.defer(),
             artifact = null;
+            //userid = WebGMEGlobal.userInfo._id;
         if (pluginInvocation == 'ROOT')
             artifact = self.blobClient.createArtifact('MOCA');
         else
@@ -778,28 +779,83 @@ define([
         }*/
 
         if (typeof window === 'undefined') {
-            // Test for whether the plugin is executed on server or client
-            // (if you're inside this block, the plugin is executed on server)
-
-            // Test "require", for testing server side execution
+            // Save the files on the server side
             self.savePythonSourceFiles(filesToAdd, dataModel, deferred, artifact);
         }
-
-        self.downloadPythonSourceFiles(filesToAdd, dataModel, deferred, artifact);
+        else {
+            // Save the files using the blobClient and give them as a downloadable handle
+            self.downloadPythonSourceFiles(filesToAdd, dataModel, deferred, artifact);
+        }
 
         return deferred.promise;
     };
 
 
     MOCACodeGenerator.prototype.savePythonSourceFiles = function (filesToAdd, dataModel, deferred, artifact) {
-        var fs = require('fs');
-        /*fs.writeFile('C:\\Users\\Amogh\\Desktop\\test.txt', 'Hello world!', function (err) {
-            if (err) {
-                throw err;
-            }
-            console.log('It\'s saved!');
-        });*/
+        var mkdirp = require('mkdirp'),
+            path = require('path'),
+            fs = require('fs'),
+            self = this;
 
+        var userid = this.projectId.split('+')[0],
+            baseDir = path.join('..', 'WebGME-MOCA-2_data', 'notebooks', userid),
+            internalDirs = ['lib', 'src', 'utils', 'out'],
+            genFileName = "";
+
+        var saveFileToPath = function (fileAbsPath, text) {
+            fs.writeFile(fileAbsPath, text, function (err) {
+                if (err) {
+                    throw err;
+                }
+                else {
+                    self.logger.info(fileAbsPath + ' saved on the server');
+                }
+            });
+        };
+
+        internalDirs.forEach(function (internalDir) {
+            mkdirp(path.join(baseDir, internalDir), function (err) {
+                if (err)
+                    console.error(err);
+                else
+                    console.log('Directory created successfully!');
+            });
+
+            if (initFileName != 'out') {
+                var initFileName = path.join(baseDir, internalDir, '__init__.py');
+                saveFileToPath(initFileName, '# A boilerplate file to enable this directory to be imported as a module');
+            }
+        });
+
+        self.FILES.forEach(function (fileInfo) {
+            if (fileInfo.name === 'components' || fileInfo.name === 'groups') {
+                genFileName = path.join(baseDir, 'lib', fileInfo.name + '.py');
+                saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel));
+            } else if (fileInfo.name === 'problems') {
+                // If the filename is "problem" - use the template for problems
+                // additionally generate .bat file for that as well
+                for (var i = 0; i < dataModel.problems.length; i++) {
+                    genFileName = path.join(baseDir, 'src', dataModel.problems[i].name + '.py');
+                    var genIpynbFile = path.join(baseDir, dataModel.problems[i].name + '.ipynb');
+                    saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]));
+                    saveFileToPath(genIpynbFile, ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.problems[i]));
+                }
+            } else if (fileInfo.name === 'parsing utilities') {
+                // If the filename is parsing utilities - use the template for utilities
+                // Template for utilities is not required to be populated with
+                // Application specific data
+                genFileName = path.join(baseDir, 'utils', 'MOCAparseutils.py');
+                saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], null));
+            } else if (fileInfo.name === 'plotting utilities') {
+                // If the filename is plotting utilities - use the template for utilities
+                // Template for utilities is not required to be populated with
+                // Application specific data
+                genFileName = path.join(baseDir, 'utils', 'MOCAplotutils.py');
+                saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel));
+            }
+        });
+
+        this.logger.info('Generated python files for MOCA on the server.');
     };
 
 
@@ -824,19 +880,19 @@ define([
                 // If the filename is parsing utilities - use the template for utilities
                 // Template for utilities is not required to be populated with
                 // Application specific data
-                genFileName = 'MOCA_GeneratedCode/util/MOCAparseutils.py';
+                genFileName = 'MOCA_GeneratedCode/utils/MOCAparseutils.py';
                 filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], null);
             } else if (fileInfo.name === 'plotting utilities') {
                 // If the filename is plotting utilities - use the template for utilities
                 // Template for utilities is not required to be populated with
                 // Application specific data
-                genFileName = 'MOCA_GeneratedCode/util/MOCAplotutils.py';
+                genFileName = 'MOCA_GeneratedCode/utils/MOCAplotutils.py';
                 filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel);
             }
         });
 
         // Create __init__.py file in the lib, src and util directories each
-        var subdirectories = ['lib', 'src', 'util'];
+        var subdirectories = ['lib', 'src', 'utils'];
         for (var i = 0; i < subdirectories.length; i++) {
             var initFileName = 'MOCA_GeneratedCode/' + subdirectories[i] + '/__init__.py';
             filesToAdd[initFileName] = '# A boilerplate file to enable this directory to be imported as a module';
@@ -852,7 +908,7 @@ define([
         filesToAdd[ipynbLaunchScriptName] = 'echo off\njupyter notebook --port=9999';
 
         //TODO Add the static files too.
-        self.logger.info('Generated python files for MOCA');
+        self.logger.info('Generated python files for MOCA to download on client.');
 
         artifact.addFiles(filesToAdd, function (err) {
             if (err) {
