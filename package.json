@@ -12,7 +12,7 @@
     "webgme": "latest",
     "mkdirp": "^0.5.1",
     "path": "^0.12.7",
-    "http-proxy": "latest",
+    "http-proxy": "^1.15.1",
     "express-http-proxy": "latest"
   },
   "devDependencies": {

@@ -15,7 +15,8 @@
 // http://expressjs.com/en/guide/routing.html
 var express = require('express'),
     router = express.Router(),
-    proxy = require('express-http-proxy');
+    httpProxy = require('http-proxy'),
+    proxy = httpProxy.createProxyServer({ ws : true, target: 'http://localhost:9999/'});
 
 /**
  * Called when the server is created but before it starts to listening to incoming requests.
@@ -50,35 +51,10 @@ function initialize(middlewareOpts) {
     // Use ensureAuthenticated if the routes require authentication. (Can be set explicitly for each route.)
     router.use('*', ensureAuthenticated);
 
-    //router.get('/', function(req, res, next) {
-    //    console.log('From router.. Accessing the root');
-    //    next();
-    //});
-    //
-    //router.get('/a', function (req, res/*, next*/) {
-    //    console.log('From router.. Accessing /a');
-    //
-    //    var userId = getUserId(req);
-    //    res.json({userId: userId, message: 'get request was handled'});
-    //});
-    //
-    router.get('/b', function (req, res/*, next*/) {
-        console.log('From router.. Accessing /b');
-        res.send('In /b');
+    router.all(['/ipython', '/ipython/*'], function (req, res) {
+        console.log('GET from ipython', req.url);
+        proxy.web(req, res, { target: 'http://localhost:9999/' });
     });
-
-    //router.use('/c', proxy('http://localhost:9999/tree', {
-    //    intercept: function(rsp, data, req, res, callback) {
-    //        return callback(null, data);
-    //    }
-    //}));
-
-    router.use('/ipython', proxy('http://localhost:9999/', {
-        forwardPath: function(req, res) {
-            console.log(req);
-            return req.originalUrl;
-        }
-    }));
 
     router.patch('/patchExample', function (req, res/*, next*/) {
         res.sendStatus(200);
@@ -98,6 +74,7 @@ function initialize(middlewareOpts) {
 
     logger.debug('ready');
 }
+
 
 /**
  * Called before the server starts listening.
