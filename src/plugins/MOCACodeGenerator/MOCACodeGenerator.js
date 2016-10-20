@@ -798,7 +798,7 @@ define([
             self = this;
 
         var userid = this.projectId.split('+')[0],
-            baseDir = path.join('..', 'WebGME-MOCA-2_data', 'notebooks', userid),
+            baseDir = path.join('..', 'WebGME-MOCA-2_data', 'notebooks', userid, this.projectName),
             internalDirs = ['lib', 'src', 'utils', 'out'],
             genFileName = "";
 
@@ -814,14 +814,14 @@ define([
         };
 
         internalDirs.forEach(function (internalDir) {
-            mkdirp(path.join(baseDir, internalDir), function (err) {
+            mkdirp.sync(path.join(baseDir, internalDir), function (err) {
                 if (err)
                     console.error(err);
                 else
                     console.log('Directory created successfully!');
             });
 
-            if (initFileName != 'out') {
+            if (internalDir != 'out') {
                 var initFileName = path.join(baseDir, internalDir, '__init__.py');
                 saveFileToPath(initFileName, '# A boilerplate file to enable this directory to be imported as a module');
             }
