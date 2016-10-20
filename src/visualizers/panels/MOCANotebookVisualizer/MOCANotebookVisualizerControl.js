@@ -95,7 +95,8 @@
                 name: node.getAttribute(nodePropertyNames.Attributes.name),
                 childrenIds: node.getChildrenIds(),
                 parentId: node.getParentId(),
-                isConnection: GMEConcepts.isConnection(nodeId)
+                isConnection: GMEConcepts.isConnection(nodeId),
+                projectName: this._client.getProjectObject().projectName
             };
         }
 

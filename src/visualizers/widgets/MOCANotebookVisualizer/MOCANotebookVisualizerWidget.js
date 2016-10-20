@@ -62,7 +62,9 @@ define(['css!./styles/MOCANotebookVisualizerWidget.css'], function () {
     };
 
     MOCANotebookVisualizerWidget.prototype.getNotebookUrl = function (desc) {
-         return "http://localhost:9999/ipython/notebooks/" + desc.name + ".ipynb";
+         return "http://localhost:9999/ipython/notebooks/" + WebGMEGlobal.userInfo._id + "/"
+             + desc.projectName + "/"
+             + desc.name + ".ipynb";
     };
 
     // Adding/Removing/Updating items
