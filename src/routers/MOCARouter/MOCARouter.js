@@ -14,9 +14,9 @@
 
 // http://expressjs.com/en/guide/routing.html
 var express = require('express'),
-    router = express.Router(),
-    httpProxy = require('http-proxy'),
-    proxy = httpProxy.createProxyServer({ ws : true, target: 'http://localhost:9999/'});
+    router = express.Router();//,
+    // httpProxy = require('http-proxy'),
+    // proxy = httpProxy.createProxyServer({ ws : true, target: 'http://localhost:9999/'});
 
 /**
  * Called when the server is created but before it starts to listening to incoming requests.
@@ -51,10 +51,12 @@ function initialize(middlewareOpts) {
     // Use ensureAuthenticated if the routes require authentication. (Can be set explicitly for each route.)
     router.use('*', ensureAuthenticated);
 
+/*
     router.all(['/ipython', '/ipython/*'], function (req, res) {
         console.log('GET from ipython', req.url);
         proxy.web(req, res, { target: 'http://localhost:9999/' });
     });
+*/
 
     router.patch('/patchExample', function (req, res/*, next*/) {
         res.sendStatus(200);
