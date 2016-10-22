@@ -62,13 +62,13 @@ define(['css!./styles/MOCANotebookVisualizerWidget.css'], function () {
     };
 
     MOCANotebookVisualizerWidget.prototype.getNotebookUrl = function (desc) {
-         // Replace "localhost:9999" with "moca.isis.vanderbilt.edu" if you're running this on localhost
-         return "http://moca.isis.vanderbilt.edu/ipython/notebooks/" + WebGMEGlobal.userInfo._id + "/"
-             + desc.projectName + "/"
-             + desc.name + ".ipynb";
-         //return "ipython/notebooks/" + WebGMEGlobal.userInfo._id + "/"
-         //    + desc.projectName + "/"
-         //    + desc.name + ".ipynb";
+        // Replace "localhost:9999" with "moca.isis.vanderbilt.edu" if you're running this on localhost
+        return "http://moca.isis.vanderbilt.edu/ipython/notebooks/" + WebGMEGlobal.userInfo._id + "/"
+            + desc.projectName + "/"
+            + desc.name + ".ipynb";
+        //return "ipython/notebooks/" + WebGMEGlobal.userInfo._id + "/"
+        //    + desc.projectName + "/"
+        //    + desc.name + ".ipynb";
     };
 
     // Adding/Removing/Updating items
