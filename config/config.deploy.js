@@ -5,7 +5,7 @@ var config = require('./config.webgme'),
     path = require('path');
 
 // Add/overwrite any additional settings here
-config.server.port = 80;
+config.server.port = 8888;
 
 // Plugins
 config.plugin.allowServerExecution = true;
