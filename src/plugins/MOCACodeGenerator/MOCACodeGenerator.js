@@ -855,6 +855,8 @@ define([
             }
         });
 
+        this.sendNotification("Generated python files for MOCA on the server.");
+
         this.logger.info('Generated python files for MOCA on the server.');
     };
 
