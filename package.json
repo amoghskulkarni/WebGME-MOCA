@@ -4,7 +4,8 @@
   "scripts": {
     "start": "node app.js",
     "test": "node ./node_modules/mocha/bin/mocha --recursive test",
-    "users": "node ./node_modules/webgme/src/bin/usermanager.js"
+    "users": "node ./node_modules/webgme/src/bin/usermanager.js",
+    "globals": "npm install -g configurable-http-proxy"
   },
   "version": "1.0.0",
   "dependencies": {
