@@ -35,7 +35,8 @@ define(['js/util',
                 async: false
             });
 
-            $.getJSON('http://localhost:3000/users/data', function (data) {
+            // $.getJSON('http://localhost:3000/users/data', function (data) {
+            $.getJSON('http://moca.isis.vanderbilt.edu/ontology', function (data) {
                 self._options = {
                     interaction: {
                         multiselect: true

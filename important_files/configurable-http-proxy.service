@@ -6,18 +6,14 @@
 # $ systemctl start <service name>.service
 # Then use 'sudo service <service name> start/stop/restart/status' to do the respective actions
 
-# This includes the configuration for jupyter service
-
 [Unit]
 Description=Reverse-proxy server for serving jupyter requests of MOCA
 
 [Service]
 Type=simple
-# Environment=JUPYTER_CONFIG_DIR=/isis/home/kulkaras/.jupyter
 ExecStart=/usr/local/bin/configurable-http-proxy --default-target=http://localhost:8888 --port 80 --api-port 8889
 User=root
 Group=root
-# WorkingDirectory=/isis/home/kulkaras/WebGME-MOCA-2_data/notebooks
 
 [Install]
 WantedBy=multi-user.target
