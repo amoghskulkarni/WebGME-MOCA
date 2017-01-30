@@ -9,38 +9,37 @@ from ipywidgets import interact
 import ipywidgets as widgets
 
 <%
-for (var i = 0; i < problems.length; i++) {
-if (problems[i].driver === 'FullFactorialDOE') {
+if (driver === 'FullFactorialDOE') {
 -%>
 
-class <%= problems[i].name %>_PlotUtils:
+class <%= name %>_PlotUtils:
     def __init__(self, parseutils):
         self.timestamps = parseutils.getTimestampValues()
 <%
     // generate __values statements for all the records connected to Unknowns only
-    for (var j = 0; j < problems[i].records.length; j++) {
-        if (problems[i].records[j].type === "Unknown") {
+    for (var j = 0; j < records.length; j++) {
+        if (records[j].type === "Unknown") {
 -%>
-        self.<%= problems[i].records[j].connection[0].srcParent %>_<%= problems[i].records[j].connection[0].src %>__values = parseutils.getUnknownValues('<%= problems[i].records[j].connection[0].srcParent %>.<%= problems[i].records[j].connection[0].src %>')
+        self.<%= records[j].connection[0].srcParent %>_<%= records[j].connection[0].src %>__values = parseutils.getUnknownValues('<%= records[j].connection[0].srcParent %>.<%= records[j].connection[0].src %>')
 <%
         }
     }
     // generate __values statements for all the desvars
     // all desvars are recorded by default, and we access their values by taking the values of IndepVarComps
     // Since, all IndepVarComps' outputs are Unknowns, we are using getUnknownValues
-    for (var j = 0; j < problems[i].desvars.length; j++) {
+    for (var j = 0; j < desvars.length; j++) {
 -%>
-        self.<%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values = parseutils.getUnknownValues('<%= problems[i].desvars[j].name %>.<%= problems[i].desvars[j].connection[0].dst %>')
+        self.<%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values = parseutils.getUnknownValues('<%= desvars[j].name %>.<%= desvars[j].connection[0].dst %>')
 <%
     }
 -%>
         # step calculation
 <%
-    for (var j = 0; j < problems[i].desvars.length; j++) {
-        if (problems[i].desvars[j].setByDriver) {
+    for (var j = 0; j < desvars.length; j++) {
+        if (desvars[j].setByDriver) {
 -%>
-        <%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values__sorted = sorted(self.<%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values)
-        self.<%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__step = <%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values__sorted[<%= problems[i].doeSamples %>] - <%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values__sorted[0]
+        <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values__sorted = sorted(self.<%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values)
+        self.<%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__step = <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values__sorted[<%= doeSamples %>] - <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values__sorted[0]
 <%
         }
     }
@@ -51,32 +50,32 @@ class <%= problems[i].name %>_PlotUtils:
 
         # axes configuration
 <%
-    for (var j = 0; j < problems[i].desvars.length; j++) {
-        if (problems[i].desvars[j].setByDriver) {
+    for (var j = 0; j < desvars.length; j++) {
+        if (desvars[j].setByDriver) {
 -%>
-        x_axis_values = self.<%= problems[i].desvars[j].connection[0].dstParent %>_<%= problems[i].desvars[j].connection[0].dst %>__values
+        x_axis_values = self.<%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values
 <%
             break;
         }
     }
 -%>
-        y_axis_values = self.<%= problems[i].records[0].connection[0].srcParent %>_<%= problems[i].records[0].connection[0].src %>__values
+        y_axis_values = self.<%= records[0].connection[0].srcParent %>_<%= records[0].connection[0].src %>__values
 
         # bokeh config
         self.source = ColumnDataSource(data=dict(x=x_axis_values, y=y_axis_values))
-        self.p = figure(title='<%= problems[i].name %>')
+        self.p = figure(title='<%= name %>')
         self.p.add_tools(HoverTool())
         self.p.circle(x_axis_values, y_axis_values, size=3, source=self.source, alpha=0.5)
 <%
     var slider_desvars = [];
-    for (var j = 0; j < problems[i].desvars.length; j++) {
-        if (problems[i].desvars[j].setByDriver) {
+    for (var j = 0; j < desvars.length; j++) {
+        if (desvars[j].setByDriver) {
             slider_desvars.push({
-                dstParent: problems[i].desvars[j].connection[0].dstParent,
-                dst: problems[i].desvars[j].connection[0].dst,
-                upper: problems[i].desvars[j].upper,
-                lower: problems[i].desvars[j].lower,
-                value: problems[i].desvars[j].value
+                dstParent: desvars[j].connection[0].dstParent,
+                dst: desvars[j].connection[0].dst,
+                upper: desvars[j].upper,
+                lower: desvars[j].lower,
+                value: desvars[j].value
             });
         }
     }
@@ -125,10 +124,10 @@ class <%= problems[i].name %>_PlotUtils:
     var x_and_y = ['x', 'y'];
     for (var k = 0; k < x_and_y.length; k++) {
         var xy = x_and_y[k];
-        for (var j = 0; j < problems[i].records.length; j++) {
+        for (var j = 0; j < records.length; j++) {
 -%>
-        if <%= xy %> == '<%= problems[i].records[j].connection[0].srcParent %>.<%= problems[i].records[j].connection[0].src %>':
-            <%= xy %>_vals = self.<%= problems[i].records[j].connection[0].srcParent %>_<%= problems[i].records[j].connection[0].src %>__values
+        if <%= xy %> == '<%= records[j].connection[0].srcParent %>.<%= records[j].connection[0].src %>':
+            <%= xy %>_vals = self.<%= records[j].connection[0].srcParent %>_<%= records[j].connection[0].src %>__values
             lists_of_indices = [<%= slider_desvars_list_string %>]
 <%
     }
@@ -175,8 +174,8 @@ class <%= problems[i].name %>_PlotUtils:
         show(self.p)
 <%
     var options_string = "";
-    for (var j = 0; j < problems[i].records.length; j++) {
-        var substring = "'" + problems[i].records[j].connection[0].srcParent + '.' + problems[i].records[j].connection[0].src + "'";
+    for (var j = 0; j < records.length; j++) {
+        var substring = "'" + records[j].connection[0].srcParent + '.' + records[j].connection[0].src + "'";
         options_string += substring;
         options_string += ", ";
     }
@@ -207,6 +206,5 @@ class <%= problems[i].name %>_PlotUtils:
             <%= slider_desvars[j].dst %>_all=widgets.Checkbox(description='<%= slider_desvars[j].dstParent %>.<%= slider_desvars[j].dst %> (all values)', value=True)<%= trailing_character %>
 <%
     }
-}
 }
 -%>
