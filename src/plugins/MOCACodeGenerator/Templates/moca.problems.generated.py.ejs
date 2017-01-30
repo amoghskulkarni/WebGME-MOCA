@@ -2,8 +2,19 @@
 
 # Static imports
 from openmdao.api import IndepVarComp, Group, Problem
-import lib.components as components
-import lib.groups as groups
+<%
+// Generate the code for import statement for components
+for (var j = 0; j < compInstances.length; j++) {
+-%>
+from lib.moca_components.<%= compInstances[j].base %> import <%= compInstances[j].base %>
+<%
+}
+for (var j = 0; j < groupInstances.length; j++) {
+-%>
+from lib.moca_groups.<%= groupInstances[j].base %> import <%= groupInstances[j].base %>
+<%
+}
+-%>
 
 # Dynamic imports
 <%
@@ -63,7 +74,7 @@ for (var j = 0; j < compInstances.length; j++) {
             promotesString += ', ';
     }
 -%>
-        self.add('<%= compInstances[j].name %>', components.<%= compInstances[j].base %>(), promotes=[<%- promotesString %>])
+        self.add('<%= compInstances[j].name %>', <%= compInstances[j].base %>(), promotes=[<%- promotesString %>])
 <%
 }
 -%>
@@ -78,7 +89,7 @@ for (var j = 0; j < groupInstances.length; j++) {
             promotesString += ', ';
     }
 -%>
-        self.add('<%= groupInstances[j].name %>', groups.<%= groupInstances[j].base %>(), promotes=[<%- promotesString %>])
+        self.add('<%= groupInstances[j].name %>', <%= groupInstances[j].base %>(), promotes=[<%- promotesString %>])
 <%
 }
 -%>
