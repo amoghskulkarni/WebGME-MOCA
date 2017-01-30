@@ -873,7 +873,7 @@ define([
                 // For every component, one file
                 for (var i = 0; i < dataModel.comps.length; i++) {
                     genFileName = 'MOCA_GeneratedCode/lib/moca_components/' + dataModel.comps[i].name + '.py';
-                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], {comps: [dataModel.comps[i]]});
+                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.comps[i]);
                 }
             } else if (fileInfo.name === 'groups') {
                 // For every component, one file

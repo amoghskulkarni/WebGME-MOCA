@@ -3,45 +3,43 @@ from openmdao.api import Component
 import sys
 
 <%
-// Generate the code for all the components
-for (var i = 0; i < comps.length; i++) {
+// Generate the code the component
 -%>
-class <%= comps[i].name %>(Component):
+class <%= name %>(Component):
     def __init__(self):
-        super(<%= comps[i].name %>, self).__init__()
+        super(<%= name %>, self).__init__()
 <%
     // Generate "add_param" statements
-    for (var j = 0; j < comps[i].parameters.length; j++) {
-        valueString = comps[i].parameters[j].value;
+    for (var j = 0; j < parameters.length; j++) {
+        valueString = parameters[j].value;
         if (valueString.indexOf('.') === -1)
             valueString += '.0';
 -%>
-        self.add_param('<%= comps[i].parameters[j].name %>', val=<%= comps[i].parameters[j].value %>)
+        self.add_param('<%= parameters[j].name %>', val=<%= parameters[j].value %>)
 <%
     }
 -%>
 <%
     // Generate "add_output" and "add_state" statements
-    for (var j = 0; j < comps[i].unknowns.length; j++) {
+    for (var j = 0; j < unknowns.length; j++) {
         var unknown_type;
-        if (comps[i].unknowns[j].type == 'Output') {
+        if (unknowns[j].type == 'Output') {
             unknown_type = 'output';
         } else {
             unknown_type = 'state';
         }
-        valueString = comps[i].unknowns[j].value;
+        valueString = unknowns[j].value;
         if (valueString.indexOf('.') === -1)
             valueString += '.0';
 -%>
-        self.add_<%= unknown_type %>('<%= comps[i].unknowns[j].name %>', val=<%= comps[i].unknowns[j].value %>)
+        self.add_<%= unknown_type %>('<%= unknowns[j].name %>', val=<%= unknowns[j].value %>)
 <%
     }
 -%>
 <%
     // Generate statement configuring force_fd
-    if (comps[i].force_fd === true) {
+    if (force_fd === true) {
 -%>
-        # self.fd_options['force_fd'] = True            # For openmdao v1.5.0
         self.deriv_options['type'] = 'fd'
 <%
     }
@@ -51,27 +49,27 @@ class <%= comps[i].name %>(Component):
         # Assigning shorthand(s) to the parameter(s)
 <%
     // Generate statements for dummy implementation of the method
-    for (var j = 0; j < comps[i].parameters.length; j++) {
+    for (var j = 0; j < parameters.length; j++) {
 -%>
-        <%= comps[i].parameters[j].name %> = params['<%= comps[i].parameters[j].name %>']
+        <%= parameters[j].name %> = params['<%= parameters[j].name %>']
 <%
     }
 -%>
 
 <%
     // Generate statements to give explicit equation between output(s) and input(s)
-    if (comps[i].outputFunction === '') {
+    if (outputFunction === '') {
         // Print the dummy code snippet if the user hasn't given one
         var dummyStatement = '';
-        for (var j = 0; j < comps[i].parameters.length; j++) {
-            dummyStatement += comps[i].parameters[j].name;
-            if (j != comps[i].parameters.length - 1)
+        for (var j = 0; j < parameters.length; j++) {
+            dummyStatement += parameters[j].name;
+            if (j != parameters.length - 1)
                 dummyStatement += ' + ';
         }
-        for (var j = 0; j < comps[i].unknowns.length; j++) {
+        for (var j = 0; j < unknowns.length; j++) {
 -%>
-        # Dummy function for the unknown <%= comps[i].unknowns[j].name %>
-        <%= comps[i].unknowns[j].name %> = <%= dummyStatement %>
+        # Dummy function for the unknown <%= unknowns[j].name %>
+        <%= unknowns[j].name %> = <%= dummyStatement %>
 <%
         }
     } else {
@@ -79,7 +77,7 @@ class <%= comps[i].name %>(Component):
         # This code snippet is defined by user using the embedded code editor in MOCA
 <%
         // Print the user defined code snippet
-        var eqnLines = comps[i].outputFunction.split("\n");
+        var eqnLines = outputFunction.split("\n");
         for (var j = 0; j < eqnLines.length; j++) {
             if (eqnLines[j] !== '') {
 -%>
@@ -92,15 +90,15 @@ class <%= comps[i].name %>(Component):
 
         # Assign the value(s) to unknown(s)
 <%
-    for (var j = 0; j < comps[i].unknowns.length; j++) {
+    for (var j = 0; j < unknowns.length; j++) {
 -%>
-        unknowns['<%= comps[i].unknowns[j].name %>'] = <%= comps[i].unknowns[j].name %>
+        unknowns['<%= unknowns[j].name %>'] = <%= unknowns[j].name %>
 <%
     }
 -%>
 <%
     // If the component is implicit, generate code for apply_nonlinear()
-    if (comps[i].type === 'Implicit') {
+    if (type === 'Implicit') {
         // TODO: Generate statements giving the values for residuals
 -%>
 
@@ -111,7 +109,7 @@ class <%= comps[i].name %>(Component):
 -%>
 <%
     // If the force_fd is set to false, generate code for linearize()
-    if (comps[i].force_fd === false) {
+    if (force_fd === false) {
 -%>
 
     def linearize(self, params, unknowns, resids):
@@ -120,9 +118,9 @@ class <%= comps[i].name %>(Component):
         # Assigning shorthand(s) to the parameter(s)
 <%
         // Generate statements for dummy implementation of the method
-        for (var j = 0; j < comps[i].parameters.length; j++) {
+        for (var j = 0; j < parameters.length; j++) {
 -%>
-        <%= comps[i].parameters[j].name %> = params['<%= comps[i].parameters[j].name %>']
+        <%= parameters[j].name %> = params['<%= parameters[j].name %>']
 <%
         }
 -%>
@@ -130,7 +128,7 @@ class <%= comps[i].name %>(Component):
         # This jecobian is defined by user using the embedded code editor in MOCA
 <%
         // Print the user defined code snippet
-        var jecobianLines = comps[i].jacobian.split("\n");
+        var jecobianLines = jacobian.split("\n");
         for (var j = 0; j < jecobianLines.length; j++) {
             if (jecobianLines[j] !== '') {
 -%>
@@ -144,8 +142,4 @@ class <%= comps[i].name %>(Component):
         return J
 <%
     }
--%>
-
-<%
-}
 -%>
