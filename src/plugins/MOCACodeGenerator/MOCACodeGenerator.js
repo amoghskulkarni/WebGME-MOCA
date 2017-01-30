@@ -879,7 +879,7 @@ define([
                 // For every component, one file
                 for (var i = 0; i < dataModel.groups.length; i++) {
                     genFileName = 'MOCA_GeneratedCode/lib/moca_groups/' + dataModel.groups[i].name + '.py';
-                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], {groups: [dataModel.groups[i]]});
+                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.groups[i]);
                 }
             } else if (fileInfo.name === 'problems') {
                 // If the filename is "problem" - use the template for problems
