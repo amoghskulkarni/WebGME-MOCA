@@ -1,0 +1,17 @@
+To launch from the command line
+-------------------------------
+configurable-http-proxy --default-target=http://localhost:8888 --port 80 --api-port 8889
+
+
+
+GET example:
+-----------
+curl -X GET --header 'Accept: application/json' 'http://localhost:8889/api/routes/'
+
+DELETE example:
+---------------
+curl -X DELETE --header 'Accept: application/json' 'http://localhost:8889/api/routes/ipython'
+
+POST example:
+------------
+curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{ "target": "http://localhost:9000" }' 'http://localhost:8889/api/routes/ipython'

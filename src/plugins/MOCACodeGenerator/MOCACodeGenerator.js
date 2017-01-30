@@ -866,9 +866,21 @@ define([
             genFileName = "";
 
         self.FILES.forEach(function (fileInfo) {
-            if (fileInfo.name === 'components' || fileInfo.name === 'groups') {
-                genFileName = 'MOCA_GeneratedCode/lib/' + fileInfo.name + '.py';
-                filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel);
+            if (fileInfo.name === 'components') {
+                // genFileName = 'MOCA_GeneratedCode/lib/' + fileInfo.name + '.py';
+                // filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel);
+
+                // For every component, one file
+                for (var i = 0; i < dataModel.comps.length; i++) {
+                    genFileName = 'MOCA_GeneratedCode/lib/moca_components/' + dataModel.comps[i].name + '.py';
+                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], {comps: [dataModel.comps[i]]});
+                }
+            } else if (fileInfo.name === 'groups') {
+                // For every component, one file
+                for (var i = 0; i < dataModel.groups.length; i++) {
+                    genFileName = 'MOCA_GeneratedCode/lib/moca_groups/' + dataModel.groups[i].name + '.py';
+                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], {groups: [dataModel.groups[i]]});
+                }
             } else if (fileInfo.name === 'problems') {
                 // If the filename is "problem" - use the template for problems
                 // additionally generate .bat file for that as well
@@ -894,7 +906,7 @@ define([
         });
 
         // Create __init__.py file in the lib, src and util directories each
-        var subdirectories = ['lib', 'src', 'utils'];
+        var subdirectories = ['lib', 'lib/moca_components', 'lib/moca_groups', 'src', 'utils'];
         for (var i = 0; i < subdirectories.length; i++) {
             var initFileName = 'MOCA_GeneratedCode/' + subdirectories[i] + '/__init__.py';
             filesToAdd[initFileName] = '# A boilerplate file to enable this directory to be imported as a module';

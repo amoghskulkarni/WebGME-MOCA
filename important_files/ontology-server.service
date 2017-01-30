@@ -1,0 +1,21 @@
+[Unit]
+Description=Ontology Server for MOCA
+#Requires mongodb service to be run first
+Requires=webgme.service
+Wants=webgme.service
+After=webgme.service
+
+[Service]
+ExecStart=/usr/bin/node /isis/home/kulkaras/OntologyServer-MOCA-2/bin/www
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=ontology-moca-service
+User=kulkaras
+#Group=root
+Environment=PORT=8890
+
+[Install]
+WantedBy=multi-user.target
+
