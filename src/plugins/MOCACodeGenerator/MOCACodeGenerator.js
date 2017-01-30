@@ -799,7 +799,7 @@ define([
 
         var userid = this.projectId.split('+')[0],
             baseDir = path.join('..', 'WebGME-MOCA-2_data', 'notebooks', userid, this.projectName),
-            internalDirs = ['lib', 'src', 'utils', 'out'],
+            internalDirs = ['lib', 'lib/moca_components', 'lib/moca_groups', 'src', 'utils', 'out'],
             genFileName = "";
 
         var saveFileToPath = function (fileAbsPath, text) {
@@ -828,9 +828,18 @@ define([
         });
 
         self.FILES.forEach(function (fileInfo) {
-            if (fileInfo.name === 'components' || fileInfo.name === 'groups') {
-                genFileName = path.join(baseDir, 'lib', fileInfo.name + '.py');
-                saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel));
+            if (fileInfo.name === 'components') {
+                // For every component, one file
+                for (var i = 0; i < dataModel.comps.length; i++) {
+                    genFileName = path.join(baseDir, 'lib', 'moca_components', dataModel.comps[i].name + '.py');
+                    saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.comps[i]));
+                }
+            } else if (fileInfo.name === 'groups') {
+                // For every group, one file
+                for (var i = 0; i < dataModel.comps.length; i++) {
+                    genFileName = path.join(baseDir, 'lib', 'moca_groups', dataModel.groups[i].name + '.py');
+                    saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.groups[i]));
+                }
             } else if (fileInfo.name === 'problems') {
                 // If the filename is "problem" - use the template for problems
                 // additionally generate .bat file for that as well
@@ -867,9 +876,6 @@ define([
 
         self.FILES.forEach(function (fileInfo) {
             if (fileInfo.name === 'components') {
-                // genFileName = 'MOCA_GeneratedCode/lib/' + fileInfo.name + '.py';
-                // filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel);
-
                 // For every component, one file
                 for (var i = 0; i < dataModel.comps.length; i++) {
                     genFileName = 'MOCA_GeneratedCode/lib/moca_components/' + dataModel.comps[i].name + '.py';
