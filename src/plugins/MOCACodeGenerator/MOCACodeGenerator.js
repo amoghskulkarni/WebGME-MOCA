@@ -836,7 +836,7 @@ define([
                 }
             } else if (fileInfo.name === 'groups') {
                 // For every group, one file
-                for (var i = 0; i < dataModel.comps.length; i++) {
+                for (var i = 0; i < dataModel.groups.length; i++) {
                     genFileName = path.join(baseDir, 'lib', 'moca_groups', dataModel.groups[i].name + '.py');
                     saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.groups[i]));
                 }
