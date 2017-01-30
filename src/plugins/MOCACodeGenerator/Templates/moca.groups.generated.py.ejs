@@ -2,7 +2,13 @@
 
 # Static imports
 from openmdao.api import Group
-import components
+<%
+for (var i = 0; i < groups[0].compInstances.length; i++) {
+-%>
+from ..moca_components.<%= groups[0].compInstances[i].base %> import <%= groups[0].compInstances[i].base %>
+<%
+}
+-%>
 import sys
 
 # Dynamic imports
@@ -40,7 +46,7 @@ class <%= groups[i].name %>(Group):
                 promotesString += ', ';
         }
 -%>
-        self.add('<%= groups[i].compInstances[j].name %>', components.<%= groups[i].compInstances[j].base %>(), promotes=[<%- promotesString %>])
+        self.add('<%= groups[i].compInstances[j].name %>', <%= groups[i].compInstances[j].base %>(), promotes=[<%- promotesString %>])
 <%
     }
 -%>
