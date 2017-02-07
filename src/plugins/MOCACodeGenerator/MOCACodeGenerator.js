@@ -799,7 +799,10 @@ define([
 
         var userid = this.projectId.split('+')[0],
             baseDir = path.join('..', 'WebGME-MOCA-2_data', 'notebooks', userid, this.projectName),
-            internalDirs = ['lib', 'src', 'utils', 'out'],
+            internalDirs = ['lib', 'lib/moca_components', 'lib/moca_groups',
+              'src',
+              'utils',  'utils/moca_plotutils',
+              'out'],
             genFileName = "";
 
         var saveFileToPath = function (fileAbsPath, text) {
@@ -828,9 +831,18 @@ define([
         });
 
         self.FILES.forEach(function (fileInfo) {
-            if (fileInfo.name === 'components' || fileInfo.name === 'groups') {
-                genFileName = path.join(baseDir, 'lib', fileInfo.name + '.py');
-                saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel));
+            if (fileInfo.name === 'components') {
+                // For every component, one file
+                for (var i = 0; i < dataModel.comps.length; i++) {
+                    genFileName = path.join(baseDir, 'lib', 'moca_components', dataModel.comps[i].name + '.py');
+                    saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.comps[i]));
+                }
+            } else if (fileInfo.name === 'groups') {
+                // For every group, one file
+                for (var i = 0; i < dataModel.groups.length; i++) {
+                    genFileName = path.join(baseDir, 'lib', 'moca_groups', dataModel.groups[i].name + '.py');
+                    saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.groups[i]));
+                }
             } else if (fileInfo.name === 'problems') {
                 // If the filename is "problem" - use the template for problems
                 // additionally generate .bat file for that as well
@@ -850,8 +862,10 @@ define([
                 // If the filename is plotting utilities - use the template for utilities
                 // Template for utilities is not required to be populated with
                 // Application specific data
-                genFileName = path.join(baseDir, 'utils', 'MOCAplotutils.py');
-                saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel));
+                for (var i = 0; i < dataModel.problems.length; i++) {
+                    genFileName = path.join(baseDir, 'utils', 'moca_plotutils', dataModel.problems[i].name + '_plotutils.py');
+                    saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]));
+                }
             }
         });
 
@@ -867,19 +881,16 @@ define([
 
         self.FILES.forEach(function (fileInfo) {
             if (fileInfo.name === 'components') {
-                // genFileName = 'MOCA_GeneratedCode/lib/' + fileInfo.name + '.py';
-                // filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel);
-
                 // For every component, one file
                 for (var i = 0; i < dataModel.comps.length; i++) {
                     genFileName = 'MOCA_GeneratedCode/lib/moca_components/' + dataModel.comps[i].name + '.py';
-                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], {comps: [dataModel.comps[i]]});
+                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.comps[i]);
                 }
             } else if (fileInfo.name === 'groups') {
-                // For every component, one file
+                // For every group, one file
                 for (var i = 0; i < dataModel.groups.length; i++) {
                     genFileName = 'MOCA_GeneratedCode/lib/moca_groups/' + dataModel.groups[i].name + '.py';
-                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], {groups: [dataModel.groups[i]]});
+                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.groups[i]);
                 }
             } else if (fileInfo.name === 'problems') {
                 // If the filename is "problem" - use the template for problems
@@ -900,13 +911,16 @@ define([
                 // If the filename is plotting utilities - use the template for utilities
                 // Template for utilities is not required to be populated with
                 // Application specific data
-                genFileName = 'MOCA_GeneratedCode/utils/MOCAplotutils.py';
-                filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel);
+                // For each problem, a separate file
+                for (var i = 0; i < dataModel.problems.length; i++) {
+                    genFileName = 'MOCA_GeneratedCode/utils/moca_plotutils/' + dataModel.problems[i].name + '_plotutils.py';
+                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]);
+                }
             }
         });
 
         // Create __init__.py file in the lib, src and util directories each
-        var subdirectories = ['lib', 'lib/moca_components', 'lib/moca_groups', 'src', 'utils'];
+        var subdirectories = ['lib', 'lib/moca_components', 'lib/moca_groups', 'src', 'utils', 'utils/moca_plotutils'];
         for (var i = 0; i < subdirectories.length; i++) {
             var initFileName = 'MOCA_GeneratedCode/' + subdirectories[i] + '/__init__.py';
             filesToAdd[initFileName] = '# A boilerplate file to enable this directory to be imported as a module';
