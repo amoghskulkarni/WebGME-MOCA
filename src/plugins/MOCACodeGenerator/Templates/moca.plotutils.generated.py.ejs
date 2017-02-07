@@ -2,8 +2,9 @@ __author__ = 'Amogh'
 __doc__ = 'The utility class defined in this file gives the methods to plot' \
           'the data points saved in the list on 2D and 3D plots.'
 
-from bokeh.models import ColumnDataSource, HoverTool
-from bokeh.plotting import figure, show, output_notebook
+from bokeh.models import HoverTool
+from bokeh.plotting import figure
+from bokeh.io import show, output_notebook, push_notebook
 
 from ipywidgets import interact
 import ipywidgets as widgets
@@ -62,10 +63,9 @@ class <%= name %>_PlotUtils:
         y_axis_values = self.<%= records[0].connection[0].srcParent %>_<%= records[0].connection[0].src %>__values
 
         # bokeh config
-        self.source = ColumnDataSource(data=dict(x=x_axis_values, y=y_axis_values))
         self.p = figure(title='<%= name %>')
         self.p.add_tools(HoverTool())
-        self.p.circle(x_axis_values, y_axis_values, size=3, source=self.source, alpha=0.5)
+        self.r = self.p.circle(x_axis_values, y_axis_values, size=3, alpha=0.5)
 <%
     var slider_desvars = [];
     for (var j = 0; j < desvars.length; j++) {
@@ -166,12 +166,12 @@ class <%= name %>_PlotUtils:
             x_vals = list(x_vals[i] for i in indices)
             y_vals = list(y_vals[i] for i in indices)
 
-        self.source.data['x'] = x_vals
-        self.source.data['y'] = y_vals
-        self.source.push_notebook()
+        self.r.data_source.data['x'] = x_vals
+        self.r.data_source.data['y'] = y_vals
+        push_notebook()
 
     def plot (self):
-        show(self.p)
+        self.handle = show(self.p, notebook_handle=True)
 <%
     var options_string = "";
     for (var j = 0; j < records.length; j++) {
