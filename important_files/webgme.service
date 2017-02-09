@@ -16,7 +16,7 @@ Wants=mongod.service
 After=mongod.service
 
 [Service]
-ExecStart=/usr/bin/node /isis/home/kulkaras/WebGME-MOCA-2/app.js
+ExecStart=/usr/bin/node /isis/home/kulkaras/WebGME-MOCA/app.js
 Restart=always
 RestartSec=10
 StandardOutput=syslog

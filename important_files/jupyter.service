@@ -1,13 +1,3 @@
-# This file goes into /etc/systemd/system directory
-# After being placed, it needs to be enabled and registered as a startup service
-# For this, following commands are used as root -
-# $ systemctl daemon-reload
-# $ systemctl enable <service name>
-# $ systemctl start <service name>
-# Then use 'sudo service <service name> start/stop/restart/status' to do the respective actions
-
-# This includes the configuration for jupyter service
-
 [Unit]
 Description=Jupyter Notebook Service for MOCA
 
@@ -17,7 +7,7 @@ Environment=JUPYTER_CONFIG_DIR=/isis/home/kulkaras/.jupyter
 ExecStart=/home/anaconda2/bin/jupyter-notebook --port=9000
 User=root
 Group=root
-WorkingDirectory=/isis/home/kulkaras
+WorkingDirectory=/isis/home/kulkaras/WebGME-MOCA_data/notebooks
 
 [Install]
 WantedBy=multi-user.target

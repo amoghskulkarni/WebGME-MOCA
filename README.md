@@ -1,4 +1,4 @@
-# WebGME-MOCA-2
+# WebGME-MOCA
 Modeling language for OpenMDAO using WebGME
 
 MOCA (stands for "MOdel Composition and Analysis") is a modeling language for modeling optimization problems and running analysis on them. 
