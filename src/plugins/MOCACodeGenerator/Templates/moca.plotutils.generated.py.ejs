@@ -88,7 +88,7 @@ class <%= name %>_PlotUtils:
         # bokeh config
         self.p = figure(title='<%= name %>')
         self.p.add_tools(HoverTool())
-        self.r = self.p.circle(x_axis_values, y_axis_values, size=3, alpha=0.5)
+        self.base_scatter = self.p.circle(x_axis_values, y_axis_values, size=3, alpha=0.5)
 <%
     var slider_desvars = [];
     for (var j = 0; j < desvars.length; j++) {
@@ -125,8 +125,8 @@ class <%= name %>_PlotUtils:
     }
 -%>
 
-        self.r.data_source.data['x'] = sliced_df[x]
-        self.r.data_source.data['y'] = sliced_df[y]
+        self.base_scatter.data_source.data['x'] = sliced_df[x]
+        self.base_scatter.data_source.data['y'] = sliced_df[y]
         push_notebook()
 
     def plot (self):
