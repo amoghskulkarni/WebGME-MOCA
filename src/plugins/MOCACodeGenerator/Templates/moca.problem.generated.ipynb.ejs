@@ -230,7 +230,7 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
    "source": [
       "from utils.MOCAparseutils import SqliteParseUtils\n"
       ,"from utils.moca_plotutils.<%= name %>_plotutils import <%= name %>_PlotUtils\n"
-      ,"plotutils = <%= name %>_PlotUtils(SqliteParseUtils(top))"
+      ,"plotutils = <%= name %>_PlotUtils(SqliteParseUtils(top))\n"
       ,"plotutils.plot()"
    ]
   }
