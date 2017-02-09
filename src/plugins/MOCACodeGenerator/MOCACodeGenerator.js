@@ -798,7 +798,7 @@ define([
             self = this;
 
         var userid = this.projectId.split('+')[0],
-            baseDir = path.join('..', 'WebGME-MOCA-2_data', 'notebooks', userid, this.projectName),
+            baseDir = path.join('..', 'WebGME-MOCA_data', 'notebooks', userid, this.projectName),
             internalDirs = ['lib', 'lib/moca_components', 'lib/moca_groups',
               'src',
               'utils',  'utils/moca_plotutils',
