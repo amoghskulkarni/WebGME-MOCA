@@ -6,6 +6,11 @@ from bokeh.models import HoverTool
 from bokeh.plotting import figure
 from bokeh.io import show, output_notebook, push_notebook
 
+from pandas import DataFrame
+from numpy import isclose
+
+from copy import deepcopy
+
 from ipywidgets import interact
 import ipywidgets as widgets
 
@@ -15,13 +20,13 @@ if (driver === 'FullFactorialDOE') {
 
 class <%= name %>_PlotUtils:
     def __init__(self, parseutils):
-        self.timestamps = parseutils.getTimestampValues()
+        timestamps = parseutils.getTimestampValues()
 <%
     // generate __values statements for all the records connected to Unknowns only
     for (var j = 0; j < records.length; j++) {
         if (records[j].type === "Unknown") {
 -%>
-        self.<%= records[j].connection[0].srcParent %>_<%= records[j].connection[0].src %>__values = parseutils.getUnknownValues('<%= records[j].connection[0].srcParent %>.<%= records[j].connection[0].src %>')
+        <%= records[j].connection[0].srcParent %>_<%= records[j].connection[0].src %>__values = parseutils.getUnknownValues('<%= records[j].connection[0].srcParent %>.<%= records[j].connection[0].src %>')
 <%
         }
     }
@@ -30,16 +35,34 @@ class <%= name %>_PlotUtils:
     // Since, all IndepVarComps' outputs are Unknowns, we are using getUnknownValues
     for (var j = 0; j < desvars.length; j++) {
 -%>
-        self.<%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values = parseutils.getUnknownValues('<%= desvars[j].name %>.<%= desvars[j].connection[0].dst %>')
+        <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values = parseutils.getUnknownValues('<%= desvars[j].name %>.<%= desvars[j].connection[0].dst %>')
 <%
     }
 -%>
+
+        # Dataframe construction
+        self.df = DataFrame({'timestamps': timestamps,
+<%
+    for (var j = 0; j < desvars.length; j++) {
+-%>
+                             '<%= desvars[j].connection[0].dstParent %>.<%= desvars[j].connection[0].dst %>': <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values,
+<%
+    }
+    for (var j = 0; j < records.length-1; j++) {
+        if (records[j].type === "Unknown") {
+-%>
+                             '<%= records[j].connection[0].srcParent %>.<%= records[j].connection[0].src %>':  <%= records[j].connection[0].srcParent %>_<%= records[j].connection[0].src %>__values,
+<%
+        }
+    }
+-%>
+                             '<%= records[records.length-1].connection[0].srcParent %>.<%= records[records.length-1].connection[0].src %>':  <%= records[records.length-1].connection[0].srcParent %>_<%= records[records.length-1].connection[0].src %>__values })
         # step calculation
 <%
     for (var j = 0; j < desvars.length; j++) {
         if (desvars[j].setByDriver) {
 -%>
-        <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values__sorted = sorted(self.<%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values)
+        <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values__sorted = sorted(<%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values)
         self.<%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__step = <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values__sorted[<%= doeSamples %>] - <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values__sorted[0]
 <%
         }
@@ -54,13 +77,13 @@ class <%= name %>_PlotUtils:
     for (var j = 0; j < desvars.length; j++) {
         if (desvars[j].setByDriver) {
 -%>
-        x_axis_values = self.<%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values
+        x_axis_values = <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values
 <%
             break;
         }
     }
 -%>
-        y_axis_values = self.<%= records[0].connection[0].srcParent %>_<%= records[0].connection[0].src %>__values
+        y_axis_values = <%= records[0].connection[0].srcParent %>_<%= records[0].connection[0].src %>__values
 
         # bokeh config
         self.p = figure(title='<%= name %>')
@@ -90,110 +113,48 @@ class <%= name %>_PlotUtils:
 -%>
 
     def update(self, x, y, <%= desvar_function_signature_string %>):
-        lists_of_indices = []
-        indices = []
-        x_vals = []
-        y_vals = []
-<%
-    for (var j = 0; j < slider_desvars.length; j++) {
--%>
-        <%= slider_desvars[j].dst %>_indices = []
-<%
-    }
--%>
-
+        sliced_df = deepcopy(self.df)
 <%
     // These two statements are for each slider_desvar, which check tick-box for it
     for (var j = 0; j < slider_desvars.length; j++) {
 -%>
+
         if not <%= slider_desvars[j].dst %>_all:
-            <%= slider_desvars[j].dst %>_indices = [i<%= j %> for i<%= j %>, j<%= j %> in enumerate(self.<%= slider_desvars[j].dstParent %>_<%= slider_desvars[j].dst %>__values) if abs(j<%= j %> - <%= slider_desvars[j].dst %>_slider) < 0.00001]
+            sliced_df = sliced_df.loc[isclose(sliced_df['<%= slider_desvars[j].dstParent %>.<%= slider_desvars[j].dst %>'], <%= slider_desvars[j].dst %>_slider)]
 <%
     }
 -%>
 
-<%
-    // This string is for for including non-self desvars in list_of_indices
-    var slider_desvars_list_string = "";
-    for (var j = 0; j < slider_desvars.length; j++) {
-        slider_desvars_list_string += (slider_desvars[j].dst + "_indices");
-        if (j < slider_desvars.length - 1) {
-            slider_desvars_list_string += ", ";
-        }
-    }
-    var x_and_y = ['x', 'y'];
-    for (var k = 0; k < x_and_y.length; k++) {
-        var xy = x_and_y[k];
-        for (var j = 0; j < records.length; j++) {
--%>
-        if <%= xy %> == '<%= records[j].connection[0].srcParent %>.<%= records[j].connection[0].src %>':
-            <%= xy %>_vals = self.<%= records[j].connection[0].srcParent %>_<%= records[j].connection[0].src %>__values
-            lists_of_indices = [<%= slider_desvars_list_string %>]
-<%
-    }
--%>
-<%
-        for (var j = 0; j < slider_desvars.length; j++) {
-            // This string is for for including non-self desvars in list_of_indices
-            var non_self_string = "";
-            for (var m = 0; m < slider_desvars.length; m++) {
-                if (j != m) {
-                    non_self_string += (slider_desvars[m].dst + "_indices");
-                    if (m < slider_desvars.length - 1) {
-                        non_self_string += ", ";
-                    }
-                }
-            }
--%>
-        if <%= xy %> == '<%= slider_desvars[j].dstParent %>.<%= slider_desvars[j].dst %>':
-            <%= xy %>_vals = self.<%= slider_desvars[j].dstParent %>_<%= slider_desvars[j].dst %>__values
-            lists_of_indices = [<%= non_self_string %>]
-<%
-        }
--%>
-
-        for index_list in lists_of_indices:
-            if index_list != []:
-                if indices != []:
-                    indices = list(set(indices).intersection(set(index_list)))
-                else:
-                    indices = index_list
-
-<%
-    }
--%>
-        if indices != []:
-            x_vals = list(x_vals[i] for i in indices)
-            y_vals = list(y_vals[i] for i in indices)
-
-        self.r.data_source.data['x'] = x_vals
-        self.r.data_source.data['y'] = y_vals
+        self.r.data_source.data['x'] = sliced_df[x]
+        self.r.data_source.data['y'] = sliced_df[y]
         push_notebook()
 
     def plot (self):
         self.handle = show(self.p, notebook_handle=True)
 <%
-    var options_string = "";
+    var domain_options_string = "";
+    var range_options_string = "";
     for (var j = 0; j < records.length; j++) {
-        var substring = "'" + records[j].connection[0].srcParent + '.' + records[j].connection[0].src + "'";
-        options_string += substring;
-        options_string += ", ";
+        range_options_string += "'" + records[j].connection[0].srcParent + '.' + records[j].connection[0].src + "'";
+        if (j < records.length - 1) {
+            range_options_string += ", ";
+        }
     }
 
     for (var j = 0; j < slider_desvars.length; j++) {
-        var substring = "'" + slider_desvars[j].dstParent + '.' + slider_desvars[j].dst + "'";
-        options_string += substring;
+        domain_options_string += "'" + slider_desvars[j].dstParent + '.' + slider_desvars[j].dst + "'";
         if (j < slider_desvars.length - 1) {
-            options_string += ", ";
+            domain_options_string += ", ";
         }
     }
 -%>
 
     def show_widgets(self):
-        options = [<%- options_string %>]
+        domain_options = [<%- domain_options_string %>]
+        range_options = [<%- range_options_string %>]
         interact(self.update,
-            x=widgets.Dropdown(options=options,value=options[0],description='domain'),
-            y=widgets.Dropdown(options=options,value=options[1],description='range'),
+            x=widgets.Dropdown(options=domain_options, value=domain_options[0], description='Domain (X-axis)'),
+            y=widgets.Dropdown(options=range_options, value=range_options[0], description='Range (Y-axis)'),
 <%
     for (var j = 0; j < slider_desvars.length; j++) {
         var trailing_character;
@@ -202,8 +163,8 @@ class <%= name %>_PlotUtils:
         else
             trailing_character = ")";
 -%>
-            <%= slider_desvars[j].dst %>_slider=widgets.FloatSlider(value=<%= slider_desvars[j].value %>, min=<%= slider_desvars[j].lower %>, max=<%= slider_desvars[j].upper %>, step=self.<%= slider_desvars[j].dstParent %>_<%= slider_desvars[j].dst %>__step, description='<%= slider_desvars[j].dstParent %>.<%= slider_desvars[j].dst %>'),
-            <%= slider_desvars[j].dst %>_all=widgets.Checkbox(description='<%= slider_desvars[j].dstParent %>.<%= slider_desvars[j].dst %> (all values)', value=True)<%= trailing_character %>
+            <%= slider_desvars[j].dst %>_slider = widgets.FloatSlider(value=<%= slider_desvars[j].value %>, min=<%= slider_desvars[j].lower %>, max=<%= slider_desvars[j].upper %>, step=self.<%= slider_desvars[j].dstParent %>_<%= slider_desvars[j].dst %>__step, description='<%= slider_desvars[j].dstParent %>.<%= slider_desvars[j].dst %>'),
+            <%= slider_desvars[j].dst %>_all = widgets.Checkbox(description='<%= slider_desvars[j].dstParent %>.<%= slider_desvars[j].dst %> (all values)', value=True)<%= trailing_character %>
 <%
     }
 }
