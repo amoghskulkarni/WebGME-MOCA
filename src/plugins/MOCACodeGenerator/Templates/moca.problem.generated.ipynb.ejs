@@ -231,8 +231,25 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
       "from utils.MOCAparseutils import SqliteParseUtils\n"
       ,"from utils.moca_plotutils.<%= name %>_plotutils import <%= name %>_PlotUtils\n"
       ,"plotutils = <%= name %>_PlotUtils(SqliteParseUtils(top))\n"
-      ,"plotutils.plot()\n"
-      ,"plotutils.show_widgets()"
+      ,"plotutils.plot()"
+   ]
+  }
+  ,{
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+      "Use widgets to interact with the plot.\n"
+   ]
+  }
+  ,{
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+      "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+      "plotutils.show_widgets()"
    ]
   }
 <%
