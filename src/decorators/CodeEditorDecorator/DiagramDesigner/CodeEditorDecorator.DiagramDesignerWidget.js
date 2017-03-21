@@ -4,12 +4,14 @@
 define([
     'js/RegistryKeys',
     'js/Constants',
+    'js/Utils/GMEConcepts',
     './CodeEditorDialog',
     './GraphBrowserDialog',
     'decorators/ModelDecorator/DiagramDesigner/ModelDecorator.DiagramDesignerWidget'
   ], function (
     REGISTRY_KEYS,
     CONSTANTS,
+    GMEConcepts,
     CodeEditorDialog,
     GraphBrowserDialog,
     ModelDecoratorDiagramDesignerWidget) {
@@ -164,30 +166,68 @@ define([
         var self = this,
             client = this._control._client,
             nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
-        //try {
-        //    var metaTypeNodeObj = client.getNode(nodeObj.getMetaTypeId());
-        //} catch (e) {
-        //    self.logger.error("...");
-        //}
-        //if (metaTypeNodeObj.getAttribute('name') === 'Component') {
-        //    this._skinParts.$EqnEditorBtn.off('click');
-        //    this._skinParts.$JacobianEditorBtn.off('click');
-        //}
-        //this._skinParts.$OntologyBrowserBtn.off('click');
         ModelDecoratorDiagramDesignerWidget.prototype.destroy.apply(this, arguments);
     };
 
-    //CodeEditorDecorator.prototype.update = function () {
-    //    var client = this._control._client,
-    //        nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]),
-    //        newDoc = '';
+    // CodeEditorDecorator.prototype.getTerritoryQuery = function () {
+    //     var territoryRule = {},
+    //         gmeID = this._metaInfo[CONSTANTS.GME_ID],
+    //         client = this._control._client,
+    //         nodeObj =  client.getNode(gmeID),
+    //         hasAspect = this._aspect && this._aspect !== CONSTANTS.ASPECT_ALL && nodeObj &&
+    //             nodeObj.getValidAspectNames().indexOf(this._aspect) !== -1;
     //
-    //    ModelDecoratorDiagramDesignerWidget.prototype.update.apply(this, arguments);
+    //     if (hasAspect) {
+    //         territoryRule[gmeID] = client.getAspectTerritoryPattern(gmeID, this._aspect);
+    //         territoryRule[gmeID].children = 1;
+    //     } else {
+    //         territoryRule[gmeID] = {children: 2};
+    //     }
     //
-    //    if (nodeObj) {
-    //        newDoc = nodeObj.getAttribute('OutputFunction') || '';
-    //    }
-    //};
+    //     return territoryRule;
+    // };
+    //
+    // CodeEditorDecorator.prototype.getPortIDs = function () {
+    //     var client = this._control._client,
+    //         nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]),
+    //         childrenIDs = [],
+    //         len,
+    //         gmeID = this._metaInfo[CONSTANTS.GME_ID],
+    //         hasAspect = this._aspect && this._aspect !== CONSTANTS.ASPECT_ALL &&
+    //             nodeObj.getValidAspectNames().indexOf(this._aspect) !== -1;
+    //
+    //     if (nodeObj) {
+    //         childrenIDs = nodeObj.getChildrenIds().slice(0);
+    //         len = childrenIDs.length;
+    //         var grandChildrenIDs = [];
+    //         while(len--) {
+    //             var childrenNodeObj = client.getNode(childrenIDs[len]);
+    //             grandChildrenIDs = grandChildrenIDs.concat(childrenNodeObj.getChildrenIds().slice(0));
+    //         }
+    //         childrenIDs = childrenIDs.concat(grandChildrenIDs);
+    //
+    //         //filter out the ones that are not ports
+    //         len = childrenIDs.length;
+    //         while (len--) {
+    //             if (!GMEConcepts.isPort(childrenIDs[len])) {
+    //                 childrenIDs.splice(len, 1);
+    //             }
+    //         }
+    //
+    //         //filter out the ones that are not part of the specified aspect
+    //         if (hasAspect) {
+    //             len = childrenIDs.length;
+    //             while (len--) {
+    //                 if (!GMEConcepts.isValidTypeInAspect(childrenIDs[len], gmeID, this._aspect)) {
+    //                     childrenIDs.splice(len, 1);
+    //                 }
+    //             }
+    //         }
+    //     }
+    //
+    //     return childrenIDs;
+    // };
+
 
     return CodeEditorDecorator;
 });

@@ -4,6 +4,9 @@
     "decorators": {
       "CodeEditorDecorator": {
         "src": "src\\decorators\\CodeEditorDecorator"
+      },
+      "PortExporterDecorator": {
+        "src": "src/decorators/PortExporterDecorator"
       }
     },
     "layouts": {},
