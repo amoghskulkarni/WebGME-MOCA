@@ -25,7 +25,7 @@ config.requirejsPaths = {
   'widgets': './src/visualizers/widgets'
 };
 
-
-config.mongo.uri = 'mongodb://127.0.0.1:27017/WebGME_MOCA';
+// TODO: Fix mongo uri as per the package name which is 'WebGME_MOCA'
+config.mongo.uri = 'mongodb://127.0.0.1:27017/moca_2';
 validateConfig(config);
 module.exports = config;
