@@ -6,16 +6,17 @@
  */
 
 define([
-    'js/Decorators/DecoratorBase',
+    // 'js/Decorators/DecoratorBase',
+    'decorators/ModelDecorator/ModelDecorator',
     './DiagramDesigner/CodeEditorDecorator.DiagramDesignerWidget',
     './PartBrowser/CodeEditorDecorator.PartBrowserWidget'
-], function (DecoratorBase, CodeEditorDecoratorDiagramDesignerWidget, CodeEditorDecoratorPartBrowserWidget) {
+], function (ModelDecorator, CodeEditorDecoratorDiagramDesignerWidget, CodeEditorDecoratorPartBrowserWidget) {
 
     'use strict';
 
     var CodeEditorDecorator,
-        __parent__ = DecoratorBase,
-        __parent_proto__ = DecoratorBase.prototype,
+        __parent__ = ModelDecorator,
+        __parent_proto__ = ModelDecorator.prototype,
         DECORATOR_ID = 'CodeEditorDecorator';
 
     CodeEditorDecorator = function (params) {

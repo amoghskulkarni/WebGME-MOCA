@@ -1,6 +1,6 @@
 {
   "__COMMENT_AMOGH": "Earlier value of the webgme version was ^1.1.0",
-  "name": "WebGME-MOCA",
+  "name": "WebGME_MOCA",
   "scripts": {
     "start": "node app.js",
     "test": "node ./node_modules/mocha/bin/mocha --recursive test",
