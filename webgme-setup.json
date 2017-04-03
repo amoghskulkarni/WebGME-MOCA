@@ -14,6 +14,10 @@
       "MOCACodeGenerator": {
         "src": "src\\plugins\\MOCACodeGenerator",
         "test": "test\\plugins\\MOCACodeGenerator"
+      },
+      "DESCodeGenerator": {
+        "src": "src/plugins/DESCodeGenerator",
+        "test": "test/plugins/DESCodeGenerator"
       }
     },
     "seeds": {},
