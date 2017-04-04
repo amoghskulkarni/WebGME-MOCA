@@ -10,11 +10,19 @@
 define([
     'plugin/PluginConfig',
     'text!./metadata.json',
-    'plugin/PluginBase'
+    'plugin/PluginBase',
+    'common/util/ejs',
+    'common/util/xmljsonconverter',
+    'plugin/MOCACodeGenerator/MOCACodeGenerator/Templates/Templates',
+    'q'
 ], function (
     PluginConfig,
     pluginMetadata,
-    PluginBase) {
+    PluginBase,
+    ejs,
+    Converter,
+    TEMPLATES,
+    Q) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
@@ -30,6 +38,14 @@ define([
         // Call base class' constructor.
         PluginBase.call(this);
         this.pluginMetadata = pluginMetadata;
+
+        this.FILES = [
+            {
+                name: 'simulation',
+                template: 'des.simpymodel.generated.py.ejs',
+                ipynbfile: 'des.simpymodel.generated.ipynb.ejs'
+            }
+        ];
     };
 
     /**
@@ -57,34 +73,54 @@ define([
         // These are all instantiated at this point.
         var self = this,
             nodeObject;
-
-
-        // Using the logger.
-        self.logger.debug('This is a debug message.');
-        self.logger.info('This is an info message.');
-        self.logger.warn('This is a warning message.');
-        self.logger.error('This is an error message.');
-
-        // Using the coreAPI to make changes.
-
         nodeObject = self.activeNode;
 
-        self.core.setAttribute(nodeObject, 'name', 'My new obj');
-        self.core.setRegistry(nodeObject, 'position', {x: 70, y: 70});
+        if (self.core.getParent(nodeObject) === null &&
+            self.core.getAttribute(nodeObject, 'name') !== "ROOT") {
+            callback(new Error('The plugin has to be executed from ROOT.'), self.result);
+            return;
+        }
 
-
-        // This will save the changes. If you don't want to save;
-        // exclude self.save and call callback directly from this scope.
-        self.save('DESCodeGenerator updated model.')
+        self.generateDataModel(nodeObject)
+            .then(function (dataModel) {
+                // Create JSON files for the models only if the plugin is invoked at the ROOT
+                if (self.getMetaType(nodeObject) === null) {
+                    self.logger.info(JSON.stringify(dataModel, null, 4));
+                    return self.generateArtifact('ROOT', dataModel);
+                }
+                else
+                    return self.generateArtifact('Problem', dataModel);
+            })
             .then(function () {
                 self.result.setSuccess(true);
                 callback(null, self.result);
             })
             .catch(function (err) {
-                // Result success is false at invocation.
-                callback(err, self.result);
-            });
+                self.logger.error(err);
+                self.createMessage(null, err.message, 'error');
+                self.result.setSuccess(false);
+                callback(null, self.result);
+            })
+            .done();
 
+    };
+    
+    DESCodeGenerator.prototype.generateDataModel = function (rootNode) {
+        var self = this,
+            dataModel = {
+                simulations: []
+            },
+            simulationLibraryPromises = [];
+
+        // If the code generator is invoked from ROOT
+        if (self.getMetaType(rootNode) === null) {
+            return self.core.loadChildren(rootNode)
+                .then(function (children) {
+                    for (var i = 0; i < children.length; i++) {
+                        // If this is a component
+                    }
+                })
+        }
     };
 
     return DESCodeGenerator;
