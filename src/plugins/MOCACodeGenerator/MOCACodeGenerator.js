@@ -58,6 +58,11 @@ define([
             {
                 name: 'plotting utilities',
                 template: 'moca.plotutils.generated.py.ejs'
+            },
+            {
+                name: 'process flows',
+                templates: 'moca.processflows.generated.py.ejs',
+                ipynbfile: 'moca.processflow.generated.ipynb.ejs'
             }
         ];
     };
@@ -279,7 +284,103 @@ define([
                     return dataModel;
                 })
         }
+        // TODO: If the code generator is invoked from a DES model (i.e. a ProcessFlow)
     };
+
+    /**********************************************************************************************************/
+    /* DES i.e. ProcessFlow interpreter methods */
+    MOCACodeGenerator.prototype.getProcessFlowData = function (processFlowNode) {
+        var self = this,
+            processFlowData = {
+                name: self.core.getAttribute(processFlowNode, 'name'),
+                simend: self.core.getAttribute(processFlowNode, 'SimulationEndTime'),
+                processes: [],
+                buffers: [],
+                connections: []
+            },
+            processPromises = [],
+            bufferPromises = [],
+            connectionPromises = [];
+
+        return self.core.loadChildren(processFlowNode)
+            .then(function(children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
+                    if (childMetaType == 'Process')
+                        processPromises.push(self.getProcessData(children[i]));
+                    else if (childMetaType == 'Buffer')
+                        bufferPromises.push(self.getBufferData(children[i]));
+                    else if (childMetaType == 'ProcToBuffFlow' || childMetaType == 'BuffToProcFlow')
+                        connectionPromises.push(self.getMaterialFlowData(children[i]));
+                }
+
+                return Q.all(processPromises);
+            })
+            .then(function (processesData) {
+                processFlowData.processes = processesData;
+                return Q.all(bufferPromises);
+            })
+            .then(function (buffersData) {
+                processFlowData.buffers = buffersData;
+                return Q.all(connectionPromises);
+            })
+            .then(function (connectionsData) {
+                processFlowData.connections = connectionsData;
+                return processFlowData;
+            });
+    };
+
+
+    MOCACodeGenerator.prototype.getProcessData = function (processNode) {
+        var self = this,
+            processData = {
+                name: self.core.getAttribute(processNode, 'name'),
+                processingTime: self.core.getAttribute(processNode, 'ProcessingTime'),
+                processShiftOffTime: self.core.getAttribute(processNode, 'ProcessOffTime'),
+                processShiftOnTime: self.core.getAttribute(processNode, 'ProcessOnTime')
+            };
+        return processData;
+    };
+
+
+    MOCACodeGenerator.prototype.getBufferData = function (bufferNode) {
+        var self = this,
+            bufferData = {
+                name: self.core.getAttribute(bufferNode, 'name'),
+                size: self.core.getAttribute(bufferNode, 'Size')
+            };
+        return bufferData;
+    };
+
+
+    MOCACodeGenerator.prototype.getMaterialFlowData = function (connectionNode) {
+        var self = this,
+            deferred = Q.defer(),
+            connectionData = {
+                name: self.core.getAttribute(connectionNode, 'name'),
+                src: "",
+                dst: ""
+            };
+
+        self.core.loadPointer(connectionNode, 'src', function (err, srcNode) {
+            if (err) {
+                deferred.reject(new Error(err))
+            } else {
+                connectionData.src = self.core.getAttribute(srcNode, 'name');
+                self.core.loadPointer(connectionNode, 'dst', function (err, dstNode) {
+                    if (err) {
+                        deferred.reject(new Error(err));
+                    } else {
+                        connectionData.dst = self.core.getAttribute(dstNode, 'name');
+                        deferred.resolve(connectionData);
+                    }
+                });
+            }
+        });
+
+        return deferred.promise;
+    };
+     /**********************************************************************************************************/
 
 
     // This is a recursive function which goes through a group and populates the lists groupPromises and componentPromises
@@ -933,7 +1034,7 @@ define([
                 // additionally generate .bat file for that as well
                 for (var i = 0; i < dataModel.problems.length; i++) {
                     genFileName = 'MOCA_GeneratedCode/src/' + dataModel.problems[i].name + '.py';
-                    var genIpynbFile = 'MOCA_GeneratedCode/' + dataModel.problems[i].name + '.ipynb' ;
+                    var genIpynbFile = 'MOCA_GeneratedCode/' + dataModel.problems[i].name + '.ipynb';
                     filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]);
                     filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.problems[i]);
                 }
@@ -951,6 +1052,13 @@ define([
                 for (var i = 0; i < dataModel.problems.length; i++) {
                     genFileName = 'MOCA_GeneratedCode/utils/moca_plotutils/' + dataModel.problems[i].name + '_plotutils.py';
                     filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]);
+                }
+            } else if (fileInfo.name === 'process flows') {
+                for (var i = 0; i < dataModel.processFlows.length; i++) {
+                    genFileName = 'MOCA_GeneratedCode/src/' + dataModel.processFlows[i].name + '.py';
+                    var genIpynbFile = 'MOCA_GeneratedCode/' + dataModel.processFlows[i].name + '.ipynb';
+                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]);
+                    filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.processFlows[i]);
                 }
             }
         });
