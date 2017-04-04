@@ -1,0 +1,32 @@
+<%= name %>
+    Simulation end time: <%= simend %>
+    Processes
+<%
+for (var i=0, i < processes.length; i++) {
+-%>
+        <%= processes[i].name%>
+            Processing time: <%= processes[i].processingTime %>
+            Process shift OFF time: <%= processes[i].processShiftOffTime %>
+            Process shift ON time: <%= processes[i].processShiftOnTime %>
+<%
+}
+-%>
+    Buffers
+<%
+for (var i=0, i < buffers.length; i++) {
+-%>
+        <%= buffers[i].name%>
+            Size: <%= buffers[i].size %>
+<%
+}
+-%>
+    Connections
+<%
+for (var i=0; i < connections.length; i++) {
+-%>
+        <%= connections[i].name %>
+            Source: <%= connections[i].src %>
+            Destination: <%= connections[i].dst %>
+<%
+}
+-%>

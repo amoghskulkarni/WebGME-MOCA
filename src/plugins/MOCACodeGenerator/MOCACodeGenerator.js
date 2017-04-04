@@ -218,7 +218,7 @@ define([
                     return Q.all(groupLibraryPromises);
                 })
                 .then(function () {
-                    return Q.all(ProblemLibraryPromises);
+                    return Q.all(problemLibraryPromises);
                 })
                 .then(function () {
                     return Q.all(processFlowLibraryPromises);
