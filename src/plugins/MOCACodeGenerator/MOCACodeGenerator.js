@@ -137,12 +137,16 @@ define([
             dataModel = {
                 comps: [],
                 groups: [],
+                processFlows: [],
                 problems: []
             },
             componentLibraryPromises = [],
             groupLibraryPromises = [],
+            processFlowLibraryPromises = [],
+            problemLibraryPromises = [],
             componentPromises = [],
             groupPromises = [],
+            processFlowPromises = [],
             problemPromises = [];
 
         // If the code generator is invoked from ROOT
@@ -154,7 +158,7 @@ define([
                     for (var i = 0; i < children.length; i++) {
                         // If it is ComponentLibrary..
                         if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'ComponentLibrary') {
-                            // Load it's children (use ComponentLibraryPromises for that) and then get their componentData
+                            // Load its children (use ComponentLibraryPromises for that) and then get their componentData
                             componentLibraryPromises.push(self.core.loadChildren(children[i])
                                 .then(function (comps) {
                                     for (var j = 0; j < comps.length; j++) {
@@ -165,7 +169,7 @@ define([
                         }
                         // If it is GroupLibrary..
                         else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'GroupLibrary') {
-                            // Load it's children (use GroupLibraryPromises for that) and then get their groupData
+                            // Load its children (use GroupLibraryPromises for that) and then get their groupData
                             groupLibraryPromises.push(self.core.loadChildren(children[i])
                                 .then(function (groups) {
                                     for (var j = 0; j < groups.length; j++) {
@@ -174,17 +178,45 @@ define([
                                 })
                             );
                         }
-                        // If it is a Problem..
-                        else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Problem') {
-                            // Get its problemData
-                            problemPromises.push(self.getProblemData(children[i]));
+                        // If it is a ProcessFlowLibrary..
+                        else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'ProcessFlowLibrary'){
+                            // Load its children (use ProcessFlowLibraryPromises for that) and then get their ProcessFlowData
+                            processFlowLibraryPromises.push(self.core.loadChildren(children[i])
+                                .then(function (processFlows) {
+                                    for (var j = 0; j < processFlows.length; j++) {
+                                        processFlowPromises.push(self.getProcessFlowData(processFlows[j]));
+                                    }
+                                })
+                            );
                         }
+                        // If it is a ProblemLibrary
+                        else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'ProblemLibrary') {
+                            // Load its children (use ProblemLibraryPromises for that) and then get their ProblemData
+                            problemLibraryPromises.push(self.core.loadChildren(children[i])
+                                .then(function (problems) {
+                                    for (var j = 0; j < problems.length; j++) {
+                                        problemPromises.push(self.getProblemData(children[j]));
+                                    }
+                                })
+                            );
+                        }
+                        // If it is a Problem..
+                        // else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Problem') {
+                        //     // Get its problemData
+                        //     problemPromises.push(self.getProblemData(children[i]));
+                        // }
                     }
 
                     return Q.all(componentLibraryPromises);
                 })
                 .then(function () {
                     return Q.all(groupLibraryPromises);
+                })
+                .then(function () {
+                    return Q.all(ProblemLibraryPromises);
+                })
+                .then(function () {
+                    return Q.all(processFlowLibraryPromises);
                 })
                 .then(function () {
                     return Q.all(componentPromises);
@@ -195,6 +227,10 @@ define([
                 })
                 .then(function (groupsData) {
                     dataModel.groups = groupsData;
+                    return Q.all(processFlowPromises);
+                })
+                .then(function (processFlowsData) {
+                    dataModel.processFlows = processFlowsData;
                     return Q.all(problemPromises);
                 })
                 .then(function (problemsData) {
