@@ -1,10 +1,10 @@
 {
   "id": "DESCodeGenerator",
-  "name": "DES Code Generator",
+  "name": "DESCodeGenerator",
   "version": "0.1.0",
-  "description": "Generates python source code for production flow line models which uses SimPy as a simulation engine.",
+  "description": "",
   "icon": {
-    "class": "glyphicon glyphicon-list-alt",
+    "class": "glyphicon glyphicon-cog",
     "src": ""
   },
   "disableServerSideExecution": false,
