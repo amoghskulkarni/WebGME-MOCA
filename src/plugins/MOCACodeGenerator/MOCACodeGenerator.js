@@ -61,7 +61,7 @@ define([
             },
             {
                 name: 'process flows',
-                templates: 'moca.processflows.generated.py.ejs',
+                template: 'moca.processflows.generated.py.ejs',
                 ipynbfile: 'moca.processflow.generated.ipynb.ejs'
             }
         ];
@@ -336,8 +336,8 @@ define([
             processData = {
                 name: self.core.getAttribute(processNode, 'name'),
                 processingTime: self.core.getAttribute(processNode, 'ProcessingTime'),
-                processShiftOffTime: self.core.getAttribute(processNode, 'ProcessOffTime'),
-                processShiftOnTime: self.core.getAttribute(processNode, 'ProcessOnTime')
+                processShiftOffTime: self.core.getAttribute(processNode, 'ProcessOFFTime'),
+                processShiftOnTime: self.core.getAttribute(processNode, 'ProcessONTime')
             };
         return processData;
     };
