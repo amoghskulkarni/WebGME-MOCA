@@ -1,1 +1,77 @@
-dummy file
+import simpy
+
+class <%= name %>_simpy():
+    def __init__(self):
+        # SimPy environment
+        self.env = simpy.Environment()
+
+        # SimPy processes for shifts
+<%
+for (var i=0; i < processes.length; i++) {
+-%>
+        self.<%= processes[i].name %> = self.env.process(self.<%= processes[i].name %>__shift_controller(self.env))
+<%
+}
+-%>
+
+        # SimPy stores for buffers
+<%
+for (var i=0; i< buffers.length; i++) {
+-%>
+        self.<%= buffers[i].name %> = simpy.Store(self.env, capacity=<%= buffers[i].size %>)
+<%
+}
+-%>
+
+    # Methods for SimPy processes (for shifts and internal business logic)
+<%
+for (var i=0; i < processes.length; i++) {
+-%>
+    def <%= processes[i].name %>__shift_controller(self, simpy_env):
+        # Start production
+        <%= processes[i].name %>_proc = simpy_env.process(self.<%= processes[i].name %>__business_logic(simpy_env))
+        yield simpy_env.timeout(<%= processes[i].processShiftOnTime %>)
+
+        # Stop production
+        <%= processes[i].name %>_proc.interrupt("end_of_shift")
+        yield simpy_env.timeout(<%= processes[i].processShiftOffTime %>)
+
+    def <%= processes[i].name %>__business_logic(self, simpy_env):
+        # A unique item ID needs to be associated with every item to push it into buffers (restriction by SimPy)
+        item_id = 0
+        while True:
+            try:
+                # Get the input material (or in case of processes at the start of the chain, don't do anything)
+<%
+    // Filter every such connection for which this process is dst
+    for (var j=0; j < connections.length; j++) {
+        if (connections[j].name == 'BuffToProcFlow' && connections[j].dst == processes[i].name) {
+-%>
+                yield self.<%= connections[j].src %>.get()
+<%
+        }
+    }
+-%>
+
+                # Simulate production
+                yield simpy_env.timeout(<%= processes[i].processingTime %>
+
+                # Put the processed material into the buffer (assumption: processes is storing the part in only one buffer)
+<%
+    // Filter the first connection for which this process is src
+    for (var j=0; j < connections.length; j++) {
+        if (connections[j].name == 'ProcToBuffFlow' && connections[j].src == processes[i].name) {
+-%>
+                yield <%= connections[j].dst %>.put("<%= processes[i].name %>_\%s" \% item_id)
+                item_id += 1
+<%
+            break;
+        }
+    }
+-%>
+            except simpy.Interrupt as i:
+                return
+
+    # Method to simulate the SimPy simulation
+    def simulate(self):
+        self.env.run(until=<%= simend %>)
