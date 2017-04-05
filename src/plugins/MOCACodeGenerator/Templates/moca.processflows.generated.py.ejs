@@ -1,9 +1,24 @@
 import simpy
 
-class <%= name %>_simpy():
+class <%= name %>__SimPy_simulation():
     def __init__(self):
         # SimPy environment
         self.env = simpy.Environment()
+
+        # Simulation states
+        self.simulation_states = {
+            'timestamps': [],
+<%
+for (var i=0; i < buffers.length; i++) {
+-%>
+            'buff_<%= buffers[i].name %>_usage': [],
+<%
+}
+-%>
+        }
+
+        # SimPy process for monitoring simulation
+        self.sim_monitor = self.env.process(self.monitor(self.env))
 
         # SimPy processes for shifts
 <%
@@ -28,13 +43,14 @@ for (var i=0; i< buffers.length; i++) {
 for (var i=0; i < processes.length; i++) {
 -%>
     def <%= processes[i].name %>__shift_controller(self, simpy_env):
-        # Start production
-        <%= processes[i].name %>_proc = simpy_env.process(self.<%= processes[i].name %>__business_logic(simpy_env))
-        yield simpy_env.timeout(<%= processes[i].processShiftOnTime %>)
+        while True:
+            # Start production
+            <%= processes[i].name %>_proc = simpy_env.process(self.<%= processes[i].name %>__business_logic(simpy_env))
+            yield simpy_env.timeout(<%= processes[i].processShiftOnTime %>)
 
-        # Stop production
-        <%= processes[i].name %>_proc.interrupt("end_of_shift")
-        yield simpy_env.timeout(<%= processes[i].processShiftOffTime %>)
+            # Stop production
+            <%= processes[i].name %>_proc.interrupt("end_of_shift")
+            yield simpy_env.timeout(<%= processes[i].processShiftOffTime %>)
 
     def <%= processes[i].name %>__business_logic(self, simpy_env):
         # A unique item ID needs to be associated with every item to push it into buffers (restriction by SimPy)
@@ -56,7 +72,7 @@ for (var i=0; i < processes.length; i++) {
                 # Simulate production
                 yield simpy_env.timeout(<%= processes[i].processingTime %>)
 
-                # Put the processed material into the buffer (assumption: processes is storing the part in only one buffer)
+                # Put the processed material into the buffer (assumption: process is storing the part in only one buffer)
 <%
     // Filter the first connection for which this process is src
     for (var j=0; j < connections.length; j++) {
@@ -72,6 +88,19 @@ for (var i=0; i < processes.length; i++) {
             except simpy.Interrupt as i:
                 return
 
+<%
+}
+-%>
+
+    # Method to monitor simulation stats
+    def monitor(self, simpy_env):
+        while True:
+            yield simpy_env.timeout(0.1)
+            self.simulation_states['timestamps'].append(simpy_env.now)
+<%
+for (var i=0; i < buffers.length; i++) {
+-%>
+            self.simulation_states['buff_<%= buffers[i].name %>_usage'].append(len(self.<%= buffers[i].name %>.items))
 <%
 }
 -%>
