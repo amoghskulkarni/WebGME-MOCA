@@ -62,19 +62,19 @@ for (var i=0; i < processes.length; i++) {
     for (var j=0; j < connections.length; j++) {
         if (connections[j].name == 'ProcToBuffFlow' && connections[j].src == processes[i].name) {
 -%>
-                yield <%= connections[j].dst %>.put("<%= processes[i].name %>_%s" % item_id)
+                yield self.<%= connections[j].dst %>.put("<%= processes[i].name %>_%s" % item_id)
                 item_id += 1
 <%
             break;
         }
     }
 -%>
+            except simpy.Interrupt as i:
+                return
 
 <%
 }
 -%>
-            except simpy.Interrupt as i:
-                return
 
     # Method to simulate the SimPy simulation
     def simulate(self):

@@ -1,32 +1,52 @@
-<%= name %>
-    Simulation end time: <%= simend %>
-    Processes
-<%
-for (var i=0; i < processes.length; i++) {
--%>
-        <%= processes[i].name %>
-            Processing time: <%= processes[i].processingTime %>
-            Process shift OFF time: <%= processes[i].processShiftOffTime %>
-            Process shift ON time: <%= processes[i].processShiftOnTime %>
-<%
+{
+    "cells": [
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "# <%= name %> SimPy Notebook\n",
+                "***",
+                "\n",
+                "## Execution\n",
+                "\n",
+                "Import the DES model code."
+            ]
+        }
+        ,{
+            "cell_type": "code",
+            "execution_count": null,
+            "metadata": {
+                "collapsed": true
+            },
+            "outputs": [],
+            "source": [
+                "from src.<%= name %> import <%= name %>_simpy",
+                "\n",
+                "pf_model = <%= name %>_simpy()",
+                "\n",
+                "pf_model.simulate()"
+            ]
+        }
+    ],
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 2",
+            "language": "python",
+            "name": "python2"
+        },
+        "language_info": {
+            "codemirror_mode": {
+            "name": "ipython",
+            "version": 2
+        },
+        "file_extension": ".py",
+        "mimetype": "text/x-python",
+        "name": "python",
+        "nbconvert_exporter": "python",
+        "pygments_lexer": "ipython2",
+        "version": "2.7.9"
+        }
+    },
+    "nbformat": 4,
+    "nbformat_minor": 0
 }
--%>
-    Buffers
-<%
-for (var i=0; i < buffers.length; i++) {
--%>
-        <%= buffers[i].name %>
-            Size: <%= buffers[i].size %>
-<%
-}
--%>
-    Connections
-<%
-for (var i=0; i < connections.length; i++) {
--%>
-        <%= connections[i].name %>
-            Source: <%= connections[i].src %>
-            Destination: <%= connections[i].dst %>
-<%
-}
--%>
