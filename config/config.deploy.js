@@ -16,7 +16,7 @@ config.seedProjects.enable = true;
 config.seedProjects.defaultProject = 'MOCA';
 config.seedProjects.basePaths.push("./src/seeds");
 
-config.visualization.svgDirs = ['./Icons/png'];
+config.visualization.svgDirs.push('./Icons/png');
 
 // User authentication
 config.authentication.enable = true;
