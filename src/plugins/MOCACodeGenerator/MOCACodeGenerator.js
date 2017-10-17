@@ -58,6 +58,11 @@ define([
             {
                 name: 'plotting utilities',
                 template: 'moca.plotutils.generated.py.ejs'
+            },
+            {
+                name: 'process flows',
+                template: 'moca.processflows.generated.py.ejs',
+                ipynbfile: 'moca.processflow.generated.ipynb.ejs'
             }
         ];
     };
@@ -137,12 +142,16 @@ define([
             dataModel = {
                 comps: [],
                 groups: [],
+                processFlows: [],
                 problems: []
             },
             componentLibraryPromises = [],
             groupLibraryPromises = [],
+            processFlowLibraryPromises = [],
+            problemLibraryPromises = [],
             componentPromises = [],
             groupPromises = [],
+            processFlowPromises = [],
             problemPromises = [];
 
         // If the code generator is invoked from ROOT
@@ -153,8 +162,8 @@ define([
                     // Process them all according to their type
                     for (var i = 0; i < children.length; i++) {
                         // If it is ComponentLibrary..
-                        if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'ComponentLibrary') {
-                            // Load it's children (use ComponentLibraryPromises for that) and then get their componentData
+                        if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') === 'ComponentLibrary') {
+                            // Load its children (use ComponentLibraryPromises for that) and then get their componentData
                             componentLibraryPromises.push(self.core.loadChildren(children[i])
                                 .then(function (comps) {
                                     for (var j = 0; j < comps.length; j++) {
@@ -164,8 +173,8 @@ define([
                             );
                         }
                         // If it is GroupLibrary..
-                        else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'GroupLibrary') {
-                            // Load it's children (use GroupLibraryPromises for that) and then get their groupData
+                        else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'GroupLibrary') {
+                            // Load its children (use GroupLibraryPromises for that) and then get their groupData
                             groupLibraryPromises.push(self.core.loadChildren(children[i])
                                 .then(function (groups) {
                                     for (var j = 0; j < groups.length; j++) {
@@ -174,17 +183,45 @@ define([
                                 })
                             );
                         }
-                        // If it is a Problem..
-                        else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Problem') {
-                            // Get its problemData
-                            problemPromises.push(self.getProblemData(children[i]));
+                        // If it is a ProcessFlowLibrary..
+                        else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'ProcessFlowLibrary'){
+                            // Load its children (use ProcessFlowLibraryPromises for that) and then get their ProcessFlowData
+                            processFlowLibraryPromises.push(self.core.loadChildren(children[i])
+                                .then(function (processFlows) {
+                                    for (var j = 0; j < processFlows.length; j++) {
+                                        processFlowPromises.push(self.getProcessFlowData(processFlows[j]));
+                                    }
+                                })
+                            );
                         }
+                        // If it is a ProblemLibrary
+                        else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'ProblemLibrary') {
+                            // Load its children (use ProblemLibraryPromises for that) and then get their ProblemData
+                            problemLibraryPromises.push(self.core.loadChildren(children[i])
+                                .then(function (problems) {
+                                    for (var j = 0; j < problems.length; j++) {
+                                        problemPromises.push(self.getProblemData(problems[j]));
+                                    }
+                                })
+                            );
+                        }
+                        // If it is a Problem..
+                        // else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Problem') {
+                        //     // Get its problemData
+                        //     problemPromises.push(self.getProblemData(children[i]));
+                        // }
                     }
 
                     return Q.all(componentLibraryPromises);
                 })
                 .then(function () {
                     return Q.all(groupLibraryPromises);
+                })
+                .then(function () {
+                    return Q.all(problemLibraryPromises);
+                })
+                .then(function () {
+                    return Q.all(processFlowLibraryPromises);
                 })
                 .then(function () {
                     return Q.all(componentPromises);
@@ -195,6 +232,10 @@ define([
                 })
                 .then(function (groupsData) {
                     dataModel.groups = groupsData;
+                    return Q.all(processFlowPromises);
+                })
+                .then(function (processFlowsData) {
+                    dataModel.processFlows = processFlowsData;
                     return Q.all(problemPromises);
                 })
                 .then(function (problemsData) {
@@ -203,7 +244,7 @@ define([
                 });
         }
         // If the code generator is invoked from a problem
-        else if (self.core.getAttribute(self.getMetaType(rootNode), 'name') == 'Problem') {
+        else if (self.core.getAttribute(self.getMetaType(rootNode), 'name') === 'Problem') {
             var recursivePromises = [];
             // Load all the children of the problem
             return self.core.loadChildren(rootNode)
@@ -211,12 +252,12 @@ define([
                     // Process them all according to their type
                     for (var i = 0; i < children.length; i++) {
                         // If it is a Component..
-                        if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'Component') {
+                        if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') === 'Component') {
                             // Traverse to its base class through the instance tree
                             self.getOriginalBase('Component', componentPromises, children[i]);
                         }
                         // If it is a Group..
-                        else if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'Group') {
+                        else if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') === 'Group') {
                             // Call a recursive function which in turn populates the promise lists.
                             // Had to use a recursive function because a group can contain groups and the hierarchy
                             // can be arbitrarily deep.
@@ -243,7 +284,103 @@ define([
                     return dataModel;
                 })
         }
+        // TODO: If the code generator is invoked from a DES model (i.e. a ProcessFlow)
     };
+
+    /**********************************************************************************************************/
+    /* DES i.e. ProcessFlow interpreter methods */
+    MOCACodeGenerator.prototype.getProcessFlowData = function (processFlowNode) {
+        var self = this,
+            processFlowData = {
+                name: self.core.getAttribute(processFlowNode, 'name'),
+                simend: self.core.getAttribute(processFlowNode, 'SimulationEndTime'),
+                processes: [],
+                buffers: [],
+                connections: []
+            },
+            processPromises = [],
+            bufferPromises = [],
+            connectionPromises = [];
+
+        return self.core.loadChildren(processFlowNode)
+            .then(function(children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
+                    if (childMetaType === 'Process')
+                        processPromises.push(self.getProcessData(children[i]));
+                    else if (childMetaType === 'Buffer')
+                        bufferPromises.push(self.getBufferData(children[i]));
+                    else if (childMetaType === 'ProcToBuffFlow' || childMetaType === 'BuffToProcFlow')
+                        connectionPromises.push(self.getMaterialFlowData(children[i]));
+                }
+
+                return Q.all(processPromises);
+            })
+            .then(function (processesData) {
+                processFlowData.processes = processesData;
+                return Q.all(bufferPromises);
+            })
+            .then(function (buffersData) {
+                processFlowData.buffers = buffersData;
+                return Q.all(connectionPromises);
+            })
+            .then(function (connectionsData) {
+                processFlowData.connections = connectionsData;
+                return processFlowData;
+            });
+    };
+
+
+    MOCACodeGenerator.prototype.getProcessData = function (processNode) {
+        var self = this,
+            processData = {
+                name: self.core.getAttribute(processNode, 'name'),
+                processingTime: self.core.getAttribute(processNode, 'ProcessingTime'),
+                processShiftOffTime: self.core.getAttribute(processNode, 'ProcessOFFTime'),
+                processShiftOnTime: self.core.getAttribute(processNode, 'ProcessONTime')
+            };
+        return processData;
+    };
+
+
+    MOCACodeGenerator.prototype.getBufferData = function (bufferNode) {
+        var self = this,
+            bufferData = {
+                name: self.core.getAttribute(bufferNode, 'name'),
+                size: self.core.getAttribute(bufferNode, 'Size')
+            };
+        return bufferData;
+    };
+
+
+    MOCACodeGenerator.prototype.getMaterialFlowData = function (connectionNode) {
+        var self = this,
+            deferred = Q.defer(),
+            connectionData = {
+                name: self.core.getAttribute(connectionNode, 'name'),
+                src: "",
+                dst: ""
+            };
+
+        self.core.loadPointer(connectionNode, 'src', function (err, srcNode) {
+            if (err) {
+                deferred.reject(new Error(err))
+            } else {
+                connectionData.src = self.core.getAttribute(srcNode, 'name');
+                self.core.loadPointer(connectionNode, 'dst', function (err, dstNode) {
+                    if (err) {
+                        deferred.reject(new Error(err));
+                    } else {
+                        connectionData.dst = self.core.getAttribute(dstNode, 'name');
+                        deferred.resolve(connectionData);
+                    }
+                });
+            }
+        });
+
+        return deferred.promise;
+    };
+     /**********************************************************************************************************/
 
 
     // This is a recursive function which goes through a group and populates the lists groupPromises and componentPromises
@@ -258,12 +395,12 @@ define([
             .then(function (children) {
                 for (var i = 0; i < children.length; i++) {
                     // If it is a Component..
-                    if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'Component') {
+                    if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') === 'Component') {
                         // Traverse to its base class through the instance tree
                         self.getOriginalBase('Component', componentPromises, children[i]);
                     }
                     // If it is a Group (be careful here!)..
-                    else if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') == 'Group') {
+                    else if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') === 'Group') {
                         recursivePromises.push(self.recursivelyPopulateGroupContents(componentPromises, groupPromises, children[i]));
                     }
                 }
@@ -275,17 +412,17 @@ define([
     MOCACodeGenerator.prototype.getOriginalBase = function(compOrGroup, promiseList, node) {
         var self = this,
             baseToPush = null;
-        if (compOrGroup == 'Component') {
+        if (compOrGroup === 'Component') {
             baseToPush = self.core.getBase(node);
-            while (self.core.getAttribute(self.core.getParent(baseToPush), 'name') != 'ComponentLibrary'
-            || self.core.getAttribute(self.core.getBase(baseToPush), 'name') != 'Component')
+            while (self.core.getAttribute(self.core.getParent(baseToPush), 'name') !== 'ComponentLibrary'
+            || self.core.getAttribute(self.core.getBase(baseToPush), 'name') !== 'Component')
                 baseToPush = self.core.getBase(baseToPush);
             promiseList.push(self.getComponentData(baseToPush));
         }
-        else if (compOrGroup == 'Group') {
+        else if (compOrGroup === 'Group') {
             baseToPush = self.core.getBase(node);
-            while (self.core.getAttribute(self.core.getParent(baseToPush), 'name') != 'GroupLibrary'
-            || self.core.getAttribute(self.core.getBase(baseToPush), 'name') != 'Group')
+            while (self.core.getAttribute(self.core.getParent(baseToPush), 'name') !== 'GroupLibrary'
+            || self.core.getAttribute(self.core.getBase(baseToPush), 'name') !== 'Group')
                 baseToPush = self.core.getBase(baseToPush);
             promiseList.push(self.getGroupData(baseToPush));
         }
@@ -309,9 +446,9 @@ define([
         return self.core.loadChildren(componentNode)
             .then(function(children) {
                 for (var i = 0; i < children.length; i++) {
-                    if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Parameter')
+                    if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'Parameter')
                         parameterPromises.push(self.getParameterData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Unknown')
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'Unknown')
                         unknownPromises.push(self.getUnknownData(children[i]));
                 }
 
@@ -385,11 +522,11 @@ define([
         return self.core.loadChildren(groupNode)
             .then(function(children) {
                 for (var i = 0; i < children.length; i++) {
-                    if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Component')
+                    if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'Component')
                         compInstancePromises.push(self.getCompInstanceData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'Group')
                         groupInstancePromises.push(self.getGroupInstanceData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'DataConn')
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'DataConn')
                         connectionPromises.push(self.getConnectionData(children[i]));
                 }
 
@@ -500,7 +637,7 @@ define([
             } else {
                 connectionData.src = self.core.getAttribute(srcNode, 'name');
                 connectionData.srcParent = self.core.getAttribute(self.core.getParent(srcNode), 'name');
-                if (self.core.getAttribute(self.getMetaType(connectionNode), 'name') == 'DataConn') {
+                if (self.core.getAttribute(self.getMetaType(connectionNode), 'name') === 'DataConn') {
                     var srcMetaType = self.core.getAttribute(self.getMetaType(srcNode), 'name');
                     if (srcMetaType === 'Unknown' || srcMetaType === 'Parameter') {
                         connectionData.srcOnto = self.core.getAttribute(srcNode, 'OntologyElementID');
@@ -512,7 +649,7 @@ define([
                     } else {
                         connectionData.dst = self.core.getAttribute(dstNode, 'name');
                         connectionData.dstParent = self.core.getAttribute(self.core.getParent(dstNode), 'name');
-                        if (self.core.getAttribute(self.getMetaType(connectionNode), 'name') == 'DataConn') {
+                        if (self.core.getAttribute(self.getMetaType(connectionNode), 'name') === 'DataConn') {
                             var dstMetaType = self.core.getAttribute(self.getMetaType(dstNode), 'name');
                             if (dstMetaType === 'Unknown' || dstMetaType === 'Parameter') {
                                 connectionData.dstOnto = self.core.getAttribute(dstNode, 'OntologyElementID');
@@ -555,19 +692,19 @@ define([
         return self.core.loadChildren(problemNode)
             .then(function(children) {
                 for (var i = 0; i < children.length; i++) {
-                    if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Component')
+                    if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'Component')
                         compInstancePromises.push(self.getCompInstanceData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'Group')
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'Group')
                         groupInstancePromises.push(self.getGroupInstanceData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'DataConn')
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'DataConn')
                         connectionPromises.push(self.getConnectionData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'DesVarToInConn')
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'DesVarToInConn')
                         desvarPromises.push(self.getDesignVariableData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'OutToObjConn')
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'OutToObjConn')
                         objectivePromises.push(self.getObjectiveData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'PortToRecConn')
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'PortToRecConn')
                         recordPromises.push(self.getRecordData(children[i]));
-                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') == 'PortToConstraintConn')
+                    else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'PortToConstraintConn')
                         constraintPromises.push(self.getConstraintData(children[i]));
                 }
 
@@ -736,12 +873,12 @@ define([
             deferred = new Q.defer(),
             artifact = null;
             //userid = WebGMEGlobal.userInfo._id;
-        if (pluginInvocation == 'ROOT')
+        if (pluginInvocation === 'ROOT')
             artifact = self.blobClient.createArtifact('MOCA');
         else
             artifact = self.blobClient.createArtifact(dataModel.problems[0].name);
 
-        if (pluginInvocation == 'ROOT') {
+        if (pluginInvocation === 'ROOT') {
             filesToAdd['MOCA.json'] = JSON.stringify(dataModel, null, 2);
             filesToAdd['MOCA_metadata.json'] = JSON.stringify({
                 projectId: self.projectId,
@@ -778,6 +915,8 @@ define([
             }
         }*/
 
+        // Check if the plugin is executed in the client (browser) or server context
+        // (if the 'window' object is undefined, it's executed on the server-side)
         if (typeof window === 'undefined') {
             // Save the files on the server side
             self.savePythonSourceFiles(filesToAdd, dataModel, deferred, artifact);
@@ -824,7 +963,7 @@ define([
                     console.log('Directory created successfully!');
             });
 
-            if (internalDir != 'out') {
+            if (internalDir !== 'out') {
                 var initFileName = path.join(baseDir, internalDir, '__init__.py');
                 saveFileToPath(initFileName, '# A boilerplate file to enable this directory to be imported as a module');
             }
@@ -897,7 +1036,7 @@ define([
                 // additionally generate .bat file for that as well
                 for (var i = 0; i < dataModel.problems.length; i++) {
                     genFileName = 'MOCA_GeneratedCode/src/' + dataModel.problems[i].name + '.py';
-                    var genIpynbFile = 'MOCA_GeneratedCode/' + dataModel.problems[i].name + '.ipynb' ;
+                    var genIpynbFile = 'MOCA_GeneratedCode/' + dataModel.problems[i].name + '.ipynb';
                     filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]);
                     filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.problems[i]);
                 }
@@ -915,6 +1054,13 @@ define([
                 for (var i = 0; i < dataModel.problems.length; i++) {
                     genFileName = 'MOCA_GeneratedCode/utils/moca_plotutils/' + dataModel.problems[i].name + '_plotutils.py';
                     filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]);
+                }
+            } else if (fileInfo.name === 'process flows') {
+                for (var i = 0; i < dataModel.processFlows.length; i++) {
+                    genFileName = 'MOCA_GeneratedCode/src/' + dataModel.processFlows[i].name + '.py';
+                    var genIpynbFile = 'MOCA_GeneratedCode/' + dataModel.processFlows[i].name + '.ipynb';
+                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]);
+                    filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.processFlows[i]);
                 }
             }
         });
