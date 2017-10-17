@@ -200,7 +200,7 @@ define([
                             problemLibraryPromises.push(self.core.loadChildren(children[i])
                                 .then(function (problems) {
                                     for (var j = 0; j < problems.length; j++) {
-                                        problemPromises.push(self.getProblemData(children[j]));
+                                        problemPromises.push(self.getProblemData(problems[j]));
                                     }
                                 })
                             );
