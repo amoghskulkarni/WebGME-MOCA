@@ -993,8 +993,8 @@ define([
                 }
             } else if (fileInfo.name === 'process flows') {
                 for (var i = 0; i < dataModel.processFlows.length; i++) {
-                    genFileName = 'MOCA_GeneratedCode/src/' + dataModel.processFlows[i].name + '.py';
-                    var genIpynbFile = 'MOCA_GeneratedCode/' + dataModel.processFlows[i].name + '.ipynb';
+                    genFileName = path.join(baseDir, 'src', dataModel.processFlows[i].name + '.py');
+                    var genIpynbFile = path.join(baseDir, dataModel.processFlows[i].name + '.ipynb');
                     saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]));
                     saveFileToPath(genIpynbFile, ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.processFlows[i]));
                 }
