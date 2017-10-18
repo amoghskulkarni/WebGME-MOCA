@@ -5,7 +5,22 @@ Instructions on how to configure auto-start, service commands. Following was the
 
 
 -----
-
+root@moca:/isis/home/kulkaras/grafana_setup# sudo dpkg -i grafana_4.5.2_amd64.deb
+Selecting previously unselected package grafana.
+(Reading database ... 143563 files and directories currently installed.)
+Preparing to unpack grafana_4.5.2_amd64.deb ...
+Unpacking grafana (4.5.2) ...
+Setting up grafana (4.5.2) ...
+Adding system user `grafana' (UID 113) ...
+Adding new user `grafana' (UID 113) with group `grafana' ...
+Not creating home directory `/usr/share/grafana'.
+### NOT starting on installation, please execute the following statements to configure grafana to start automatically using systemd
+ sudo /bin/systemctl daemon-reload
+ sudo /bin/systemctl enable grafana-server
+### You can start grafana-server by executing
+ sudo /bin/systemctl start grafana-server
+Processing triggers for systemd (229-4ubuntu19) ...
+Processing triggers for ureadahead (0.100.0-19) ...
 -----
 
 
