@@ -12,3 +12,11 @@ Instructions as to how to use these files can be found inside the files.
         http://jupyter-notebook.readthedocs.io/en/latest/config.html
 
 
+
+Services running on the machine -
+
+1. WebGME (8888)
+2. Jupyter (9000)
+3. Ontoloy service (8890)
+4. Influxdb (8088 and 8086 by default, configuration in /etc/influxdb/influxdb.conf)
+
