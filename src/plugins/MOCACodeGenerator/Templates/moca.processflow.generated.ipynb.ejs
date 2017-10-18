@@ -27,6 +27,46 @@
                 "pf_model.simulate()"
             ]
         }
+        ,{
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## Visualization\n"
+            ]
+        }
+<%
+for (var i=0; i < buffers.length; i++) {
+    var buffer = buffers[i];
+-%>
+        ,{
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "Buffer usage of <%= buffer.name %>"
+            ]
+        }
+        ,{
+            "cell_type": "code",
+            "execution_count": null,
+            "metadata": {
+            "collapsed": true
+            },
+            "outputs": [],
+            "source": [
+                "%matplotlib inline",
+                "\n",
+                "import matplotlib.pyplot as plt",
+                "\n",
+                "plt.plot(pf_model.simulation_states['timestamps'], pf_model.simulation_states['buff_<%= buffer.name %>_usage'])",
+                "\n",
+                "plt.title('Buffer usage of <%= buffer.name %>')",
+                "\n",
+                "plt.show()"
+            ]
+        }
+<%
+}
+-%>
     ],
     "metadata": {
         "kernelspec": {
