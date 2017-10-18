@@ -120,8 +120,12 @@ define([
                     self.logger.info(JSON.stringify(dataModel, null, 4));
                     return self.generateArtifact('ROOT', dataModel);
                 }
-                else
+                else if (self.core.getAttribute(self.getMetaType(nodeObject), 'name') === 'Problem') {
                     return self.generateArtifact('Problem', dataModel);
+                }
+                else if (self.core.getAttribute(self.getMetaType(nodeObject), 'name') === 'ProcessFlow') {
+                    return self.generateArtifact('ProcessFlow', dataModel);
+                }
             })
             .then(function () {
                 self.result.setSuccess(true);
@@ -183,7 +187,7 @@ define([
                                 })
                             );
                         }
-                        // If it is a ProcessFlowLibrary..
+                        // If it is a ProcessFlowLibrary
                         else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'ProcessFlowLibrary'){
                             // Load its children (use ProcessFlowLibraryPromises for that) and then get their ProcessFlowData
                             processFlowLibraryPromises.push(self.core.loadChildren(children[i])
@@ -243,6 +247,7 @@ define([
                     return dataModel;
                 });
         }
+
         // If the code generator is invoked from a problem
         else if (self.core.getAttribute(self.getMetaType(rootNode), 'name') === 'Problem') {
             var recursivePromises = [];
@@ -284,7 +289,19 @@ define([
                     return dataModel;
                 })
         }
+
         // TODO: If the code generator is invoked from a DES model (i.e. a ProcessFlow)
+        // If the code generator is invoked from a problem
+        else if (self.core.getAttribute(self.getMetaType(rootNode), 'name') === 'ProcessFlow') {
+            // No need to recursively populate anything here, this is not a recursive structure as of yet
+            // When it becomes, change this method
+            processFlowPromises.push(self.getProcessFlowData(rootNode));
+            return Q.all(processFlowPromises)
+                .then(function (processFlowData) {
+                    dataModel.processFlows = processFlowData;
+                    return dataModel;
+                });
+        }
     };
 
     /**********************************************************************************************************/
@@ -875,8 +892,10 @@ define([
             //userid = WebGMEGlobal.userInfo._id;
         if (pluginInvocation === 'ROOT')
             artifact = self.blobClient.createArtifact('MOCA');
-        else
+        else if (pluginInvocation === 'Problem')
             artifact = self.blobClient.createArtifact(dataModel.problems[0].name);
+        else if (pluginInvocation === 'ProcessFlow')
+            artifact = self.blobClient.createArtifact(dataModel.processFlows[0].name);
 
         if (pluginInvocation === 'ROOT') {
             filesToAdd['MOCA.json'] = JSON.stringify(dataModel, null, 2);
