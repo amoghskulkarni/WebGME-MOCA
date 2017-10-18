@@ -53,6 +53,8 @@ define([
             self.logger.error("...");
         }
 
+        var metaTypeName = metaTypeNodeObj.getAttribute('name');
+
         //let the parent decorator class do its job first
         try {
             ModelDecoratorDiagramDesignerWidget.prototype.on_addTo.apply(this, arguments);
@@ -60,13 +62,16 @@ define([
             self.logger.error("...");
         }
 
-        if (metaTypeNodeObj.getAttribute('name') === 'Component') {
+        if (metaTypeName === 'Component' || metaTypeName === 'DataPreprocessor' || metaTypeName === 'LearningAlgorithm') {
             //render text-editor based META editing UI piece
             this._skinParts.$EqnEditorBtn = EQN_EDIT_BTN_BASE.clone();
-            this._skinParts.$JacobianEditorBtn = JACOBIAN_EDIT_BTN_BASE.clone();
             this.$el.append('<br>');
             this.$el.append(this._skinParts.$EqnEditorBtn);
             this.$el.append('  Function');
+        }
+
+        if (metaTypeName === 'Component') {
+            this._skinParts.$JacobianEditorBtn = JACOBIAN_EDIT_BTN_BASE.clone();
             this.$el.append('<br>');
             this.$el.append(this._skinParts.$JacobianEditorBtn);
             this.$el.append('  Jacobian');
@@ -77,7 +82,7 @@ define([
         this.$el.append(this._skinParts.$OntologyBrowserBtn);
         this.$el.append('  Ontology');
 
-        if (metaTypeNodeObj.getAttribute('name') === 'Component') {
+        if (metaTypeName === 'Component' || metaTypeName === 'DataPreprocessor' || metaTypeName === 'LearningAlgorithm') {
             // onClick listener for the eqn button
             this._skinParts.$EqnEditorBtn.on('click', function () {
                 if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true &&
@@ -87,7 +92,9 @@ define([
                 event.stopPropagation();
                 event.preventDefault();
             });
+        }
 
+        if (metaTypeName === 'Component') {
             // onClick listener for the jacobian button
             this._skinParts.$JacobianEditorBtn.on('click', function () {
                 if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true &&
