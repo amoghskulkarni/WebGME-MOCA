@@ -1,0 +1,11 @@
+GRAFANA Setup output
+====================
+
+Instructions on how to configure auto-start, service commands. Following was the bash output of the grafana installation -
+
+
+-----
+
+-----
+
+
