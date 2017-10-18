@@ -991,7 +991,15 @@ define([
                     saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]));
                     saveFileToPath(genIpynbFile, ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.problems[i]));
                 }
-            } else if (fileInfo.name === 'parsing utilities') {
+            } else if (fileInfo.name === 'process flows') {
+                for (var i = 0; i < dataModel.processFlows.length; i++) {
+                    genFileName = path.join(baseDir, 'src', dataModel.processFlows[i].name + '.py');
+                    var genIpynbFile = path.join(baseDir, dataModel.processFlows[i].name + '.ipynb');
+                    saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]));
+                    saveFileToPath(genIpynbFile, ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.processFlows[i]));
+                }
+            }
+            else if (fileInfo.name === 'parsing utilities') {
                 // If the filename is parsing utilities - use the template for utilities
                 // Template for utilities is not required to be populated with
                 // Application specific data
