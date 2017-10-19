@@ -65,7 +65,7 @@ define([
             self._selfPatterns = {};
             self._selfPatterns[nodeId] = {children: 0};  // Territory "rule"
 
-            self._widget.setTitle(desc.name.toUpperCase());
+            // self._widget.setTitle(desc.name.toUpperCase());
 
             if (typeof desc.parentId === 'string') {
                 self.$btnModelHierarchyUp.show();

@@ -7,7 +7,7 @@
   },
   {
     "id": "MOCAGrafanaVisualizer",
-    "title": "MOCAGrafanaVisualizer",
+    "title": "Grafana",
     "panel": "panels/MOCAGrafanaVisualizer/MOCAGrafanaVisualizerPanel",
     "DEBUG_ONLY": false
   }

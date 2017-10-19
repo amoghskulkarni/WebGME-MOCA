@@ -61,7 +61,7 @@ define(['css!./styles/MOCAGrafanaVisualizerWidget.css'], function () {
 
     MOCAGrafanaVisualizerWidget.prototype.getGrafanaUrl = function (desc) {
         // Replace "localhost:9999" with "moca.isis.vanderbilt.edu" if you're running this on localhost
-        return "http://localhost:3000/grafana/";
+        return "http://moca.isis.vanderbilt.edu/grafana/";
     };
 
     MOCAGrafanaVisualizerWidget.prototype.onWidgetContainerResize = function (width, height) {
