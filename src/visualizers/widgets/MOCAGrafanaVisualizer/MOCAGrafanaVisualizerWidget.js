@@ -47,9 +47,9 @@ define(['css!./styles/MOCAGrafanaVisualizerWidget.css'], function () {
 
         grafanaIframe.src = this.getGrafanaUrl(nodeData);
 
-        this._el.append(notebookIframe);
+        this._el.append(grafanaIframe);
 
-        this.notebookIframe = notebookIframe;
+        this.grafanaIframe = grafanaIframe;
 
         // Registering to events can be done with jQuery (as normal)
         this._el.on('dblclick', function (event) {
