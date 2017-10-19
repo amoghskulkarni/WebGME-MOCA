@@ -134,7 +134,8 @@ define([
 
     MOCAGrafanaVisualizerControl.prototype._onLoad = function (gmeId) {
         var description = this._getObjectDescriptor(gmeId);
-        this._widget.addNode(description);
+        this._widget.destroy();
+        this._widget._initialize(description);
     };
 
     MOCAGrafanaVisualizerControl.prototype._onUpdate = function (gmeId) {
