@@ -4,5 +4,11 @@
     "title": "ipython Notebook",
     "panel": "panels/MOCANotebookVisualizer/MOCANotebookVisualizerPanel",
     "DEBUG_ONLY": false
+  },
+  {
+    "id": "MOCAGrafanaVisualizer",
+    "title": "MOCAGrafanaVisualizer",
+    "panel": "panels/MOCAGrafanaVisualizer/MOCAGrafanaVisualizerPanel",
+    "DEBUG_ONLY": false
   }
 ]

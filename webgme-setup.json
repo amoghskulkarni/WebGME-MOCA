@@ -24,6 +24,13 @@
         "panel": "src/visualizers/panels/MOCANotebookVisualizer",
         "secondary": false,
         "widget": "src/visualizers/widgets/MOCANotebookVisualizer"
+      },
+      "MOCAGrafanaVisualizer": {
+        "src": "panels/MOCAGrafanaVisualizer/MOCAGrafanaVisualizerPanel",
+        "title": "MOCAGrafanaVisualizer",
+        "panel": "src/visualizers/panels/MOCAGrafanaVisualizer",
+        "secondary": false,
+        "widget": "src/visualizers/widgets/MOCAGrafanaVisualizer"
       }
     },
     "routers": {
