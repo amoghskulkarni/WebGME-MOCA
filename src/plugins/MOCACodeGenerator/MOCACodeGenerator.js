@@ -126,6 +126,9 @@ define([
                 else if (self.core.getAttribute(self.getMetaType(nodeObject), 'name') === 'ProcessFlow') {
                     return self.generateArtifact('ProcessFlow', dataModel);
                 }
+                else if (self.core.getAttribute(self.getMetaType(nodeObject), 'name') === 'DataDrivenComponent') {
+                    return self.generateArtifact('DataDrivenComponent', dataModel);
+                }
             })
             .then(function () {
                 self.result.setSuccess(true);
@@ -145,6 +148,7 @@ define([
         var self = this,
             dataModel = {
                 comps: [],
+                ddComps: [],
                 groups: [],
                 processFlows: [],
                 problems: []
@@ -152,8 +156,10 @@ define([
             componentLibraryPromises = [],
             groupLibraryPromises = [],
             processFlowLibraryPromises = [],
-            problemLibraryPromises = [],
-            componentPromises = [],
+            problemLibraryPromises = [];
+
+        var componentPromises = [],
+            ddComponentPromises = [],
             groupPromises = [],
             processFlowPromises = [],
             problemPromises = [];
@@ -171,7 +177,12 @@ define([
                             componentLibraryPromises.push(self.core.loadChildren(children[i])
                                 .then(function (comps) {
                                     for (var j = 0; j < comps.length; j++) {
-                                        componentPromises.push(self.getComponentData(comps[j]));
+                                        if (self.core.getAttribute(self.getMetaType(comps[j]) , 'name') === 'Component') {
+                                            componentPromises.push(self.getComponentData(comps[j]));
+                                        }
+                                        else if (self.core.getAttribute(self.getMetaType(comps[j]) , 'name') === 'DataDrivenComponent') {
+                                            ddComponentPromises.push(self.getDDComponentData(comps[j]));
+                                        }
                                     }
                                 })
                             );
@@ -232,6 +243,10 @@ define([
                 })
                 .then(function (componentsData) {
                     dataModel.comps = componentsData;
+                    return Q.all(ddComponentPromises);
+                })
+                .then(function (ddComponentsData) {
+                    dataModel.ddComps = ddComponentsData;
                     return Q.all(groupPromises);
                 })
                 .then(function (groupsData) {
@@ -290,15 +305,24 @@ define([
                 })
         }
 
-        // TODO: If the code generator is invoked from a DES model (i.e. a ProcessFlow)
         // If the code generator is invoked from a problem
         else if (self.core.getAttribute(self.getMetaType(rootNode), 'name') === 'ProcessFlow') {
             // No need to recursively populate anything here, this is not a recursive structure as of yet
-            // When it becomes, change this method
             processFlowPromises.push(self.getProcessFlowData(rootNode));
             return Q.all(processFlowPromises)
-                .then(function (processFlowData) {
-                    dataModel.processFlows = processFlowData;
+                .then(function (processFlowsData) {
+                    dataModel.processFlows = processFlowsData;
+                    return dataModel;
+                });
+        }
+
+        // If the code generator is invoked from a DataDrivenComponent
+        else if (self.core.getAttribute(self.getMetaType(rootNode), 'name') === 'ProcessFlow') {
+            // No need to recursively populate anything here, this is not a recursive structure as of yet
+            ddComponentPromises.push(self.getDDComponentData(rootNode));
+            return Q.all(ddComponentPromises)
+                .then(function (ddComponentsData) {
+                    dataModel.ddComps = ddComponentsData;
                     return dataModel;
                 });
         }
@@ -397,8 +421,15 @@ define([
 
         return deferred.promise;
     };
-     /**********************************************************************************************************/
+    /**********************************************************************************************************/
 
+    /**********************************************************************************************************/
+    /* DataDrivenComponent interpreter methods */
+    MOCACodeGenerator.prototype.getDDComponentData = function (ddComponentNode) {
+
+    };
+
+    /**********************************************************************************************************/
 
     // This is a recursive function which goes through a group and populates the lists groupPromises and componentPromises
     MOCACodeGenerator.prototype.recursivelyPopulateGroupContents = function(componentPromises, groupPromises, groupNode) {
@@ -641,10 +672,14 @@ define([
             deferred = Q.defer(),
             connectionData = {
                 src: null,
+                srcMeta: null,
                 srcParent: null,
+                srcParentMeta: null,
                 srcOnto: "",
                 dst: null,
+                dstMeta: null,
                 dstParent: null,
+                dstParentMeta: null,
                 dstOnto: ""
             };
 
@@ -652,26 +687,40 @@ define([
             if (err) {
                 deferred.reject(new Error(err))
             } else {
+                var srcParent = self.core.getParent(srcNode);
+                var srcMeta = self.getMetaType(srcNode);
+                var srcParentMeta = self.getMetaType(srcParent);
+
                 connectionData.src = self.core.getAttribute(srcNode, 'name');
-                connectionData.srcParent = self.core.getAttribute(self.core.getParent(srcNode), 'name');
+                connectionData.srcMeta = self.core.getAttribute(srcMeta, 'name');
+                connectionData.srcParent = self.core.getAttribute(srcParent, 'name');
+                connectionData.srcParentMeta = self.core.getAttribute(srcParentMeta, 'name');
+
                 if (self.core.getAttribute(self.getMetaType(connectionNode), 'name') === 'DataConn') {
-                    var srcMetaType = self.core.getAttribute(self.getMetaType(srcNode), 'name');
-                    if (srcMetaType === 'Unknown' || srcMetaType === 'Parameter') {
+                    if (connectionData.srcMeta === 'Unknown' || connectionData.srcMeta === 'Parameter') {
                         connectionData.srcOnto = self.core.getAttribute(srcNode, 'OntologyElementID');
                     }
                 }
+
                 self.core.loadPointer(connectionNode, 'dst', function (err, dstNode) {
                     if (err) {
                         deferred.reject(new Error(err));
                     } else {
+                        var dstParent = self.core.getParent(dstNode),
+                            dstMeta = self.getMetaType(dstNode),
+                            dstParentMeta = self.getMetaType(dstParent);
+
                         connectionData.dst = self.core.getAttribute(dstNode, 'name');
-                        connectionData.dstParent = self.core.getAttribute(self.core.getParent(dstNode), 'name');
+                        connectionData.dstMeta = self.core.getAttribute(dstMeta, 'name');
+                        connectionData.dstParent = self.core.getAttribute(dstParent, 'name');
+                        connectionData.dstParentMeta = self.core.getAttribute(dstParentMeta, 'name');
+
                         if (self.core.getAttribute(self.getMetaType(connectionNode), 'name') === 'DataConn') {
-                            var dstMetaType = self.core.getAttribute(self.getMetaType(dstNode), 'name');
-                            if (dstMetaType === 'Unknown' || dstMetaType === 'Parameter') {
+                            if (connectionData.dstMeta === 'Unknown' || connectionData.dstMeta === 'Parameter') {
                                 connectionData.dstOnto = self.core.getAttribute(dstNode, 'OntologyElementID');
                             }
                         }
+
                         deferred.resolve(connectionData);
                     }
                 });
