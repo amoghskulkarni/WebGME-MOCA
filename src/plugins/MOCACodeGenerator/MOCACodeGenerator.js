@@ -426,7 +426,199 @@ define([
     /**********************************************************************************************************/
     /* DataDrivenComponent interpreter methods */
     MOCACodeGenerator.prototype.getDDComponentData = function (ddComponentNode) {
+        var self = this,
+            deferred = Q.defer(),
+            ddComponentData = {
+                name: self.core.getAttribute(ddComponentNode, 'name'),
+                dataSources: [],
+                dataPreprocs: [],
+                learningAlgorithms: [],
+                params: [],
+                unknowns: [],
+                connections: []
+            },
+            dataSourcePromises = [],
+            dataPreprocPromises = [],
+            learningAlgoPromises = [],
+            paramPromises = [],
+            unknownPromises = [],
+            connectionPromises = [];
 
+        return self.core.loadChildren(ddComponentNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
+                    if (childMetaType === 'DataSource')
+                        dataSourcePromises.push(self.getDataSourceData(children[i]));
+                    else if (childMetaType === 'DataPreprocessor')
+                        dataPreprocPromises.push(self.getDataPreprocessorData(children[i]));
+                    else if (childMetaType === 'LearningAlgorithm')
+                        learningAlgoPromises.push(self.getLearningAlgoData(children[i]));
+                    else if (childMetaType === 'Parameter')
+                        paramPromises.push(self.getParameterData(children[i]));
+                    else if (childMetaType === 'Unknown')
+                        unknownPromises.push(self.getUnknownData(children[i]));
+                    else if (childMetaType === 'DataConn'
+                          || childMetaType === 'OutToLableAssoc'
+                          || childMetaType === 'InToFeatureAssoc'
+                          || childMetaType === 'ParamToFeatureAssoc'
+                          || childMetaType === 'UnknownToLabelAssoc')
+                        connectionPromises.push(self.getMaterialFlowData(children[i]));
+                }
+
+                return Q.all(dataSourcePromises);
+            })
+            .then(function (dataSourcesData) {
+                ddComponentData.dataSources = dataSourcesData;
+                return Q.all(dataPreprocPromises);
+            })
+            .then(function (dataPreprocsData) {
+                ddComponentData.dataPreprocs = dataPreprocsData;
+                return Q.all(learningAlgoPromises);
+            })
+            .then(function (learningAlgosData) {
+                ddComponentData.learningAlgorithms = learningAlgosData;
+                return Q.all(paramPromises);
+            })
+            .then(function (paramsData) {
+                ddComponentData.params = paramsData;
+                return Q.all(unknownPromises);
+            })
+            .then(function (unknownsData) {
+                ddComponentData.unknowns = unknownsData;
+                return Q.all(connectionPromises);
+            })
+            .then(function (connectionsData) {
+                ddComponentData.connections = connectionsData;
+                return ddComponentData;
+            })
+    };
+    
+    MOCACodeGenerator.prototype.getDataSourceData = function (dataSourceNode) {
+        // self.core.loadPointer(connectionNode, 'src', function (err, srcNode) {
+        //     if (err) {
+        //         deferred.reject(new Error(err))
+        //     } else {
+        //         var srcParent = self.core.getParent(srcNode);
+        //         var srcMeta = self.getMetaType(srcNode);
+        //         var srcParentMeta = self.getMetaType(srcParent);
+        //     }
+        // });
+
+        var self = this,
+            deferred = new Q.defer(),
+            dataSourceData = {
+                name: self.core.getAttribute(ddComponentNode, 'name'),
+                forEach: self.core.getAttribute(ddComponentNode, 'ForEach'),
+                operation: self.core.getAttribute(ddComponentNode, 'Operation'),
+                tags: self.core.getAttribute(ddComponentNode, 'Tags'),
+                t_end: self.core.getAttribute(ddComponentNode, 'TimestampEnd'),
+                t_start: self.core.getAttribute(ddComponentNode, 'TimestampStart'),
+                type: self.core.getAttribute(ddComponentNode, 'Type'),
+                value: self.core.getAttribute(ddComponentNode, 'Value'),
+                variableNameInDB: self.core.getAttribute(ddComponentNode, 'VariableName'),
+                databaseRef: null,
+                children: []
+            };
+
+        return self.core.loadChildren(dataSourceNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
+                    if (childMetaType === 'DatabaseRef') {
+                        self.core.loadPointer(children[i], 'ref', function (err, refNode) {
+                            if (err) {
+                                deferred.reject(new Error(err))
+                            } else {
+                                dataSourceData.databaseRef = self.getDatabaseData(refNode)
+                            }
+                        });
+                    } else {
+                        children.push({
+                            name: self.core.getAttribute(children[i], 'name'),
+                            meta: childMetaType
+                        });
+                    }
+                }
+
+                return deferred.resolve(dataSourceData.databaseRef);
+            })
+            .then(function (databaseRefData) {
+                dataSourceData.databaseRef = databaseRefData;
+                return dataSourceData;
+            })
+    };
+    
+    MOCACodeGenerator.prototype.getDataPreprocessorData = function (dataPreprocNode) {
+        var self = this,
+            dataPreprocData = {
+                name: self.core.getAttribute(dataPreprocNode, 'name'),
+                outputFunction: self.core.getAttribute(dataPreprocNode, 'OutputFunction'),
+                inputPorts: [],
+                outputPorts: []
+            };
+
+        return self.core.loadChildren(dataPreprocNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
+                    if (childMetaType === 'Input') {
+                        dataPreprocData.inputPorts.push(self.getInputPortData(children[i]))
+                    } else if (childMetaType === 'Output') {
+                        dataPreprocData.outputPorts.push(self.getOutputPortData(children[i]))
+                    }
+                }
+
+                return dataPreprocData;
+            })
+    };
+
+    MOCACodeGenerator.prototype.getLearningAlgoData = function (learningAlgoNode) {
+        var self = this,
+            learningAlgoData = {
+                name: self.core.getAttribute(learningAlgoNode, 'name'),
+                algorithm: self.core.getAttribute(learningAlgoNode, 'Algorithm'),
+                outputFunction: self.core.getAttribute(learningAlgoNode, 'OutputFunction'),
+                inputPorts: [],
+                outputPorts: []
+            };
+
+        return self.core.loadChildren(learningAlgoNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
+                    if (childMetaType === 'Input') {
+                        learningAlgoData.inputPorts.push(self.getInputPortData(children[i]))
+                    } else if (childMetaType === 'Output') {
+                        learningAlgoData.outputPorts.push(self.getOutputPortData(children[i]))
+                    }
+                }
+
+                return learningAlgoData;
+            })
+    };
+
+    MOCACodeGenerator.prototype.getDatabaseData = function (databaseNode) {
+        var self = this;
+        return {
+            name: self.core.getAttribute(databaseNode, 'name'),
+            mtcAgentURL: self.core.getAttribute(databaseNode, 'MTConnectAgentURL'),
+            dbname: self.core.getAttribute(databaseNode, 'DBName')
+        };
+    };
+
+    MOCACodeGenerator.prototype.getInputPortData = function (inputPortNode) {
+        var self = this;
+        return {
+            name: self.core.getAttribute(inputPortNode, 'name')
+        };
+    };
+
+    MOCACodeGenerator.prototype.getOutputPortData = function (outputPortNode) {
+        var self = this;
+        return {
+            name: self.core.getAttribute(outputPortNode, 'name')
+        };
     };
 
     /**********************************************************************************************************/
@@ -671,6 +863,7 @@ define([
         var self = this,
             deferred = Q.defer(),
             connectionData = {
+                name: self.core.getAttribute(self.getMetaType(connectionNode), 'name'),
                 src: null,
                 srcMeta: null,
                 srcParent: null,
@@ -696,7 +889,7 @@ define([
                 connectionData.srcParent = self.core.getAttribute(srcParent, 'name');
                 connectionData.srcParentMeta = self.core.getAttribute(srcParentMeta, 'name');
 
-                if (self.core.getAttribute(self.getMetaType(connectionNode), 'name') === 'DataConn') {
+                if (connectionData.name === 'DataConn') {
                     if (connectionData.srcMeta === 'Unknown' || connectionData.srcMeta === 'Parameter') {
                         connectionData.srcOnto = self.core.getAttribute(srcNode, 'OntologyElementID');
                     }
@@ -715,7 +908,7 @@ define([
                         connectionData.dstParent = self.core.getAttribute(dstParent, 'name');
                         connectionData.dstParentMeta = self.core.getAttribute(dstParentMeta, 'name');
 
-                        if (self.core.getAttribute(self.getMetaType(connectionNode), 'name') === 'DataConn') {
+                        if (connectionData.name === 'DataConn') {
                             if (connectionData.dstMeta === 'Unknown' || connectionData.dstMeta === 'Parameter') {
                                 connectionData.dstOnto = self.core.getAttribute(dstNode, 'OntologyElementID');
                             }
