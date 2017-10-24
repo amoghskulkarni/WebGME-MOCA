@@ -495,16 +495,6 @@ define([
     };
     
     MOCACodeGenerator.prototype.getDataSourceData = function (dataSourceNode) {
-        // self.core.loadPointer(connectionNode, 'src', function (err, srcNode) {
-        //     if (err) {
-        //         deferred.reject(new Error(err))
-        //     } else {
-        //         var srcParent = self.core.getParent(srcNode);
-        //         var srcMeta = self.getMetaType(srcNode);
-        //         var srcParentMeta = self.getMetaType(srcParent);
-        //     }
-        // });
-
         var self = this,
             deferred = new Q.defer(),
             dataSourceData = {

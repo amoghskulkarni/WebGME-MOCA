@@ -1,0 +1,58 @@
+#!/usr/bin/python
+
+def sanity_check(input_list):
+    # Add the logic to check if the parameters to this methods are of equal dimensions
+    return True
+
+<%
+// Generate the code the preprocessor
+
+// Create a list of inputs, pass it as a list of arguments to the definition
+var inputs_list = "";
+var outputs_list = "";
+for (var i = 0; i < inputPorts.length; i++) {
+    inputs_list += inputPorts[i];
+    if (i < inputPorts.length - 1) {
+        inputs_list += ", ";
+    }
+}
+
+// Create a list of outputs, return from the definition as the tuple of return values
+for (var i = 0; i < outputPorts.length; i++) {
+    outputs_list += outputPorts[i];
+    if (i < outputPorts.length - 1) {
+        outputs_list += ", ";
+    }
+}
+-%>
+def <%= name %>(<%= inputs_list %>):
+    <%= outputs_list %> = []
+
+    # Sanity check for the inputs
+    if not sanity_check([<%= inputs_list %>]):
+        raise ValueError('Inputs of the preprocessor component "<%= name %>" are not of equal dimension')
+
+    # User-defined business logic of preprocessing of the data
+<%
+    if (outputFunction !== '') {
+        // Print the user defined code snippet
+        var eqnLines = outputFunction.split("\n");
+        for (var j = 0; j < eqnLines.length; j++) {
+            if (eqnLines[j] !== '') {
+-%>
+    <%= eqnLines[j] %>
+<%
+            }
+        }
+    }
+-%>
+    #####
+
+    # Sanity check for the outputs
+    if not sanity_check([<%= outputs_list %>]):
+        raise ValueError('Outputs of the preprocessor component "<%= name %>" are not of equal dimension')
+
+    return (<%= outputs_list %>)
+<%
+}
+-%>
