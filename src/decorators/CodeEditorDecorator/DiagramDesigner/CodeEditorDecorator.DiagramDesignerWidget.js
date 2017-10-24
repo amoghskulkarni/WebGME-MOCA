@@ -160,7 +160,7 @@ define([
         // Initialize with OutputFunction attribute and save callback function
         editorDialog.initialize(title, attrText, function (text) {
             try {
-                client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], attrName, text);
+                client.setAttribute(self._metaInfo[CONSTANTS.GME_ID], attrName, text);
             } catch (e) {
                 self.logger.error('Saving META failed... Either not JSON object or something else went wrong...');
             }

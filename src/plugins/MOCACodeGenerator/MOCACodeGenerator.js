@@ -63,6 +63,10 @@ define([
                 name: 'process flows',
                 template: 'moca.processflows.generated.py.ejs',
                 ipynbfile: 'moca.processflow.generated.ipynb.ejs'
+            },
+            {
+                name: 'preprocessors',
+                template: 'moca.preprocs.generated.py.ejs'
             }
         ];
     };
@@ -126,6 +130,9 @@ define([
                 else if (self.core.getAttribute(self.getMetaType(nodeObject), 'name') === 'ProcessFlow') {
                     return self.generateArtifact('ProcessFlow', dataModel);
                 }
+                else if (self.core.getAttribute(self.getMetaType(nodeObject), 'name') === 'DataDrivenComponent') {
+                    return self.generateArtifact('DataDrivenComponent', dataModel);
+                }
             })
             .then(function () {
                 self.result.setSuccess(true);
@@ -145,6 +152,7 @@ define([
         var self = this,
             dataModel = {
                 comps: [],
+                ddComps: [],
                 groups: [],
                 processFlows: [],
                 problems: []
@@ -152,8 +160,10 @@ define([
             componentLibraryPromises = [],
             groupLibraryPromises = [],
             processFlowLibraryPromises = [],
-            problemLibraryPromises = [],
-            componentPromises = [],
+            problemLibraryPromises = [];
+
+        var componentPromises = [],
+            ddComponentPromises = [],
             groupPromises = [],
             processFlowPromises = [],
             problemPromises = [];
@@ -171,7 +181,12 @@ define([
                             componentLibraryPromises.push(self.core.loadChildren(children[i])
                                 .then(function (comps) {
                                     for (var j = 0; j < comps.length; j++) {
-                                        componentPromises.push(self.getComponentData(comps[j]));
+                                        if (self.core.getAttribute(self.getMetaType(comps[j]) , 'name') === 'Component') {
+                                            componentPromises.push(self.getComponentData(comps[j]));
+                                        }
+                                        else if (self.core.getAttribute(self.getMetaType(comps[j]) , 'name') === 'DataDrivenComponent') {
+                                            ddComponentPromises.push(self.getDDComponentData(comps[j]));
+                                        }
                                     }
                                 })
                             );
@@ -232,6 +247,10 @@ define([
                 })
                 .then(function (componentsData) {
                     dataModel.comps = componentsData;
+                    return Q.all(ddComponentPromises);
+                })
+                .then(function (ddComponentsData) {
+                    dataModel.ddComps = ddComponentsData;
                     return Q.all(groupPromises);
                 })
                 .then(function (groupsData) {
@@ -290,15 +309,24 @@ define([
                 })
         }
 
-        // TODO: If the code generator is invoked from a DES model (i.e. a ProcessFlow)
         // If the code generator is invoked from a problem
         else if (self.core.getAttribute(self.getMetaType(rootNode), 'name') === 'ProcessFlow') {
             // No need to recursively populate anything here, this is not a recursive structure as of yet
-            // When it becomes, change this method
             processFlowPromises.push(self.getProcessFlowData(rootNode));
             return Q.all(processFlowPromises)
-                .then(function (processFlowData) {
-                    dataModel.processFlows = processFlowData;
+                .then(function (processFlowsData) {
+                    dataModel.processFlows = processFlowsData;
+                    return dataModel;
+                });
+        }
+
+        // If the code generator is invoked from a DataDrivenComponent
+        else if (self.core.getAttribute(self.getMetaType(rootNode), 'name') === 'DataDrivenComponent') {
+            // No need to recursively populate anything here, this is not a recursive structure as of yet
+            ddComponentPromises.push(self.getDDComponentData(rootNode));
+            return Q.all(ddComponentPromises)
+                .then(function (ddComponentsData) {
+                    dataModel.ddComps = ddComponentsData;
                     return dataModel;
                 });
         }
@@ -397,8 +425,197 @@ define([
 
         return deferred.promise;
     };
-     /**********************************************************************************************************/
+    /**********************************************************************************************************/
 
+    /**********************************************************************************************************/
+    /* DataDrivenComponent interpreter methods */
+    MOCACodeGenerator.prototype.getDDComponentData = function (ddComponentNode) {
+        var self = this,
+            deferred = Q.defer(),
+            ddComponentData = {
+                name: self.core.getAttribute(ddComponentNode, 'name'),
+                dataSources: [],
+                dataPreprocs: [],
+                learningAlgorithms: [],
+                params: [],
+                unknowns: [],
+                connections: []
+            },
+            dataSourcePromises = [],
+            dataPreprocPromises = [],
+            learningAlgoPromises = [],
+            paramPromises = [],
+            unknownPromises = [],
+            connectionPromises = [];
+
+        return self.core.loadChildren(ddComponentNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
+                    if (childMetaType === 'DataSource')
+                        dataSourcePromises.push(self.getDataSourceData(children[i]));
+                    else if (childMetaType === 'DataPreprocessor')
+                        dataPreprocPromises.push(self.getDataPreprocessorData(children[i]));
+                    else if (childMetaType === 'LearningAlgorithm')
+                        learningAlgoPromises.push(self.getLearningAlgoData(children[i]));
+                    else if (childMetaType === 'Parameter')
+                        paramPromises.push(self.getParameterData(children[i]));
+                    else if (childMetaType === 'Unknown')
+                        unknownPromises.push(self.getUnknownData(children[i]));
+                    else if (childMetaType === 'DataConn'
+                          || childMetaType === 'OutToLableAssoc'
+                          || childMetaType === 'InToFeatureAssoc'
+                          || childMetaType === 'ParamToFeatureAssoc'
+                          || childMetaType === 'UnknownToLabelAssoc')
+                        connectionPromises.push(self.getConnectionData(children[i]));
+                }
+
+                return Q.all(dataSourcePromises);
+            })
+            .then(function (dataSourcesData) {
+                ddComponentData.dataSources = dataSourcesData;
+                return Q.all(dataPreprocPromises);
+            })
+            .then(function (dataPreprocsData) {
+                ddComponentData.dataPreprocs = dataPreprocsData;
+                return Q.all(learningAlgoPromises);
+            })
+            .then(function (learningAlgosData) {
+                ddComponentData.learningAlgorithms = learningAlgosData;
+                return Q.all(paramPromises);
+            })
+            .then(function (paramsData) {
+                ddComponentData.params = paramsData;
+                return Q.all(unknownPromises);
+            })
+            .then(function (unknownsData) {
+                ddComponentData.unknowns = unknownsData;
+                return Q.all(connectionPromises);
+            })
+            .then(function (connectionsData) {
+                ddComponentData.connections = connectionsData;
+                return ddComponentData;
+            })
+    };
+    
+    MOCACodeGenerator.prototype.getDataSourceData = function (dataSourceNode) {
+        var self = this,
+            deferred = new Q.defer(),
+            dataSourceData = {
+                name: self.core.getAttribute(dataSourceNode, 'name'),
+                forEach: self.core.getAttribute(dataSourceNode, 'ForEach'),
+                operation: self.core.getAttribute(dataSourceNode, 'Operation'),
+                tags: self.core.getAttribute(dataSourceNode, 'Tags'),
+                t_end: self.core.getAttribute(dataSourceNode, 'TimestampEnd'),
+                t_start: self.core.getAttribute(dataSourceNode, 'TimestampStart'),
+                type: self.core.getAttribute(dataSourceNode, 'Type'),
+                value: self.core.getAttribute(dataSourceNode, 'Value'),
+                variableNameInDB: self.core.getAttribute(dataSourceNode, 'VariableName'),
+                databaseRef: null,
+                children: []
+            };
+
+        return self.core.loadChildren(dataSourceNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
+                    if (childMetaType === 'DatabaseRef') {
+                        self.core.loadPointer(children[i], 'ref', function (err, refNode) {
+                            if (err) {
+                                deferred.reject(new Error(err))
+                            } else {
+                                dataSourceData.databaseRef = self.getDatabaseData(refNode)
+                            }
+                        });
+                    } else {
+                        dataSourceData.children.push({
+                            name: self.core.getAttribute(children[i], 'name'),
+                            meta: childMetaType
+                        });
+                    }
+                }
+
+                return deferred.resolve(dataSourceData.databaseRef);
+            })
+            .then(function (databaseRefData) {
+                dataSourceData.databaseRef = databaseRefData;
+                return dataSourceData;
+            })
+    };
+    
+    MOCACodeGenerator.prototype.getDataPreprocessorData = function (dataPreprocNode) {
+        var self = this,
+            dataPreprocData = {
+                name: self.core.getAttribute(dataPreprocNode, 'name'),
+                outputFunction: self.core.getAttribute(dataPreprocNode, 'OutputFunction'),
+                inputPorts: [],
+                outputPorts: []
+            };
+
+        return self.core.loadChildren(dataPreprocNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
+                    if (childMetaType === 'Input') {
+                        dataPreprocData.inputPorts.push(self.getInputPortData(children[i]))
+                    } else if (childMetaType === 'Output') {
+                        dataPreprocData.outputPorts.push(self.getOutputPortData(children[i]))
+                    }
+                }
+
+                return dataPreprocData;
+            })
+    };
+
+    MOCACodeGenerator.prototype.getLearningAlgoData = function (learningAlgoNode) {
+        var self = this,
+            learningAlgoData = {
+                name: self.core.getAttribute(learningAlgoNode, 'name'),
+                algorithm: self.core.getAttribute(learningAlgoNode, 'Algorithm'),
+                outputFunction: self.core.getAttribute(learningAlgoNode, 'OutputFunction'),
+                inputPorts: [],
+                outputPorts: []
+            };
+
+        return self.core.loadChildren(learningAlgoNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
+                    if (childMetaType === 'Input') {
+                        learningAlgoData.inputPorts.push(self.getInputPortData(children[i]))
+                    } else if (childMetaType === 'Output') {
+                        learningAlgoData.outputPorts.push(self.getOutputPortData(children[i]))
+                    }
+                }
+
+                return learningAlgoData;
+            })
+    };
+
+    MOCACodeGenerator.prototype.getDatabaseData = function (databaseNode) {
+        var self = this;
+        return {
+            name: self.core.getAttribute(databaseNode, 'name'),
+            mtcAgentURL: self.core.getAttribute(databaseNode, 'MTConnectAgentURL'),
+            dbname: self.core.getAttribute(databaseNode, 'DBName')
+        };
+    };
+
+    MOCACodeGenerator.prototype.getInputPortData = function (inputPortNode) {
+        var self = this;
+        return {
+            name: self.core.getAttribute(inputPortNode, 'name')
+        };
+    };
+
+    MOCACodeGenerator.prototype.getOutputPortData = function (outputPortNode) {
+        var self = this;
+        return {
+            name: self.core.getAttribute(outputPortNode, 'name')
+        };
+    };
+
+    /**********************************************************************************************************/
 
     // This is a recursive function which goes through a group and populates the lists groupPromises and componentPromises
     MOCACodeGenerator.prototype.recursivelyPopulateGroupContents = function(componentPromises, groupPromises, groupNode) {
@@ -640,11 +857,16 @@ define([
         var self = this,
             deferred = Q.defer(),
             connectionData = {
+                name: self.core.getAttribute(self.getMetaType(connectionNode), 'name'),
                 src: null,
+                srcMeta: null,
                 srcParent: null,
+                srcParentMeta: null,
                 srcOnto: "",
                 dst: null,
+                dstMeta: null,
                 dstParent: null,
+                dstParentMeta: null,
                 dstOnto: ""
             };
 
@@ -652,26 +874,40 @@ define([
             if (err) {
                 deferred.reject(new Error(err))
             } else {
+                var srcParent = self.core.getParent(srcNode);
+                var srcMeta = self.getMetaType(srcNode);
+                var srcParentMeta = self.getMetaType(srcParent);
+
                 connectionData.src = self.core.getAttribute(srcNode, 'name');
-                connectionData.srcParent = self.core.getAttribute(self.core.getParent(srcNode), 'name');
-                if (self.core.getAttribute(self.getMetaType(connectionNode), 'name') === 'DataConn') {
-                    var srcMetaType = self.core.getAttribute(self.getMetaType(srcNode), 'name');
-                    if (srcMetaType === 'Unknown' || srcMetaType === 'Parameter') {
+                connectionData.srcMeta = self.core.getAttribute(srcMeta, 'name');
+                connectionData.srcParent = self.core.getAttribute(srcParent, 'name');
+                connectionData.srcParentMeta = self.core.getAttribute(srcParentMeta, 'name');
+
+                if (connectionData.name === 'DataConn') {
+                    if (connectionData.srcMeta === 'Unknown' || connectionData.srcMeta === 'Parameter') {
                         connectionData.srcOnto = self.core.getAttribute(srcNode, 'OntologyElementID');
                     }
                 }
+
                 self.core.loadPointer(connectionNode, 'dst', function (err, dstNode) {
                     if (err) {
                         deferred.reject(new Error(err));
                     } else {
+                        var dstParent = self.core.getParent(dstNode),
+                            dstMeta = self.getMetaType(dstNode),
+                            dstParentMeta = self.getMetaType(dstParent);
+
                         connectionData.dst = self.core.getAttribute(dstNode, 'name');
-                        connectionData.dstParent = self.core.getAttribute(self.core.getParent(dstNode), 'name');
-                        if (self.core.getAttribute(self.getMetaType(connectionNode), 'name') === 'DataConn') {
-                            var dstMetaType = self.core.getAttribute(self.getMetaType(dstNode), 'name');
-                            if (dstMetaType === 'Unknown' || dstMetaType === 'Parameter') {
+                        connectionData.dstMeta = self.core.getAttribute(dstMeta, 'name');
+                        connectionData.dstParent = self.core.getAttribute(dstParent, 'name');
+                        connectionData.dstParentMeta = self.core.getAttribute(dstParentMeta, 'name');
+
+                        if (connectionData.name === 'DataConn') {
+                            if (connectionData.dstMeta === 'Unknown' || connectionData.dstMeta === 'Parameter') {
                                 connectionData.dstOnto = self.core.getAttribute(dstNode, 'OntologyElementID');
                             }
                         }
+
                         deferred.resolve(connectionData);
                     }
                 });
@@ -896,6 +1132,8 @@ define([
             artifact = self.blobClient.createArtifact(dataModel.problems[0].name);
         else if (pluginInvocation === 'ProcessFlow')
             artifact = self.blobClient.createArtifact(dataModel.processFlows[0].name);
+        else if (pluginInvocation === 'DataDrivenComponent')
+            artifact = self.blobClient.createArtifact(dataModel.ddComps[0].name);
 
         if (pluginInvocation === 'ROOT') {
             filesToAdd['MOCA.json'] = JSON.stringify(dataModel, null, 2);
@@ -1032,6 +1270,16 @@ define([
                     genFileName = path.join(baseDir, 'utils', 'moca_plotutils', dataModel.problems[i].name + '_plotutils.py');
                     saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]));
                 }
+            } else if (fileInfo.name === 'preprocessors') {
+                for (var i = 0; i < dataModel.ddComps.length; i++) {
+                    for (var j = 0; j < dataModel.ddComps[i].dataPreprocs.length; j++) {
+                        var ddCompName = dataModel.ddComps[i].name,
+                            preprocName = dataModel.ddComps[i].dataPreprocs[j].name;
+
+                        genFileName = path.join(baseDir, 'lib', 'moca_ddmodels', ddCompName, 'preprocs', preprocName + '.py');
+                        saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i].dataPreprocs[j]));
+                    }
+                }
             }
         });
 
@@ -1089,11 +1337,25 @@ define([
                     filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]);
                     filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.processFlows[i]);
                 }
+            } else if (fileInfo.name === 'preprocessors') {
+                for (var i = 0; i < dataModel.ddComps.length; i++) {
+                    for (var j = 0; j < dataModel.ddComps[i].dataPreprocs.length; j++) {
+                        var ddCompName = dataModel.ddComps[i].name,
+                            preprocName = dataModel.ddComps[i].dataPreprocs[j].name;
+
+                        genFileName = 'MOCA_GeneratedCode/lib/moca_ddmodels/' + ddCompName + '/preprocs/' + preprocName + '.py';
+                        filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i].dataPreprocs[j]);
+                    }
+                }
             }
         });
 
         // Create __init__.py file in the lib, src and util directories each
         var subdirectories = ['lib', 'lib/moca_components', 'lib/moca_groups', 'src', 'utils', 'utils/moca_plotutils'];
+        for (var i = 0; i < dataModel.ddComps.length; i++) {
+            subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name);
+            subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/preprocs');
+        }
         for (var i = 0; i < subdirectories.length; i++) {
             var initFileName = 'MOCA_GeneratedCode/' + subdirectories[i] + '/__init__.py';
             filesToAdd[initFileName] = '# A boilerplate file to enable this directory to be imported as a module';
