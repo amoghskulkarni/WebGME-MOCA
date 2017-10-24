@@ -463,7 +463,7 @@ define([
                           || childMetaType === 'InToFeatureAssoc'
                           || childMetaType === 'ParamToFeatureAssoc'
                           || childMetaType === 'UnknownToLabelAssoc')
-                        connectionPromises.push(self.getMaterialFlowData(children[i]));
+                        connectionPromises.push(self.getConnectionData(children[i]));
                 }
 
                 return Q.all(dataSourcePromises);
@@ -508,15 +508,15 @@ define([
         var self = this,
             deferred = new Q.defer(),
             dataSourceData = {
-                name: self.core.getAttribute(ddComponentNode, 'name'),
-                forEach: self.core.getAttribute(ddComponentNode, 'ForEach'),
-                operation: self.core.getAttribute(ddComponentNode, 'Operation'),
-                tags: self.core.getAttribute(ddComponentNode, 'Tags'),
-                t_end: self.core.getAttribute(ddComponentNode, 'TimestampEnd'),
-                t_start: self.core.getAttribute(ddComponentNode, 'TimestampStart'),
-                type: self.core.getAttribute(ddComponentNode, 'Type'),
-                value: self.core.getAttribute(ddComponentNode, 'Value'),
-                variableNameInDB: self.core.getAttribute(ddComponentNode, 'VariableName'),
+                name: self.core.getAttribute(dataSourceNode, 'name'),
+                forEach: self.core.getAttribute(dataSourceNode, 'ForEach'),
+                operation: self.core.getAttribute(dataSourceNode, 'Operation'),
+                tags: self.core.getAttribute(dataSourceNode, 'Tags'),
+                t_end: self.core.getAttribute(dataSourceNode, 'TimestampEnd'),
+                t_start: self.core.getAttribute(dataSourceNode, 'TimestampStart'),
+                type: self.core.getAttribute(dataSourceNode, 'Type'),
+                value: self.core.getAttribute(dataSourceNode, 'Value'),
+                variableNameInDB: self.core.getAttribute(dataSourceNode, 'VariableName'),
                 databaseRef: null,
                 children: []
             };
@@ -534,7 +534,7 @@ define([
                             }
                         });
                     } else {
-                        children.push({
+                        dataSourceData.children.push({
                             name: self.core.getAttribute(children[i], 'name'),
                             meta: childMetaType
                         });
