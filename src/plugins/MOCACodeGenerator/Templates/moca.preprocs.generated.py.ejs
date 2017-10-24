@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
-def sanity_check(input_list):
-    # Add the logic to check if the parameters to this methods are of equal dimensions
+def sanity_check(param_list):
+    # TODO: Add the logic to check if the parameters to this methods are of equal dimensions
+    # TODO: Implement the method with variable arguments signature
     return True
 
 <%
@@ -11,7 +12,7 @@ def sanity_check(input_list):
 var inputs_list = "";
 var outputs_list = "";
 for (var i = 0; i < inputPorts.length; i++) {
-    inputs_list += inputPorts[i];
+    inputs_list += inputPorts[i].name;
     if (i < inputPorts.length - 1) {
         inputs_list += ", ";
     }
@@ -19,7 +20,7 @@ for (var i = 0; i < inputPorts.length; i++) {
 
 // Create a list of outputs, return from the definition as the tuple of return values
 for (var i = 0; i < outputPorts.length; i++) {
-    outputs_list += outputPorts[i];
+    outputs_list += outputPorts[i].name;
     if (i < outputPorts.length - 1) {
         outputs_list += ", ";
     }
@@ -34,17 +35,17 @@ def <%= name %>(<%= inputs_list %>):
 
     # User-defined business logic of preprocessing of the data
 <%
-    if (outputFunction !== '') {
-        // Print the user defined code snippet
-        var eqnLines = outputFunction.split("\n");
-        for (var j = 0; j < eqnLines.length; j++) {
-            if (eqnLines[j] !== '') {
+if (outputFunction !== '') {
+    // Print the user defined code snippet
+    var eqnLines = outputFunction.split("\n");
+    for (var j = 0; j < eqnLines.length; j++) {
+        if (eqnLines[j] !== '') {
 -%>
     <%= eqnLines[j] %>
 <%
-            }
         }
     }
+}
 -%>
     #####
 
@@ -53,6 +54,3 @@ def <%= name %>(<%= inputs_list %>):
         raise ValueError('Outputs of the preprocessor component "<%= name %>" are not of equal dimension')
 
     return (<%= outputs_list %>)
-<%
-}
--%>

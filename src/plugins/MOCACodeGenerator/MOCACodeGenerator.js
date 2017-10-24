@@ -63,6 +63,10 @@ define([
                 name: 'process flows',
                 template: 'moca.processflows.generated.py.ejs',
                 ipynbfile: 'moca.processflow.generated.ipynb.ejs'
+            },
+            {
+                name: 'preprocessors',
+                template: 'moca.preprocs.generated.py.ejs'
             }
         ];
     };
@@ -317,7 +321,7 @@ define([
         }
 
         // If the code generator is invoked from a DataDrivenComponent
-        else if (self.core.getAttribute(self.getMetaType(rootNode), 'name') === 'ProcessFlow') {
+        else if (self.core.getAttribute(self.getMetaType(rootNode), 'name') === 'DataDrivenComponent') {
             // No need to recursively populate anything here, this is not a recursive structure as of yet
             ddComponentPromises.push(self.getDDComponentData(rootNode));
             return Q.all(ddComponentPromises)
@@ -1128,6 +1132,8 @@ define([
             artifact = self.blobClient.createArtifact(dataModel.problems[0].name);
         else if (pluginInvocation === 'ProcessFlow')
             artifact = self.blobClient.createArtifact(dataModel.processFlows[0].name);
+        else if (pluginInvocation === 'DataDrivenComponent')
+            artifact = self.blobClient.createArtifact(dataModel.ddComps[0].name);
 
         if (pluginInvocation === 'ROOT') {
             filesToAdd['MOCA.json'] = JSON.stringify(dataModel, null, 2);
@@ -1264,6 +1270,16 @@ define([
                     genFileName = path.join(baseDir, 'utils', 'moca_plotutils', dataModel.problems[i].name + '_plotutils.py');
                     saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]));
                 }
+            } else if (fileInfo.name === 'preprocessors') {
+                for (var i = 0; i < dataModel.ddComps.length; i++) {
+                    for (var j = 0; j < dataModel.ddComps[i].dataPreprocs.length; j++) {
+                        var ddCompName = dataModel.ddComps[i].name,
+                            preprocName = dataModel.ddComps[i].dataPreprocs[j].name;
+
+                        genFileName = path.join(baseDir, 'lib', 'moca_ddmodels', ddCompName, 'preprocs', preprocName + '.py');
+                        saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i].dataPreprocs[j]));
+                    }
+                }
             }
         });
 
@@ -1321,11 +1337,25 @@ define([
                     filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]);
                     filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.processFlows[i]);
                 }
+            } else if (fileInfo.name === 'preprocessors') {
+                for (var i = 0; i < dataModel.ddComps.length; i++) {
+                    for (var j = 0; j < dataModel.ddComps[i].dataPreprocs.length; j++) {
+                        var ddCompName = dataModel.ddComps[i].name,
+                            preprocName = dataModel.ddComps[i].dataPreprocs[j].name;
+
+                        genFileName = 'MOCA_GeneratedCode/lib/moca_ddmodels/' + ddCompName + '/preprocs/' + preprocName + '.py';
+                        filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i].dataPreprocs[j]);
+                    }
+                }
             }
         });
 
         // Create __init__.py file in the lib, src and util directories each
         var subdirectories = ['lib', 'lib/moca_components', 'lib/moca_groups', 'src', 'utils', 'utils/moca_plotutils'];
+        for (var i = 0; i < dataModel.ddComps.length; i++) {
+            subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name);
+            subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/preprocs');
+        }
         for (var i = 0; i < subdirectories.length; i++) {
             var initFileName = 'MOCA_GeneratedCode/' + subdirectories[i] + '/__init__.py';
             filesToAdd[initFileName] = '# A boilerplate file to enable this directory to be imported as a module';
