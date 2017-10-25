@@ -503,11 +503,11 @@ define([
             deferred = new Q.defer(),
             dataSourceData = {
                 name: self.core.getAttribute(dataSourceNode, 'name'),
-                forEach: self.core.getAttribute(dataSourceNode, 'ForEach'),
-                operation: self.core.getAttribute(dataSourceNode, 'Operation'),
+                forEachTag: self.core.getAttribute(dataSourceNode, 'ForEach'),
+                operationOnMeasurement: self.core.getAttribute(dataSourceNode, 'Operation'),
                 tags: self.core.getAttribute(dataSourceNode, 'Tags'),
-                t_end: self.core.getAttribute(dataSourceNode, 'TimestampEnd'),
-                t_start: self.core.getAttribute(dataSourceNode, 'TimestampStart'),
+                tEnd: self.core.getAttribute(dataSourceNode, 'TimestampEnd'),
+                tStart: self.core.getAttribute(dataSourceNode, 'TimestampStart'),
                 type: self.core.getAttribute(dataSourceNode, 'Type'),
                 value: self.core.getAttribute(dataSourceNode, 'Value'),
                 variableNameInDB: self.core.getAttribute(dataSourceNode, 'VariableName'),
@@ -597,7 +597,9 @@ define([
         return {
             name: self.core.getAttribute(databaseNode, 'name'),
             mtcAgentURL: self.core.getAttribute(databaseNode, 'MTConnectAgentURL'),
-            dbname: self.core.getAttribute(databaseNode, 'DBName')
+            dbName: self.core.getAttribute(databaseNode, 'DBName'),
+            dbHost: self.core.getAttribute(databaseNode, 'Host'),
+            dbPortNo: selfcore.getAttribute(databaseNode, 'Port')
         };
     };
 
