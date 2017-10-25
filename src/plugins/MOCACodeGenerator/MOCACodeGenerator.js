@@ -517,7 +517,8 @@ define([
                 variableNameInDB: self.core.getAttribute(dataSourceNode, 'VariableName'),
                 databaseRef: [],
                 children: []
-            };
+            },
+            databaseRefPromises = [];
 
         return self.core.loadChildren(dataSourceNode)
             .then(function (children) {
@@ -525,12 +526,8 @@ define([
                     var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
                     if (childMetaType === 'DatabaseRef') {
                         self.core.loadPointer(children[i], 'ref')
-                            .then(function (err, refNode) {
-                                if (err) {
-                                    deferred.reject(new Error(err))
-                                } else {
-                                    dataSourceData.databaseRef.push(self.getDatabaseData(refNode))
-                                }
+                            .then(function (refNode) {
+                                databaseRefPromises.push(self.getDatabaseData(refNode));
                             });
                     } else {
                         dataSourceData.children.push({
@@ -540,7 +537,7 @@ define([
                     }
                 }
 
-                return Q.all(dataSourceData.databaseRef);
+                return Q.all(databaseRefPromises);
             })
             .then(function (databaseRefData) {
                 dataSourceData.databaseRef = databaseRefData;
@@ -1378,7 +1375,7 @@ define([
         });
 
         // Create __init__.py file in the lib, src and util directories each
-        var subdirectories = ['lib', 'lib/moca_components', 'lib/moca_groups', 'src', 'utils', 'utils/moca_plotutils'];
+        var subdirectories = ['lib', 'lib/moca_components', 'lib/moca_groups', 'src', 'utils', 'utils/moca_plotutils', 'lib/moca_ddmodels'];
         for (var i = 0; i < dataModel.ddComps.length; i++) {
             subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name);
             subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/preprocs');
