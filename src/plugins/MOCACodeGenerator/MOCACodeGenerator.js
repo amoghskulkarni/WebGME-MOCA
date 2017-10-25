@@ -1277,16 +1277,19 @@ define([
                     genFileName = path.join(baseDir, 'utils', 'moca_plotutils', dataModel.problems[i].name + '_plotutils.py');
                     saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]));
                 }
-            } else if (fileInfo.name === 'preprocessors' || fileInfo.name === 'data sources') {
+            } else if (fileInfo.name === 'preprocessors') {
                 for (var i = 0; i < dataModel.ddComps.length; i++) {
-                    var ddCompName = dataModel.ddComps[i].name
+                    var ddCompName = dataModel.ddComps[i].name;
                     for (var j = 0; j < dataModel.ddComps[i].dataPreprocs.length; j++) {
                         var preprocName = dataModel.ddComps[i].dataPreprocs[j].name;
 
                         genFileName = path.join(baseDir, 'lib', 'moca_ddmodels', ddCompName, 'preprocs', preprocName + '.py');
                         saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i].dataPreprocs[j]));
                     }
-
+                }
+            } else if (fileInfo.name === 'data sources') {
+                for (var i = 0; i < dataModel.ddComps.length; i++) {
+                    var ddCompName = dataModel.ddComps[i].name;
                     for (var j = 0; j < dataModel.ddComps[i].dataSources.length; j++) {
                         var dataSourceName = dataModel.ddComps[i].dataSources[j].name;
 
