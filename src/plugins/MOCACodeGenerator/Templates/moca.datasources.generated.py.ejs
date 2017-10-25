@@ -21,6 +21,20 @@ for (var i = 0; i < query_params_list.length; i++) {
         query_params_names_list += ", ";
     }
 }
+if (forEachTag === '')
+    forEachTag = '\'\''
+if (operationOnMeasurement === '')
+    operationOnMeasurement = '\'\''
+if (variableNameInDB === '')
+    variableNameInDB = '\'\''
+if (tags === '')
+    tags = '\'\''
+if (tEnd === '')
+    tEnd = '\'\''
+if (tStart === '')
+    tStart = '\'\''
+if (value === '')
+    value = '\'\''
 -%>
 
 def sanity_check(param_list):
@@ -32,50 +46,57 @@ class <%= name %>():
     def __init__(self, <%= query_params_names_list %>):
         # Query parameters
         self.query_params = {}
-        self.query_params['for_each'] = <%= forEachTag %>
-        self.query_params['operation'] = <%= operationOnMeasurement %>
-        self.query_params['measurement'] = <%= variableNameInDB %>
+        self.query_params['for_each'] = <%- forEachTag %>
+        self.query_params['operation'] = <%- operationOnMeasurement %>
+        self.query_params['measurement'] = <%- variableNameInDB %>
 <%
+var p_tags = false,
+    p_tEnd = false,
+    p_tStart = false,
+    p_value = false;
 for (var i = 0; i < query_params_list.length; i++) {
     if (query_params_list[i].meta === 'QueryParamTags') {
 -%>
         self.query_params['tags'] = <%= query_params_list[i].name %>
 <%
-    } else {
--%>
-        self.query_params['tags'] = <%= tags %>
-<%
-    }
-
-    if (query_params_list[i].meta === 'QueryParamTEnd') {
+        p_tags = true;
+    } else if (query_params_list[i].meta === 'QueryParamTEnd') {
 -%>
         self.query_params['t_end'] = <%= query_params_list[i].name %>
 <%
-    } else {
--%>
-        self.query_params['t_end'] = <%= tEnd %>
-<%
-    }
-
-    if (query_params_list[i].meta === 'QueryParamTStart') {
+        p_tEnd = true;
+    } else if (query_params_list[i].meta === 'QueryParamTStart') {
 -%>
         self.query_params['t_start'] = <%= query_params_list[i].name %>
 <%
-    } else {
--%>
-        self.query_params['t_start'] = <%= tStart %>
-<%
-    }
-
-    if (query_params_list[i].meta === 'QueryParamValue') {
+        p_tStart = true;
+    } else if (query_params_list[i].meta === 'QueryParamValue') {
 -%>
         self.query_params['value'] = <%= query_params_list[i].name %>
 <%
-    } else {
--%>
-        self.query_params['value'] = <%= value %>
-<%
+        p_value = true;
     }
+}
+
+if (!p_tags) {
+-%>
+        self.query_params['tags'] = <%- tags %>
+<%
+}
+if (!p_tEnd) {
+-%>
+        self.query_params['t_end'] = <%- tEnd %>
+<%
+}
+if (!p_tStart) {
+-%>
+        self.query_params['t_start'] = <%- tStart %>
+<%
+}
+if (!p_value) {
+-%>
+        self.query_params['value'] = <%- value %>
+<%
 }
 -%>
 
@@ -90,16 +111,39 @@ for (var i = 0; i < query_results_list.length; i++) {
 -%>
 
         # InfluxDB client
-        self.client = InfluxDBClient(host='<%= dbHame %>', port=<%= dbPortNo %>, database='<%= dbName %>')
+        self.client = InfluxDBClient(host='<%= databaseRef[0].dbHost %>', port=<%= databaseRef[0].dbPortNo %>, database='<%= databaseRef[0].dbName %>')
 
-    # TODO: Private method for building a query
-    def __build_query(self):
-        pass
+    def __build_query_string(self, query_n=None):
+        query_string = ''
+        where_clause = ''
+        group_by_clause = ''
+        measurement = self.query_params['measurement']
 
-    # TODO: Private method to execute a query
+        # Extract t_start, t_end, values, tags, group_by, operation
+        # TODO: Use value filter in WHERE clause
+        
+        if not query_n:
+            # Single query
+
+
     def __execute_query(self):
-        # Convert to np_array, check shape and then execute one or multiple queries
-        pass
+        query_result_groups = []
+        query_result_times = []
+        query_result_values = []
+
+        # TODO: Check shape and raise error if the shapes mismatch
+
+        # Here we are assuming that the shapes of t_start, t_end, values and tags are the same
+        # (i.e. if they have a non-zero value flowing/hardcoded inside them)
+        param_shape = np_array(self.query_params['t_start']).shape
+
+        if len(param_shape) == 1:
+            # This is a 1D array, only 1 query is fired
+            query_string = self.__build_query_string()
+        else if len(param_shape) == 2:
+            # This is a 2D array, multiple queries are fired
+            for query_n in range(param_shape[0]):
+                query_string = self.__build_query_string()
 
     # TODO: Method to get the result assigned to query_result member of this object
     def get_query_result(self):

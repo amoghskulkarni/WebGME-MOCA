@@ -67,6 +67,10 @@ define([
             {
                 name: 'preprocessors',
                 template: 'moca.preprocs.generated.py.ejs'
+            },
+            {
+                name: 'data sources',
+                template: 'moca.datasources.generated.py.ejs'
             }
         ];
     };
@@ -511,7 +515,7 @@ define([
                 type: self.core.getAttribute(dataSourceNode, 'Type'),
                 value: self.core.getAttribute(dataSourceNode, 'Value'),
                 variableNameInDB: self.core.getAttribute(dataSourceNode, 'VariableName'),
-                databaseRef: null,
+                databaseRef: [],
                 children: []
             };
 
@@ -520,13 +524,14 @@ define([
                 for (var i = 0; i < children.length; i++) {
                     var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
                     if (childMetaType === 'DatabaseRef') {
-                        self.core.loadPointer(children[i], 'ref', function (err, refNode) {
-                            if (err) {
-                                deferred.reject(new Error(err))
-                            } else {
-                                dataSourceData.databaseRef = self.getDatabaseData(refNode)
-                            }
-                        });
+                        self.core.loadPointer(children[i], 'ref')
+                            .then(function (err, refNode) {
+                                if (err) {
+                                    deferred.reject(new Error(err))
+                                } else {
+                                    dataSourceData.databaseRef.push(self.getDatabaseData(refNode))
+                                }
+                            });
                     } else {
                         dataSourceData.children.push({
                             name: self.core.getAttribute(children[i], 'name'),
@@ -535,7 +540,7 @@ define([
                     }
                 }
 
-                return deferred.resolve(dataSourceData.databaseRef);
+                return Q.all(dataSourceData.databaseRef);
             })
             .then(function (databaseRefData) {
                 dataSourceData.databaseRef = databaseRefData;
@@ -599,7 +604,7 @@ define([
             mtcAgentURL: self.core.getAttribute(databaseNode, 'MTConnectAgentURL'),
             dbName: self.core.getAttribute(databaseNode, 'DBName'),
             dbHost: self.core.getAttribute(databaseNode, 'Host'),
-            dbPortNo: selfcore.getAttribute(databaseNode, 'Port')
+            dbPortNo: self.core.getAttribute(databaseNode, 'Port')
         };
     };
 
@@ -1274,12 +1279,22 @@ define([
                 }
             } else if (fileInfo.name === 'preprocessors') {
                 for (var i = 0; i < dataModel.ddComps.length; i++) {
+                    var ddCompName = dataModel.ddComps[i].name;
                     for (var j = 0; j < dataModel.ddComps[i].dataPreprocs.length; j++) {
-                        var ddCompName = dataModel.ddComps[i].name,
-                            preprocName = dataModel.ddComps[i].dataPreprocs[j].name;
+                        var preprocName = dataModel.ddComps[i].dataPreprocs[j].name;
 
                         genFileName = path.join(baseDir, 'lib', 'moca_ddmodels', ddCompName, 'preprocs', preprocName + '.py');
                         saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i].dataPreprocs[j]));
+                    }
+                }
+            } else if (fileInfo.name === 'data sources') {
+                for (var i = 0; i < dataModel.ddComps.length; i++) {
+                    var ddCompName = dataModel.ddComps[i].name;
+                    for (var j = 0; j < dataModel.ddComps[i].dataSources.length; j++) {
+                        var dataSourceName = dataModel.ddComps[i].dataSources[j].name;
+
+                        genFileName = path.join(baseDir, 'lib', 'moca_ddmodels', ddCompName, 'data_sources', dataSourceName + '.py');
+                        saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i].dataSources[j]));
                     }
                 }
             }
@@ -1341,12 +1356,22 @@ define([
                 }
             } else if (fileInfo.name === 'preprocessors') {
                 for (var i = 0; i < dataModel.ddComps.length; i++) {
+                    var ddCompName = dataModel.ddComps[i].name;
                     for (var j = 0; j < dataModel.ddComps[i].dataPreprocs.length; j++) {
-                        var ddCompName = dataModel.ddComps[i].name,
-                            preprocName = dataModel.ddComps[i].dataPreprocs[j].name;
+                        var preprocName = dataModel.ddComps[i].dataPreprocs[j].name;
 
                         genFileName = 'MOCA_GeneratedCode/lib/moca_ddmodels/' + ddCompName + '/preprocs/' + preprocName + '.py';
                         filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i].dataPreprocs[j]);
+                    }
+                }
+            } else if (fileInfo.name === 'data sources') {
+                for (var i = 0; i < dataModel.ddComps.length; i++) {
+                    var ddCompName = dataModel.ddComps[i].name;
+                    for (var j = 0; j < dataModel.ddComps[i].dataSources.length; j++) {
+                        var dataSourceName = dataModel.ddComps[i].dataSources[j].name;
+
+                        genFileName = 'MOCA_GeneratedCode/lib/moca_ddmodels/' + ddCompName + '/data_sources/' + dataSourceName + '.py';
+                        filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i].dataSources[j]);
                     }
                 }
             }
@@ -1357,6 +1382,7 @@ define([
         for (var i = 0; i < dataModel.ddComps.length; i++) {
             subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name);
             subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/preprocs');
+            subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/data_sources')
         }
         for (var i = 0; i < subdirectories.length; i++) {
             var initFileName = 'MOCA_GeneratedCode/' + subdirectories[i] + '/__init__.py';
