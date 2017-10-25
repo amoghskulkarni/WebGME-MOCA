@@ -111,13 +111,21 @@ for (var i = 0; i < query_results_list.length; i++) {
         self.client = InfluxDBClient(host='<%= databaseRef[0].dbHost %>', port=<%= databaseRef[0].dbPortNo %>, database='<%= databaseRef[0].dbName %>')
 
     def __build_query_string(self, query_n=None):
-        query_string = 'SELECT value FROM {0}'.format(self.query_params['measurement'])
+<%
+    var valueString = 'value';
+    var stringInResult = 'value';
+    if (operationOnMeasurement === '\'Integral\'') {
+        valueString = 'INTEGRAL(value)';
+        stringInResult = 'integral';
+    }
+-%>
+        query_string = 'SELECT <%= valueString %> FROM {0}'.format(self.query_params['measurement'])
         where_clause = ''
         group_by_clause = ''
 
         # Extract t_start, t_end, values, tags, group_by, operation
         # TODO: Use value filter in WHERE clause
-        if not query_n:
+        if query_n is None:
             # Single query
             if self.query_params['t_start'] is not '' and self.query_params['t_end'] is not '':
                 where_clause += ' WHERE ('
@@ -166,9 +174,14 @@ for (var i = 0; i < query_results_list.length; i++) {
 
         # Here we are assuming that the shapes of t_start, t_end, values and tags are the same
         # (i.e. if they have a non-zero value flowing/hardcoded inside them)
-        param_shape = np_array(self.query_params['t_start']).shape
+        params_are_2D = False
+        try:
+            if type(self.query_params['t_start'][0]) == list:
+                params_are_2D = True
+        except IndexError:
+            pass
 
-        if len(param_shape) <= 1:
+        if not params_are_2D:
             # This is a 1D array or t_start='', only 1 query is fired
             query_string = self.__build_query_string()
             query_result = self.client.query(query=query_string)
@@ -181,19 +194,29 @@ for (var i = 0; i < query_results_list.length; i++) {
                     query_result_values_for_this_group = []
                     for v in query_group_value:
                         query_result_times_for_this_group.append(v['time'])
-                        query_result_values_for_this_group.append(v['value'])
+                        query_result_values_for_this_group.append(v['<%= stringInResult %>'])
                     query_result_times.append(query_result_times_for_this_group)
                     query_result_values.append(query_result_values_for_this_group)
             else:
                 for v in query_result[query_result.keys()[0]]:
                     query_result_times.append(v['time'])
-                    query_result_values.append(v['value'])
+                    query_result_values.append(v['<%= stringInResult %>'])
 
-        elif len(param_shape) == 2:
+        else:
             # This is a 2D array, multiple queries are fired
-            for query_n in range(param_shape[0]):
+            for query_n in range(len(self.query_params['t_start'])):
                 query_string = self.__build_query_string(query_n)
-                print self.client.query(query=query_string)
+                query_result = self.client.query(query=query_string)
+
+                this_query_result_times = []
+                this_query_result_values = []
+
+                for v in query_result[query_result.keys()[0]]:
+                    this_query_result_times.append(v['time'])
+                    this_query_result_values.append(v['<%= stringInResult %>'])
+
+                query_result_times.append(this_query_result_times)
+                query_result_values.append(this_query_result_values)
 
 <%
 for (var i = 0; i < query_results_list.length; i++) {

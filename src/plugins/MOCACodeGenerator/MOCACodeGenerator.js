@@ -525,11 +525,8 @@ define([
                 for (var i = 0; i < children.length; i++) {
                     var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
                     if (childMetaType === 'DatabaseRef') {
-                        self.core.loadPointer(children[i], 'ref')
-                            .then(function (refNode) {
-                                databaseRefPromises.push(self.getDatabaseData(refNode));
-                            });
-                    } else {
+                        databaseRefPromises.push(self.helperGetDatabase(children[i]));
+                    } else if (childMetaType !== 'Documentation') {
                         dataSourceData.children.push({
                             name: self.core.getAttribute(children[i], 'name'),
                             meta: childMetaType
@@ -543,6 +540,14 @@ define([
                 dataSourceData.databaseRef = databaseRefData;
                 return dataSourceData;
             })
+    };
+
+    MOCACodeGenerator.prototype.helperGetDatabase = function (referenceNode) {
+        var self = this;
+        return self.core.loadPointer(referenceNode, 'ref')
+            .then(function (databaseNode) {
+                return self.getDatabaseData(databaseNode);
+            });
     };
     
     MOCACodeGenerator.prototype.getDataPreprocessorData = function (dataPreprocNode) {
