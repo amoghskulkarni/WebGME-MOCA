@@ -113,9 +113,18 @@ for (var i = 0; i < query_results_list.length; i++) {
         # InfluxDB client
         self.client = InfluxDBClient(host='<%= databaseRef[0].dbHost %>', port=<%= databaseRef[0].dbPortNo %>, database='<%= databaseRef[0].dbName %>')
 
-    # TODO: Private method for building a query
-    def __build_query(self, t_start, t_end, values, tags, group_by, operation):
-        pass
+    def __build_query_string(self, query_n=None):
+        query_string = ''
+        where_clause = ''
+        group_by_clause = ''
+        measurement = self.query_params['measurement']
+
+        # Extract t_start, t_end, values, tags, group_by, operation
+        # TODO: Use value filter in WHERE clause
+        
+        if not query_n:
+            # Single query
+
 
     def __execute_query(self):
         query_result_groups = []
@@ -130,13 +139,11 @@ for (var i = 0; i < query_results_list.length; i++) {
 
         if len(param_shape) == 1:
             # This is a 1D array, only 1 query is fired
-            # Extract t_start, t_end, values, tags, group_by, operation and pass them to __build_query_string()
-            pass
+            query_string = self.__build_query_string()
         else if len(param_shape) == 2:
             # This is a 2D array, multiple queries are fired
             for query_n in range(param_shape[0]):
-                # Extract t_start, t_end, values, tags, group_by, operation and pass them to __build_query_string()
-                pass
+                query_string = self.__build_query_string()
 
     # TODO: Method to get the result assigned to query_result member of this object
     def get_query_result(self):
