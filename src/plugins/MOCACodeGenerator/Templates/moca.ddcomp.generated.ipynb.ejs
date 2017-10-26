@@ -36,7 +36,7 @@
     for (var i = 0; i < learningAlgorithms.length; i++) {
 -%>
                 ,"\n"
-                ,"from lib.moca_ddmodels.<%= name %>.data_sources.<%= learningAlgorithms[i].name %> import <%= learningAlgorithms[i].name %>"
+                ,"from lib.moca_ddmodels.<%= name %>.learning_algos.<%= learningAlgorithms[i].name %> import <%= learningAlgorithms[i].name %>"
 <%
     }
 -%>
@@ -122,7 +122,7 @@
             "source": [
                 "<%= dataPreprocName %>__inst = <%= dataPreprocName %>(<%- constructor_params %>)"
                 ,"\n"
-                ,"<%= dataPreprocName %>__inst.apply_processing()"
+                ,"<%= dataPreprocName %>__inst.apply_preprocessing()"
             ]
         }
 <%
