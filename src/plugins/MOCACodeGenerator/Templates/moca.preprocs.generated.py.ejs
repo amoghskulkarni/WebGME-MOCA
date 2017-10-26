@@ -6,11 +6,8 @@ def sanity_check(param_list):
     return True
 
 <%
-// Generate the code the preprocessor
-
 // Create a list of inputs, pass it as a list of arguments to the definition
 var inputs_list = "";
-var outputs_list = "";
 for (var i = 0; i < inputPorts.length; i++) {
     inputs_list += inputPorts[i].name;
     if (i < inputPorts.length - 1) {
@@ -18,7 +15,8 @@ for (var i = 0; i < inputPorts.length; i++) {
     }
 }
 
-// Create a list of outputs, return from the definition as the tuple of return values
+// Create a list of inputs, pass it as a list of arguments to the definition
+var outputs_list = "";
 for (var i = 0; i < outputPorts.length; i++) {
     outputs_list += outputPorts[i].name;
     if (i < outputPorts.length - 1) {
@@ -26,14 +24,49 @@ for (var i = 0; i < outputPorts.length; i++) {
     }
 }
 -%>
-def <%= name %>(<%= inputs_list %>):
-    <%= outputs_list %> = []
+class <%= name %>():
+    def __init__(self, <%= inputs_list %>):
+        # Inputs
+<%
+for (var i = 0; i < inputPorts.length; i++) {
+-%>
+        self.<%= inputPorts[i].name %> = <%= inputPorts[i].name %>
+<%
+}
+-%>
 
-    # Sanity check for the inputs
-    if not sanity_check([<%= inputs_list %>]):
-        raise ValueError('Inputs of the preprocessor component "<%= name %>" are not of equal dimension')
+        # Outputs
+<%
+for (var i = 0; i < outputPorts.length; i++) {
+-%>
+        self.<%= outputPorts[i].name %> = None
+<%
+}
+-%>
 
-    # User-defined business logic of preprocessing of the data
+    def apply_preprocessing(self):
+        # Local variables to carry the computation on
+<%
+for (var i = 0; i < inputPorts.length; i++) {
+-%>
+        <%= inputPorts[i].name %> = self.<%= inputPorts[i].name %>
+<%
+}
+-%>
+
+<%
+for (var i = 0; i < outputPorts.length; i++) {
+-%>
+        <%= outputPorts[i].name %> = []
+<%
+}
+-%>
+
+        # Sanity check for the inputs
+        if not sanity_check([<%= inputs_list %>]):
+            raise ValueError('Inputs of the preprocessor component "<%= name %>" are not of equal dimension')
+
+        ##### User-defined business logic of preprocessing of the data
 <%
 if (outputFunction !== '') {
     // Print the user defined code snippet
@@ -41,16 +74,24 @@ if (outputFunction !== '') {
     for (var j = 0; j < eqnLines.length; j++) {
         if (eqnLines[j] !== '') {
 -%>
-    <%- eqnLines[j] %>
+        <%- eqnLines[j] %>
 <%
         }
     }
 }
 -%>
-    #####
+        #####
 
-    # Sanity check for the outputs
-    if not sanity_check([<%= outputs_list %>]):
-        raise ValueError('Outputs of the preprocessor component "<%= name %>" are not of equal dimension')
+        # Sanity check for the outputs
+        if not sanity_check([<%= outputs_list %>]):
+            raise ValueError('Outputs of the preprocessor component "<%= name %>" are not of equal dimension')
 
-    return (<%= outputs_list %>)
+<%
+for (var i = 0; i < outputPorts.length; i++) {
+-%>
+        self.<%= outputPorts[i].name %> = <%= outputPorts[i].name %>
+<%
+}
+-%>
+
+        return

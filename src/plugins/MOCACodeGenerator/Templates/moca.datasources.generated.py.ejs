@@ -1,0 +1,231 @@
+#!/usr/bin/python
+from influxdb import InfluxDBClient
+
+<%
+var query_params_list = [],
+    query_params_names_list = "",
+    query_results_list = [];
+for (var i = 0; i < children.length; i++) {
+    if (children[i].meta !== 'QueryResultGroups'
+        && children[i].meta !== 'QueryResultTime'
+        && children[i].meta !== 'QueryResultValue') {
+        query_params_list.push(children[i]);
+    } else {
+        query_results_list.push(children[i]);
+    }
+}
+for (var i = 0; i < query_params_list.length; i++) {
+    query_params_names_list += query_params_list[i].name;
+    if (i < query_params_list.length - 1) {
+        query_params_names_list += ", ";
+    }
+}
+forEachTag = '\'' + forEachTag + '\''
+operationOnMeasurement = '\'' + operationOnMeasurement + '\''
+variableNameInDB = '\'' + variableNameInDB + '\''
+if (tags === '')
+    tags = '\'\''
+if (tEnd === '')
+    tEnd = '\'\''
+if (tStart === '')
+    tStart = '\'\''
+if (value === '')
+    value = '\'\''
+-%>
+
+def sanity_check(param_list):
+    # TODO: Add the logic to check if the parameters to this methods are of equal dimensions
+    # TODO: Implement the method with variable arguments signature
+    return True
+
+class <%= name %>():
+    def __init__(self, <%= query_params_names_list %>):
+        # Query parameters
+        self.query_params = {}
+        self.query_params['for_each'] = <%- forEachTag %>
+        self.query_params['operation'] = <%- operationOnMeasurement %>
+        self.query_params['measurement'] = <%- variableNameInDB %>
+<%
+var p_tags = false,
+    p_tEnd = false,
+    p_tStart = false,
+    p_value = false;
+for (var i = 0; i < query_params_list.length; i++) {
+    if (query_params_list[i].meta === 'QueryParamTags') {
+-%>
+        self.query_params['tags'] = <%= query_params_list[i].name %>
+<%
+        p_tags = true;
+    } else if (query_params_list[i].meta === 'QueryParamTEnd') {
+-%>
+        self.query_params['t_end'] = <%= query_params_list[i].name %>
+<%
+        p_tEnd = true;
+    } else if (query_params_list[i].meta === 'QueryParamTStart') {
+-%>
+        self.query_params['t_start'] = <%= query_params_list[i].name %>
+<%
+        p_tStart = true;
+    } else if (query_params_list[i].meta === 'QueryParamValue') {
+-%>
+        self.query_params['value'] = <%= query_params_list[i].name %>
+<%
+        p_value = true;
+    }
+}
+
+if (!p_tags) {
+-%>
+        self.query_params['tags'] = <%- tags %>
+<%
+}
+if (!p_tEnd) {
+-%>
+        self.query_params['t_end'] = <%- tEnd %>
+<%
+}
+if (!p_tStart) {
+-%>
+        self.query_params['t_start'] = <%- tStart %>
+<%
+}
+if (!p_value) {
+-%>
+        self.query_params['value'] = <%- value %>
+<%
+}
+-%>
+
+        # Query results
+        self.query_results = {}
+<%
+for (var i = 0; i < query_results_list.length; i++) {
+-%>
+        self.query_results['<%= query_results_list[i].name %>'] = []
+<%
+}
+-%>
+
+        # InfluxDB client
+        self.client = InfluxDBClient(host='<%= databaseRef[0].dbHost %>', port=<%= databaseRef[0].dbPortNo %>, database='<%= databaseRef[0].dbName %>')
+
+    def __build_query_string(self, query_n=None):
+<%
+    var valueString = 'value';
+    var stringInResult = 'value';
+    if (operationOnMeasurement === '\'Integral\'') {
+        valueString = 'INTEGRAL(value)';
+        stringInResult = 'integral';
+    }
+-%>
+        query_string = 'SELECT <%= valueString %> FROM {0}'.format(self.query_params['measurement'])
+        where_clause = ''
+        group_by_clause = ''
+
+        # Extract t_start, t_end, values, tags, group_by, operation
+        # TODO: Use value filter in WHERE clause
+        if query_n is None:
+            # Single query
+            if self.query_params['t_start'] is not '' and self.query_params['t_end'] is not '':
+                where_clause += ' WHERE ('
+                for t_s, t_e in zip(self.query_params['t_start'], self.query_params['t_end']):
+                    where_clause += '("time" > \'{0}\' AND "time" < \'{1}\') OR'.format(t_s, t_e)
+                where_clause = where_clause[:-3]                # To remove trailing OR
+                where_clause += ')'
+            if self.query_params['tags'] is not '':
+                if where_clause is '':
+                    where_clause += ' WHERE ('
+                else:
+                    where_clause += 'AND ('
+                for tag_key, tag_value in self.query_params['tags'].items():
+                    where_clause += '("{0}"=\'{1}\') AND'.format(tag_key, tag_value)
+                where_clause = where_clause[:-4]                # To remove trailing AND
+                where_clause += ')'
+            if self.query_params['for_each'] is not '':
+                group_by_clause += ' GROUP BY {0}'.format(self.query_params['for_each'])
+            query_string += '{0}{1}'.format(where_clause, group_by_clause)
+        else:
+            # Multiple queries
+            if self.query_params['t_start'] is not '' and self.query_params['t_end'] is not '':
+                where_clause += ' WHERE '
+                t_s = self.query_params['t_start'][query_n]
+                t_e = self.query_params['t_end'][query_n]
+                where_clause += '("time" > \'{0}\' AND "time" < \'{1}\')'.format(t_s, t_e)
+            if self.query_params['tags'] is not '':
+                if where_clause is '':
+                    where_clause += ' WHERE ('
+                else:
+                    where_clause += ' AND ('
+                for tag_key, tag_value in self.query_params['tags'][query_n].items():
+                    where_clause += '"{0}"=\'{1}\' AND '.format(tag_key, tag_value)
+                where_clause = where_clause[:-5]                # To remove trailing AND
+                where_clause += ')'
+            query_string += '{0}'.format(where_clause)
+
+        return query_string
+
+    def execute_query(self):
+        query_result_groups = []
+        query_result_times = []
+        query_result_values = []
+
+        # TODO: Check shape and raise error if the shapes mismatch
+
+        # Here we are assuming that the shapes of t_start, t_end, values and tags are the same
+        # (i.e. if they have a non-zero value flowing/hardcoded inside them)
+        params_are_list = False
+        if type(self.query_params['tags']) == list:
+            params_are_list = True
+
+        if not params_are_list:
+            # This is a 1D array or t_start='', only 1 query is fired
+            query_string = self.__build_query_string()
+            query_result = self.client.query(query=query_string)
+
+            # If it is a GROUP BY query
+            if query_result.keys()[0][1] is not None:
+                for query_group_key, query_group_value in query_result.items():
+                    query_result_groups.append(query_group_key[1])
+                    query_result_times_for_this_group = []
+                    query_result_values_for_this_group = []
+                    for v in query_group_value:
+                        query_result_times_for_this_group.append(v['time'])
+                        query_result_values_for_this_group.append(v['<%= stringInResult %>'])
+                    query_result_times.append(query_result_times_for_this_group)
+                    query_result_values.append(query_result_values_for_this_group)
+            else:
+                for v in query_result[query_result.keys()[0]]:
+                    query_result_times.append(v['time'])
+                    query_result_values.append(v['<%= stringInResult %>'])
+
+        else:
+            # This is a 2D array, multiple queries are fired
+            for query_n in range(len(self.query_params['tags'])):
+                query_string = self.__build_query_string(query_n)
+                print "Query: " + query_string
+                query_result = self.client.query(query=query_string)
+
+                this_query_result_times = []
+                this_query_result_values = []
+
+                for v in query_result[query_result.keys()[0]]:
+                    this_query_result_times.append(v['time'])
+                    this_query_result_values.append(v['<%= stringInResult %>'])
+
+                query_result_times.append(this_query_result_times)
+                query_result_values.append(this_query_result_values)
+
+<%
+for (var i = 0; i < query_results_list.length; i++) {
+    var variableName = '';
+    if (query_results_list[i].meta === 'QueryResultGroups')
+        variableName = 'query_result_groups';
+    else if (query_results_list[i].meta === 'QueryResultTime')
+        variableName = 'query_result_times';
+    else if (query_results_list[i].meta === 'QueryResultValue')
+        variableName = 'query_result_values'
+-%>
+        self.query_results['<%= query_results_list[i].name %>'] = <%= variableName %>
+<%
+}
+-%>
