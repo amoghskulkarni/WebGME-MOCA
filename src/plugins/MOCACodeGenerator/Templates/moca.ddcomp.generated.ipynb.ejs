@@ -1,0 +1,209 @@
+{
+    "cells": [
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "# <%= name %> Data-Driven Component Training Notebook\n",
+                "***",
+                "\n",
+                "## Module imports\n",
+                "\n"
+            ]
+        }
+        ,{
+            "cell_type": "code",
+            "execution_count": null,
+            "metadata": {
+                "collapsed": true
+            },
+            "outputs": [],
+            "source": [
+                "%matplotlib inline"
+<%
+    for (var i = 0; i < dataSources.length; i++) {
+-%>
+                ,"\n"
+                ,"from lib.moca_ddmodels.<%= name %>.data_sources.<%= dataSources[i].name %> import <%= dataSources[i].name %>"
+<%
+    }
+    for (var i = 0; i < dataPreprocs.length; i++) {
+-%>
+                ,"\n"
+                ,"from lib.moca_ddmodels.<%= name %>.preprocs.<%= dataPreprocs[i].name %> import <%= dataPreprocs[i].name %>"
+<%
+    }
+    for (var i = 0; i < learningAlgorithms.length; i++) {
+-%>
+                ,"\n"
+                ,"from lib.moca_ddmodels.<%= name %>.data_sources.<%= learningAlgorithms[i].name %> import <%= learningAlgorithms[i].name %>"
+<%
+    }
+-%>
+            ]
+        }
+        ,{
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## Data Sources (Database querying)\n"
+            ]
+        }
+<%
+    for (var i = 0; i < dataSources.length; i++) {
+        var constructor_params = '',
+            dataSourceName = dataSources[i].name;
+        for (var j = 0; j < dataSources[i].children.length; j++) {
+            var childMetaType = dataSources[i].children[j].meta,
+                childName = dataSources[i].children[j].name;
+            if (childMetaType === 'QueryParamTags' || childMetaType === 'QueryParamTEnd'
+                    || childMetaType === 'QueryParamTStart' || childMetaType === 'QueryParamValue') {
+                constructor_params += (childName + '=');
+                for (var k = 0; k < connections.length; k++) {
+                    if (connections[k].dst === childName && connections[k].dstParent === dataSourceName) {
+                        if (connections[k].srcParentMeta === 'DataSource') {
+                            constructor_params += (connections[k].srcParent + '__inst.query_results[\'' + connections[k].src + '\'],');
+                        } else if (connections[k].srcParentMeta === 'DataPreprocessor') {
+                            constructor_params += (connections[k].srcParent + '__inst.' + connections[k].src + ',');
+                        }
+                    }
+                }
+            }
+        }
+-%>
+        ,{
+            "cell_type": "code",
+            "execution_count": null,
+            "metadata": {
+            "collapsed": true
+            },
+            "outputs": [],
+            "source": [
+                "<%- dataSourceName %>__inst = <%- dataSourceName %>(<%- constructor_params %>)"
+                ,"\n"
+                ,"<%- dataSourceName %>__inst.execute_query()"
+            ]
+        }
+<%
+    }
+-%>
+        ,{
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## Preprocessors\n"
+            ]
+        }
+<%
+    for (var i = 0; i < dataPreprocs.length; i++) {
+        var constructor_params = '',
+            dataPreprocName = dataPreprocs[i].name;
+        for (var j = 0; j < dataPreprocs[i].inputPorts.length; j++) {
+            var inputPortName = dataPreprocs[i].inputPorts[j].name;
+            constructor_params += (inputPortName + '=');
+            for (var k = 0; k < connections.length; k++) {
+                if (connections[k].dst === inputPortName && connections[k].dstParent === dataPreprocName) {
+                    if (connections[k].srcParentMeta === 'DataSource') {
+                        constructor_params += (connections[k].srcParent + '__inst.query_results[\'' + connections[k].src + '\'],');
+                    } else if (connections[k].srcParentMeta === 'DataPreprocessor') {
+                        constructor_params += (connections[k].srcParent + '__inst.' + connections[k].src + ',');
+                    }
+                }
+            }
+        }
+-%>
+        ,{
+            "cell_type": "code",
+            "execution_count": null,
+            "metadata": {
+                "collapsed": true
+            },
+            "outputs": [],
+            "source": [
+                "<%= dataPreprocName %>__inst = <%= dataPreprocName %>(<%- constructor_params %>)"
+                ,"\n"
+                ,"<%= dataPreprocName %>__inst.apply_processing()"
+            ]
+        }
+<%
+}
+-%>
+        ,{
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## Learning Algorithms (Model training)\n"
+            ]
+        }
+<%
+    for (var i = 0; i < learningAlgorithms.length; i++) {
+        var constructor_params = '',
+            learningAlgoName = learningAlgorithms[i].name;
+        for (var j = 0; j < learningAlgorithms[i].featurePorts.length; j++) {
+            var featurePortName = learningAlgorithms[i].featurePorts[j].name;
+            constructor_params += (featurePortName + '=');
+            for (var k = 0; k < connections.length; k++) {
+                if (connections[k].dst === featurePortName && connections[k].dstParent === learningAlgoName) {
+                    if (connections[k].srcParentMeta === 'DataSource') {
+                        constructor_params += (connections[k].srcParent + '__inst.query_results[\'' + connections[k].src + '\'],');
+                    } else if (connections[k].srcParentMeta === 'DataPreprocessor') {
+                        constructor_params += (connections[k].srcParent + '__inst.' + connections[k].src + ',');
+                    }
+                }
+            }
+        }
+        for (var j = 0; j < learningAlgorithms[i].labelPorts.length; j++) {
+            var labelPortName = learningAlgorithms[i].labelPorts[j].name;
+            constructor_params += (labelPortName + '=');
+            for (var k = 0; k < connections.length; k++) {
+                if (connections[k].dst === labelPortName && connections[k].dstParent === learningAlgoName) {
+                    if (connections[k].srcParentMeta === 'DataSource') {
+                        constructor_params += (connections[k].srcParent + '__inst.query_results[\'' + connections[k].src + '\'],');
+                    } else if (connections[k].srcParentMeta === 'DataPreprocessor') {
+                        constructor_params += (connections[k].srcParent + '__inst.' + connections[k].src + ',');
+                    }
+                }
+            }
+        }
+-%>
+        ,{
+            "cell_type": "code",
+            "execution_count": null,
+            "metadata": {
+            "collapsed": true
+            },
+            "outputs": [],
+            "source": [
+                "<%- learningAlgoName %>__inst = <%- learningAlgoName %>(<%- constructor_params %>)"
+                ,"\n"
+                ,"<%- learningAlgoName %>__inst.train()"
+                ,"\n"
+                ,"<%- learningAlgoName %>__inst.predict()"
+            ]
+        }
+<%
+}
+-%>
+    ],
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 2",
+            "language": "python",
+            "name": "python2"
+        },
+        "language_info": {
+            "codemirror_mode": {
+                "name": "ipython",
+                "version": 2
+            },
+            "file_extension": ".py",
+            "mimetype": "text/x-python",
+            "name": "python",
+            "nbconvert_exporter": "python",
+            "pygments_lexer": "ipython2",
+            "version": "2.7.9"
+        }
+    },
+    "nbformat": 4,
+    "nbformat_minor": 0
+}
