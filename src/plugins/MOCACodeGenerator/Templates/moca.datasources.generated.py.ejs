@@ -147,21 +147,21 @@ for (var i = 0; i < query_results_list.length; i++) {
             query_string += '{0}{1}'.format(where_clause, group_by_clause)
         else:
             # Multiple queries
-            if self.query_params['t_start'][query_n] is not '' and self.query_params['t_end'][query_n] is not '':
-                where_clause += ' WHERE ('
-                for t_s, t_e in zip(self.query_params['t_start'][query_n], self.query_params['t_end'][query_n]):
-                    where_clause += '("time" > \'{0}\' AND "time" < \'{1}\') OR'.format(t_s, t_e)
-                where_clause = where_clause[:-3]                # To remove trailing OR
-                where_clause += ')'
-            if self.query_params['tags'][query_n] is not '':
+            if self.query_params['t_start'] is not '' and self.query_params['t_end'] is not '':
+                where_clause += ' WHERE '
+                t_s = self.query_params['t_start'][query_n]
+                t_e = self.query_params['t_end'][query_n]
+                where_clause += '("time" > \'{0}\' AND "time" < \'{1}\')'.format(t_s, t_e)
+            if self.query_params['tags'] is not '':
                 if where_clause is '':
                     where_clause += ' WHERE ('
                 else:
-                    where_clause += 'AND ('
+                    where_clause += ' AND ('
                 for tag_key, tag_value in self.query_params['tags'][query_n].items():
-                    where_clause += '("{0}"=\'{1}\') AND'.format(tag_key, tag_value)
-                where_clause = where_clause[:-4]                # To remove trailing AND
+                    where_clause += '"{0}"=\'{1}\' AND '.format(tag_key, tag_value)
+                where_clause = where_clause[:-5]                # To remove trailing AND
                 where_clause += ')'
+            query_string += '{0}'.format(where_clause)
 
         return query_string
 
@@ -174,14 +174,11 @@ for (var i = 0; i < query_results_list.length; i++) {
 
         # Here we are assuming that the shapes of t_start, t_end, values and tags are the same
         # (i.e. if they have a non-zero value flowing/hardcoded inside them)
-        params_are_2D = False
-        try:
-            if type(self.query_params['t_start'][0]) == list:
-                params_are_2D = True
-        except IndexError:
-            pass
+        params_are_list = False
+        if type(self.query_params['tags']) == list:
+            params_are_list = True
 
-        if not params_are_2D:
+        if not params_are_list:
             # This is a 1D array or t_start='', only 1 query is fired
             query_string = self.__build_query_string()
             query_result = self.client.query(query=query_string)
@@ -204,8 +201,9 @@ for (var i = 0; i < query_results_list.length; i++) {
 
         else:
             # This is a 2D array, multiple queries are fired
-            for query_n in range(len(self.query_params['t_start'])):
+            for query_n in range(len(self.query_params['tags'])):
                 query_string = self.__build_query_string(query_n)
+                print "Query: " + query_string
                 query_result = self.client.query(query=query_string)
 
                 this_query_result_times = []
