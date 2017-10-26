@@ -1208,13 +1208,17 @@ define([
 
         var userid = this.projectId.split('+')[0],
             baseDir = path.join('..', 'WebGME-MOCA_data', 'notebooks', userid, this.projectName),
-            internalDirs = ['lib', 'lib/moca_components', 'lib/moca_groups',
-                'lib/moca_ddmodels',
-                'lib/moca_ddmodels/preprocs', 'lib/moca_ddmodels/data_sources', 'lib/moca_ddmodels/learning_algos',
+            internalDirs = ['lib', 'lib/moca_components', 'lib/moca_groups', 'lib/moca_ddmodels',
                 'src',
                 'utils',  'utils/moca_plotutils',
                 'out'],
             genFileName = "";
+
+        for (var i = 0; i < dataModel.ddComps.length; i++) {
+            internalDirs.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/preprocs');
+            internalDirs.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/data_sources');
+            internalDirs.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/learning_algos');
+        }
 
         var saveFileToPath = function (fileAbsPath, text) {
             fs.writeFile(fileAbsPath, text, function (err) {
