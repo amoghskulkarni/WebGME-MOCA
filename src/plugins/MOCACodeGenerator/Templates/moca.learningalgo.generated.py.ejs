@@ -2,7 +2,10 @@
 from sklearn.model_selection import train_test_split
 from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, r2_score
+
+from math import sqrt
 import numpy as np
+from matplotlib import pyplot as plt
 
 <%
     var featureString = '';
@@ -50,20 +53,43 @@ class <%= name %>():
 }
 -%>
 
+        # Training and testing datasets
+        self.X_train = None
+        self.X_test = None
+        self.y_train = None
+        self.y_test = None
+
+        # Placeholder for the trained model
+        self.trained_model = None
+
     # TODO: Train the model
     def train(self):
         np.random.seed()
 
-        X_train = []
-        y_train = []
+        in_values = []
+        out_values = []
 
         for data_point in range(len(self.features[self.features.keys()[0]])):
             feature_vector = [self.features[key][data_point] for key in self.features]
             label_vector = [self.labels[key][data_point] for key in self.labels]
-            X_train.append(feature_vector)
-            y_train.append(label_vector)
+            in_values += feature_vector
+            out_values += label_vector
 
-        print "X_train: "
-        print X_train
-        print "y_train: "
-        print y_train
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(in_values, out_values, test_size=0.1)
+
+        lin_regr = linear_model.LinearRegression()
+        self.trained_model = lin_regr.fit(self.X_train, self.y_train)
+
+    def predict(self):
+        y_pred = self.trained_model.predict(X=self.X_test)
+        print "y_act: ", self.y_test
+        print "y_pred: ", y_pred
+
+        print("RMS error: %.2f" % sqrt(mean_squared_error(self.y_test, y_pred)))
+        print('Variance score: %.2f' % r2_score(self.y_test, y_pred))
+
+        fig = plt.figure()
+        plt.plot(self.X_train, self.y_train, 'g^', markersize=5, label=u'Training data')
+        plt.plot(self.X_test, self.y_test, 'b.', markersize=5, label=u'Testing data')
+        plt.plot(self.X_test, y_pred, 'r.', markersize=5, label=u'Predictions')
+        plt.show()
