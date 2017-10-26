@@ -1219,6 +1219,7 @@ define([
             genFileName = "";
 
         for (var i = 0; i < dataModel.ddComps.length; i++) {
+            internalDirs.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name);
             internalDirs.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/preprocs');
             internalDirs.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/data_sources');
             internalDirs.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/learning_algos');
