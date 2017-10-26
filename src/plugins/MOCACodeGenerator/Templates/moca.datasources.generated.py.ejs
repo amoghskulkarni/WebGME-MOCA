@@ -180,6 +180,7 @@ for (var i = 0; i < query_results_list.length; i++) {
         if not params_are_list:
             # This is a 1D array or t_start='', only 1 query is fired
             query_string = self.__build_query_string()
+            print "Query: " + query_string
             query_result = self.client.query(query=query_string)
 
             # If it is a GROUP BY query
