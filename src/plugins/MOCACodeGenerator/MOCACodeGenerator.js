@@ -71,6 +71,10 @@ define([
             {
                 name: 'data sources',
                 template: 'moca.datasources.generated.py.ejs'
+            },
+            {
+                name: 'learning algo',
+                template: 'moca.learningalgo.generated.py.ejs'
             }
         ];
     };
@@ -580,18 +584,18 @@ define([
                 name: self.core.getAttribute(learningAlgoNode, 'name'),
                 algorithm: self.core.getAttribute(learningAlgoNode, 'Algorithm'),
                 outputFunction: self.core.getAttribute(learningAlgoNode, 'OutputFunction'),
-                inputPorts: [],
-                outputPorts: []
+                featurePorts: [],
+                labelPorts: []
             };
 
         return self.core.loadChildren(learningAlgoNode)
             .then(function (children) {
                 for (var i = 0; i < children.length; i++) {
                     var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
-                    if (childMetaType === 'Input') {
-                        learningAlgoData.inputPorts.push(self.getInputPortData(children[i]))
-                    } else if (childMetaType === 'Output') {
-                        learningAlgoData.outputPorts.push(self.getOutputPortData(children[i]))
+                    if (childMetaType === 'Feature') {
+                        learningAlgoData.featurePorts.push(self.getInputPortData(children[i]))
+                    } else if (childMetaType === 'Label') {
+                        learningAlgoData.labelPorts.push(self.getOutputPortData(children[i]))
                     }
                 }
 
@@ -1205,9 +1209,11 @@ define([
         var userid = this.projectId.split('+')[0],
             baseDir = path.join('..', 'WebGME-MOCA_data', 'notebooks', userid, this.projectName),
             internalDirs = ['lib', 'lib/moca_components', 'lib/moca_groups',
-              'src',
-              'utils',  'utils/moca_plotutils',
-              'out'],
+                'lib/moca_ddmodels',
+                'lib/moca_ddmodels/preprocs', 'lib/moca_ddmodels/data_sources', 'lib/moca_ddmodels/learning_algos',
+                'src',
+                'utils',  'utils/moca_plotutils',
+                'out'],
             genFileName = "";
 
         var saveFileToPath = function (fileAbsPath, text) {
@@ -1299,6 +1305,16 @@ define([
                         saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i].dataSources[j]));
                     }
                 }
+            } else if (fileInfo.name === 'learning algo') {
+                for (var i = 0; i < dataModel.ddComps.length; i++) {
+                    var ddCompName = dataModel.ddComps[i].name;
+                    for (var j = 0; j < dataModel.ddComps[i].learningAlgorithms.length; j++) {
+                        var learningAlgosName = dataModel.ddComps[i].learningAlgorithms[j].name;
+
+                        genFileName = path.join(baseDir, 'lib', 'moca_ddmodels', ddCompName, 'learning_algos', learningAlgosName + '.py');
+                        saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i].learningAlgorithms[j]));
+                    }
+                }
             }
         });
 
@@ -1376,6 +1392,16 @@ define([
                         filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i].dataSources[j]);
                     }
                 }
+            } else if (fileInfo.name === 'learning algo') {
+                for (var i = 0; i < dataModel.ddComps.length; i++) {
+                    var ddCompName = dataModel.ddComps[i].name;
+                    for (var j = 0; j < dataModel.ddComps[i].learningAlgorithms.length; j++) {
+                        var dataSourceName = dataModel.ddComps[i].learningAlgorithms[j].name;
+
+                        genFileName = 'MOCA_GeneratedCode/lib/moca_ddmodels/' + ddCompName + '/learning_algos/' + dataSourceName + '.py';
+                        filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i].learningAlgorithms[j]);
+                    }
+                }
             }
         });
 
@@ -1384,7 +1410,8 @@ define([
         for (var i = 0; i < dataModel.ddComps.length; i++) {
             subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name);
             subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/preprocs');
-            subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/data_sources')
+            subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/data_sources');
+            subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/learning_algos');
         }
         for (var i = 0; i < subdirectories.length; i++) {
             var initFileName = 'MOCA_GeneratedCode/' + subdirectories[i] + '/__init__.py';
