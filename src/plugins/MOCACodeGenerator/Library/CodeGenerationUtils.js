@@ -13,7 +13,7 @@ define([
     /**
      * The list containing for all kinds of files that are to be generated.
      * Every element in the list contains name and template(s) for each file type.
-     * 
+     *
      * @type {[null,null,null,null,null,null,null,null,null,null]}
      */
     CodeGenerationUtils.prototype.FILES = [

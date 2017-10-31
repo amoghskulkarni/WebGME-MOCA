@@ -1090,8 +1090,6 @@ define([
 
 
     MOCACodeGenerator.prototype.generateArtifact = codeGenUtils.generateArtifact;
-    // MOCACodeGenerator.prototype.savePythonSourceFiles = codeGenUtils.savePythonSourceFiles;
-    // MOCACodeGenerator.prototype.downloadPythonSourceFiles = codeGenUtils.downloadPythonSourceFiles;
 
     return MOCACodeGenerator;
 });
