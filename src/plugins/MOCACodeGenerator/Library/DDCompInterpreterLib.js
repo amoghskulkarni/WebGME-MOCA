@@ -8,7 +8,7 @@ define([
     'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/MOCAInterpreterLib'
 ], function (Q, connInterpreter, mocaInterpreter) {
     /**
-     * The class giving handles of interpreter methods for DDComp entities
+     * The class giving handles to interpreter methods for DataDrivenComponent and related entities
      * @constructor
      */
     var DDCompInterpreterLib = function () {};
@@ -173,13 +173,13 @@ define([
     };
 
     /**
-     * The method to get the data from a DDComponent. This method will be called from the MOCACodeGenerator
+     * The method to get the data from a DataDrivenComponent. This method will be called from the MOCACodeGenerator
      * plugin class. This will internally collect all the data from the DDComoponent's children using the
-     * methods of this class (written above). This will be called from the context of MOCACodeGenerator, thus
-     * `this` refers to MOCACodeGenerator plugin, and core and other utils are accessed through this handle.
+     * methods of this class (written above). This method will be called from the context of MOCACodeGenerator,
+     * thus `this` refers to MOCACodeGenerator plugin in it, and core and other utils are accessed through `this` handle.
      *
-     * @param ddComponentNode - The DDComponent node
-     * @returns {Promise} - Promise object resolving to the data of the DDComponent node and its children
+     * @param ddComponentNode - The DataDrivenComponent node
+     * @returns {Promise} - Promise object resolving to the data of the DataDrivenComponent node and its children
      */
     DDCompInterpreterLib.prototype.getDDComponentData = function (ddComponentNode) {
         var MOCAPlugin = this,
