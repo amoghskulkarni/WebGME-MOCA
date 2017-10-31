@@ -3,8 +3,10 @@
  */
 
 define([
-    'q'
-], function (Q) {
+    'q',
+    'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/ConnectionInterpreterLib',
+    'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/MOCAInterpreterLib'
+], function (Q, connInterpreter, mocaInterpreter) {
     /**
      * The class containing utilities to generate code
      * @constructor
@@ -14,7 +16,7 @@ define([
     var helperGetDatabase = function (MOCACodeGen, referenceNode) {
         return MOCACodeGen.core.loadPointer(referenceNode, 'ref')
             .then(function (databaseNode) {
-                return DDCompInterpreterLib.prototype.getDatabaseData(databaseNode);
+                return DDCompInterpreterLib.prototype.getDatabaseData(MOCACodeGen, databaseNode);
             });
     };
 
@@ -95,9 +97,9 @@ define([
                     var childMetaType = MOCACodeGen.core.getAttribute(MOCACodeGen.getMetaType(children[i]), 'name');
 
                     if (childMetaType === 'Feature') {
-                        learningAlgoData.featurePorts.push(DDCompInterpreterLib.prototype.getInputPortData(children[i]))
+                        learningAlgoData.featurePorts.push(DDCompInterpreterLib.prototype.getInputPortData(MOCACodeGen, children[i]))
                     } else if (childMetaType === 'Label') {
-                        learningAlgoData.labelPorts.push(DDCompInterpreterLib.prototype.getOutputPortData(children[i]))
+                        learningAlgoData.labelPorts.push(DDCompInterpreterLib.prototype.getOutputPortData(MOCACodeGen, children[i]))
                     }
                 }
 
@@ -157,15 +159,15 @@ define([
                     else if (childMetaType === 'LearningAlgorithm')
                         learningAlgoPromises.push(DDCompInterpreterLib.prototype.getLearningAlgoData(MOCACodeGen, children[i]));
                     else if (childMetaType === 'Parameter')
-                        paramPromises.push(DDCompInterpreterLib.prototype.getParameterData(MOCACodeGen, children[i]));
+                        paramPromises.push(mocaInterpreter.getParameterData(MOCACodeGen, children[i]));
                     else if (childMetaType === 'Unknown')
-                        unknownPromises.push(DDCompInterpreterLib.prototype.getUnknownData(MOCACodeGen, children[i]));
+                        unknownPromises.push(mocaInterpreter.getUnknownData(MOCACodeGen, children[i]));
                     else if (childMetaType === 'DataConn'
                         || childMetaType === 'OutToLableAssoc'
                         || childMetaType === 'OutToFeatureAssoc'
                         || childMetaType === 'ParamToFeatureAssoc'
                         || childMetaType === 'UnknownToLabelAssoc')
-                        connectionPromises.push(DDCompInterpreterLib.prototype.getConnectionData(MOCACodeGen, children[i]));
+                        connectionPromises.push(connInterpreter.getConnectionData(MOCACodeGen, children[i]));
                 }
 
                 return Q.all(dataSourcePromises);

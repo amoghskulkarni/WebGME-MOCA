@@ -328,7 +328,6 @@ define([
                 for (i = 0; i < dataModel.ddComps.length; i++) {
                     // genFileName = path.join(baseDir, 'src', dataModel.processFlows[i].name + '.py');
                     genIpynbFile = path.join(baseDir, dataModel.ddComps[i].name + '.ipynb');
-                    // saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]));
                     saveFileToPath(genIpynbFile, ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.ddComps[i]));
                 }
             }

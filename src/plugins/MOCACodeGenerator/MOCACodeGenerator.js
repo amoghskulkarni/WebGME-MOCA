@@ -157,7 +157,7 @@ define([
                                             componentPromises.push(self.getComponentData(comps[j]));
                                         }
                                         else if (self.core.getAttribute(self.getMetaType(comps[j]) , 'name') === 'DataDrivenComponent') {
-                                            ddComponentPromises.push(self.getDDComponentData(this, comps[j]));
+                                            ddComponentPromises.push(self.getDDComponentData(comps[j]));
                                         }
                                     }
                                 })
