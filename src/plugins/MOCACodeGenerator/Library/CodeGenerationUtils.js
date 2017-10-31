@@ -10,6 +10,12 @@ define([
      */
     var CodeGenerationUtils = function () {};
 
+    /**
+     * The list containing for all kinds of files that are to be generated.
+     * Every element in the list contains name and template(s) for each file type.
+     * 
+     * @type {[null,null,null,null,null,null,null,null,null,null]}
+     */
     CodeGenerationUtils.prototype.FILES = [
         {
             name: 'components',
@@ -334,6 +340,11 @@ define([
      * and either saves it on the server's filesystem or gives the option
      * to download it on the client (depending upon what is selected while invoking it).
      * Also, checks the ontology rules.
+     *
+     * Notes -
+     * This method is run in MOCACodeGenerator's context, so `this` refers to MOCACodeGenerator.
+     * The other methods which are called from inside this method are called in CodeGeneratorUtils context,
+     * so in them `this` refers to CodeGenerationUtils.
      *
      * @param MOCACodeGen - Reference of the code generator
      * @param {string} pluginInvocation - The name of the meta-type of the modeling entity
