@@ -8,54 +8,52 @@ define([
      * The class containing utilities to generate code
      * @constructor
      */
-    var CodeGenerationUtils = function () {
-        this.FILES = [
-            {
-                name: 'components',
-                template: 'moca.components.generated.py.ejs'
-            },
-            {
-                name: 'groups',
-                template: 'moca.groups.generated.py.ejs'
-            },
-            {
-                name: 'problems',
-                template: 'moca.problems.generated.py.ejs',
-                ipynbfile: 'moca.problem.generated.ipynb.ejs'
-            },
-            {
-                name: 'parsing utilities',
-                template: 'moca.parseutils.generated.py.ejs'
-            },
-            {
-                name: 'plotting utilities',
-                template: 'moca.plotutils.generated.py.ejs'
-            },
-            {
-                name: 'process flows',
-                template: 'moca.processflows.generated.py.ejs',
-                ipynbfile: 'moca.processflow.generated.ipynb.ejs'
-            },
-            {
-                name: 'preprocessors',
-                template: 'moca.preprocs.generated.py.ejs'
-            },
-            {
-                name: 'data sources',
-                template: 'moca.datasources.generated.py.ejs'
-            },
-            {
-                name: 'learning algo',
-                template: 'moca.learningalgo.generated.py.ejs'
-            },
-            {
-                name: 'ddcomp',
-                ipynbfile: 'moca.ddcomp.generated.ipynb.ejs'
-            }
-        ];
-    };
+    var CodeGenerationUtils = function () {};
 
-    CodeGenerationUtils.prototype.constructor = CodeGenerationUtils;
+    CodeGenerationUtils.prototype.FILES = [
+        {
+            name: 'components',
+            template: 'moca.components.generated.py.ejs'
+        },
+        {
+            name: 'groups',
+            template: 'moca.groups.generated.py.ejs'
+        },
+        {
+            name: 'problems',
+            template: 'moca.problems.generated.py.ejs',
+            ipynbfile: 'moca.problem.generated.ipynb.ejs'
+        },
+        {
+            name: 'parsing utilities',
+            template: 'moca.parseutils.generated.py.ejs'
+        },
+        {
+            name: 'plotting utilities',
+            template: 'moca.plotutils.generated.py.ejs'
+        },
+        {
+            name: 'process flows',
+            template: 'moca.processflows.generated.py.ejs',
+            ipynbfile: 'moca.processflow.generated.ipynb.ejs'
+        },
+        {
+            name: 'preprocessors',
+            template: 'moca.preprocs.generated.py.ejs'
+        },
+        {
+            name: 'data sources',
+            template: 'moca.datasources.generated.py.ejs'
+        },
+        {
+            name: 'learning algo',
+            template: 'moca.learningalgo.generated.py.ejs'
+        },
+        {
+            name: 'ddcomp',
+            ipynbfile: 'moca.ddcomp.generated.ipynb.ejs'
+        }
+    ];
 
     /**
      * The function which returns blob containing artifacts (code) when the MOCACodeGenerator is run on the client
@@ -68,7 +66,7 @@ define([
     CodeGenerationUtils.prototype.downloadPythonSourceFiles = function (MOCACodeGen, filesToAdd, dataModel, deferred, artifact) {
         var genFileName = "";
 
-        this.FILES.forEach(function (fileInfo) {
+        CodeGenerationUtils.prototype.FILES.forEach(function (fileInfo) {
             if (fileInfo.name === 'components') {
                 // For every component, one file
                 for (var i = 0; i < dataModel.comps.length; i++) {
@@ -203,8 +201,8 @@ define([
             path = require('path'),
             fs = require('fs');
 
-        var userid = this.projectId.split('+')[0],
-            baseDir = path.join('..', 'WebGME-MOCA_data', 'notebooks', userid, this.projectName),
+        var userid = MOCACodeGen.projectId.split('+')[0],
+            baseDir = path.join('..', 'WebGME-MOCA_data', 'notebooks', userid, MOCACodeGen.projectName),
             internalDirs = ['lib', 'lib/moca_components', 'lib/moca_groups', 'lib/moca_ddmodels',
                 'src',
                 'utils',  'utils/moca_plotutils',
@@ -343,8 +341,9 @@ define([
      * @param dataModel - In-memory object which represents of the modeling entities
      * @returns deferred.promise - Returns a deferred promise which needs to be resolved
      */
-    CodeGenerationUtils.prototype.generateArtifact = function (MOCACodeGen, pluginInvocation, dataModel) {
-        var filesToAdd = {},
+    CodeGenerationUtils.prototype.generateArtifact = function (pluginInvocation, dataModel) {
+        var MOCACodeGen = this,
+            filesToAdd = {},
             deferred = new Q.defer(),
             artifact = null;
 
@@ -356,17 +355,6 @@ define([
             artifact = MOCACodeGen.blobClient.createArtifact(dataModel.processFlows[0].name);
         else if (pluginInvocation === 'DataDrivenComponent')
             artifact = MOCACodeGen.blobClient.createArtifact(dataModel.ddComps[0].name);
-
-        if (pluginInvocation === 'ROOT') {
-            filesToAdd['MOCA.json'] = JSON.stringify(dataModel, null, 2);
-            filesToAdd['MOCA_metadata.json'] = JSON.stringify({
-                projectId: MOCACodeGen.projectId,
-                commitHash: MOCACodeGen.commitHash,
-                branchName: MOCACodeGen.branchName,
-                timeStamp: (new Date()).toISOString(),
-                pluginVersion: MOCACodeGen.getVersion()
-            }, null, 2);
-        }
 
         // parse dataModel for mismatching ontology link
         // TODO: Do this with the help of validator framework
@@ -398,11 +386,22 @@ define([
         // (if the 'window' object is undefined, it's executed on the server-side)
         if (typeof window === 'undefined') {
             // Save the files on the server side
-            this.savePythonSourceFiles(MOCACodeGen, dataModel);
+            CodeGenerationUtils.prototype.savePythonSourceFiles(MOCACodeGen, dataModel);
         }
         else {
+            if (pluginInvocation === 'ROOT') {
+                filesToAdd['MOCA.json'] = JSON.stringify(dataModel, null, 2);
+                filesToAdd['MOCA_metadata.json'] = JSON.stringify({
+                    projectId: MOCACodeGen.projectId,
+                    commitHash: MOCACodeGen.commitHash,
+                    branchName: MOCACodeGen.branchName,
+                    timeStamp: (new Date()).toISOString(),
+                    pluginVersion: MOCACodeGen.getVersion()
+                }, null, 2);
+            }
+
             // Save the files using the blobClient and give them as a downloadable handle
-            this.downloadPythonSourceFiles(MOCACodeGen, filesToAdd, dataModel, deferred, artifact);
+            CodeGenerationUtils.prototype.downloadPythonSourceFiles(MOCACodeGen, filesToAdd, dataModel, deferred, artifact);
         }
 
         return deferred.promise;

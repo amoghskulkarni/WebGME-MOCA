@@ -38,51 +38,6 @@ define([
         // Call base class' constructor.
         PluginBase.call(this);
         this.pluginMetadata = pluginMetadata;
-
-        this.FILES = [
-            {
-                name: 'components',
-                template: 'moca.components.generated.py.ejs'
-            },
-            {
-                name: 'groups',
-                template: 'moca.groups.generated.py.ejs'
-            },
-            {
-                name: 'problems',
-                template: 'moca.problems.generated.py.ejs',
-                ipynbfile: 'moca.problem.generated.ipynb.ejs'
-            },
-            {
-                name: 'parsing utilities',
-                template: 'moca.parseutils.generated.py.ejs'
-            },
-            {
-                name: 'plotting utilities',
-                template: 'moca.plotutils.generated.py.ejs'
-            },
-            {
-                name: 'process flows',
-                template: 'moca.processflows.generated.py.ejs',
-                ipynbfile: 'moca.processflow.generated.ipynb.ejs'
-            },
-            {
-                name: 'preprocessors',
-                template: 'moca.preprocs.generated.py.ejs'
-            },
-            {
-                name: 'data sources',
-                template: 'moca.datasources.generated.py.ejs'
-            },
-            {
-                name: 'learning algo',
-                template: 'moca.learningalgo.generated.py.ejs'
-            },
-            {
-                name: 'ddcomp',
-                ipynbfile: 'moca.ddcomp.generated.ipynb.ejs'
-            }
-        ];
     };
 
     MOCACodeGenerator.metadata = pluginMetadata;
@@ -136,16 +91,16 @@ define([
                 // Create JSON files for the models only if the plugin is invoked at the ROOT
                 if (self.getMetaType(nodeObject) === null) {
                     self.logger.info(JSON.stringify(dataModel, null, 4));
-                    return self.generateArtifact(self, 'ROOT', dataModel);
+                    return self.generateArtifact('ROOT', dataModel);
                 }
                 else if (self.core.getAttribute(self.getMetaType(nodeObject), 'name') === 'Problem') {
-                    return self.generateArtifact(self, 'Problem', dataModel);
+                    return self.generateArtifact('Problem', dataModel);
                 }
                 else if (self.core.getAttribute(self.getMetaType(nodeObject), 'name') === 'ProcessFlow') {
-                    return self.generateArtifact(self, 'ProcessFlow', dataModel);
+                    return self.generateArtifact('ProcessFlow', dataModel);
                 }
                 else if (self.core.getAttribute(self.getMetaType(nodeObject), 'name') === 'DataDrivenComponent') {
-                    return self.generateArtifact(self, 'DataDrivenComponent', dataModel);
+                    return self.generateArtifact('DataDrivenComponent', dataModel);
                 }
             })
             .then(function () {
@@ -1135,8 +1090,8 @@ define([
 
 
     MOCACodeGenerator.prototype.generateArtifact = codeGenUtils.generateArtifact;
-    MOCACodeGenerator.prototype.savePythonSourceFiles = codeGenUtils.savePythonSourceFiles;
-    MOCACodeGenerator.prototype.downloadPythonSourceFiles = codeGenUtils.downloadPythonSourceFiles;
+    // MOCACodeGenerator.prototype.savePythonSourceFiles = codeGenUtils.savePythonSourceFiles;
+    // MOCACodeGenerator.prototype.downloadPythonSourceFiles = codeGenUtils.downloadPythonSourceFiles;
 
     return MOCACodeGenerator;
 });
