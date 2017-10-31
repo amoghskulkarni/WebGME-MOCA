@@ -1,3 +1,6 @@
+/**
+ * Created by Amogh on 10/31/2017.
+ */
 define([
     'plugin/MOCACodeGenerator/MOCACodeGenerator/Templates/Templates',
     'common/util/ejs',
@@ -8,7 +11,7 @@ define([
      * The class containing utilities to generate code
      * @constructor
      */
-    var CodeGenerationUtils = function () {};
+    var CodeGeneratorLib = function () {};
 
     /**
      * The list containing for all kinds of files that are to be generated.
@@ -16,7 +19,7 @@ define([
      *
      * @type {[null,null,null,null,null,null,null,null,null,null]}
      */
-    CodeGenerationUtils.prototype.FILES = [
+    CodeGeneratorLib.prototype.FILES = [
         {
             name: 'components',
             template: 'moca.components.generated.py.ejs'
@@ -69,10 +72,10 @@ define([
      * @param deferred - Object for notifying that the promise has been resolved
      * @param artifact - The blob client container (with appropriate name) to populate
      */
-    CodeGenerationUtils.prototype.downloadPythonSourceFiles = function (MOCACodeGen, filesToAdd, dataModel, deferred, artifact) {
+    CodeGeneratorLib.prototype.downloadPythonSourceFiles = function (MOCACodeGen, filesToAdd, dataModel, deferred, artifact) {
         var genFileName = "";
 
-        CodeGenerationUtils.prototype.FILES.forEach(function (fileInfo) {
+        CodeGeneratorLib.prototype.FILES.forEach(function (fileInfo) {
             if (fileInfo.name === 'components') {
                 // For every component, one file
                 for (var i = 0; i < dataModel.comps.length; i++) {
@@ -202,7 +205,7 @@ define([
      * @param MOCACodeGen - Reference of the code generator
      * @param dataModel - In-memory object which represents of the modeling entities
      */
-    CodeGenerationUtils.prototype.savePythonSourceFiles = function (MOCACodeGen, dataModel) {
+    CodeGeneratorLib.prototype.savePythonSourceFiles = function (MOCACodeGen, dataModel) {
         var mkdirp = require('mkdirp'),
             path = require('path'),
             fs = require('fs');
@@ -344,7 +347,7 @@ define([
      * Notes -
      * This method is run in MOCACodeGenerator's context, so `this` refers to MOCACodeGenerator.
      * The other methods which are called from inside this method are called in CodeGeneratorUtils context,
-     * so in them `this` refers to CodeGenerationUtils.
+     * so in them `this` refers to CodeGeneratorLib.
      *
      * @param MOCACodeGen - Reference of the code generator
      * @param {string} pluginInvocation - The name of the meta-type of the modeling entity
@@ -352,7 +355,7 @@ define([
      * @param dataModel - In-memory object which represents of the modeling entities
      * @returns deferred.promise - Returns a deferred promise which needs to be resolved
      */
-    CodeGenerationUtils.prototype.generateArtifact = function (pluginInvocation, dataModel) {
+    CodeGeneratorLib.prototype.generateArtifact = function (pluginInvocation, dataModel) {
         var MOCACodeGen = this,
             filesToAdd = {},
             deferred = new Q.defer(),
@@ -397,7 +400,7 @@ define([
         // (if the 'window' object is undefined, it's executed on the server-side)
         if (typeof window === 'undefined') {
             // Save the files on the server side
-            CodeGenerationUtils.prototype.savePythonSourceFiles(MOCACodeGen, dataModel);
+            CodeGeneratorLib.prototype.savePythonSourceFiles(MOCACodeGen, dataModel);
         }
         else {
             if (pluginInvocation === 'ROOT') {
@@ -412,11 +415,11 @@ define([
             }
 
             // Save the files using the blobClient and give them as a downloadable handle
-            CodeGenerationUtils.prototype.downloadPythonSourceFiles(MOCACodeGen, filesToAdd, dataModel, deferred, artifact);
+            CodeGeneratorLib.prototype.downloadPythonSourceFiles(MOCACodeGen, filesToAdd, dataModel, deferred, artifact);
         }
 
         return deferred.promise;
     };
 
-    return CodeGenerationUtils.prototype;
+    return CodeGeneratorLib.prototype;
 });
