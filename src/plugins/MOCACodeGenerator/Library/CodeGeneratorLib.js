@@ -66,13 +66,14 @@ define([
 
     /**
      * The function which returns blob containing artifacts (code) when the MOCACodeGenerator is run on the client
-     * @param MOCACodeGen - Reference of the code generator
+     * @param MOCAPlugin - Reference of the code generator
      * @param filesToAdd - Dictionary to be passed to blob client
      * @param dataModel - In-memory object which represents of the modeling entities
      * @param deferred - Object for notifying that the promise has been resolved
      * @param artifact - The blob client container (with appropriate name) to populate
+     * @returns {null} - Resolves the Promise object after generating all the artifacts
      */
-    CodeGeneratorLib.prototype.downloadPythonSourceFiles = function (MOCACodeGen, filesToAdd, dataModel, deferred, artifact) {
+    CodeGeneratorLib.prototype.downloadPythonSourceFiles = function (MOCAPlugin, filesToAdd, dataModel, deferred, artifact) {
         var genFileName = "";
 
         CodeGeneratorLib.prototype.FILES.forEach(function (fileInfo) {
@@ -181,20 +182,20 @@ define([
         filesToAdd[ipynbLaunchScriptName] = 'echo off\njupyter notebook --port=9999';
 
         //TODO Add the static files too.
-        MOCACodeGen.logger.info('Generated python files for MOCA to download on client.');
+        MOCAPlugin.logger.info('Generated python files for MOCA to download on client.');
 
         artifact.addFiles(filesToAdd, function (err) {
             if (err) {
                 deferred.reject(new Error(err));
                 return;
             }
-            MOCACodeGen.blobClient.saveAllArtifacts(function (err, hashes) {
+            MOCAPlugin.blobClient.saveAllArtifacts(function (err, hashes) {
                 if (err) {
                     deferred.reject(new Error(err));
                     return;
                 }
 
-                MOCACodeGen.result.addArtifact(hashes[0]);
+                MOCAPlugin.result.addArtifact(hashes[0]);
                 deferred.resolve();
             });
         });
@@ -202,16 +203,16 @@ define([
 
     /**
      * The function which saves the code on the server's filesystem when the MOCACodeGenerator is run on the server
-     * @param MOCACodeGen - Reference of the code generator
+     * @param MOCAPlugin - Reference of the MOCACodeGenerator plugin
      * @param dataModel - In-memory object which represents of the modeling entities
      */
-    CodeGeneratorLib.prototype.savePythonSourceFiles = function (MOCACodeGen, dataModel) {
+    CodeGeneratorLib.prototype.savePythonSourceFiles = function (MOCAPlugin, dataModel) {
         var mkdirp = require('mkdirp'),
             path = require('path'),
             fs = require('fs');
 
-        var userid = MOCACodeGen.projectId.split('+')[0],
-            baseDir = path.join('..', 'WebGME-MOCA_data', 'notebooks', userid, MOCACodeGen.projectName),
+        var userid = MOCAPlugin.projectId.split('+')[0],
+            baseDir = path.join('..', 'WebGME-MOCA_data', 'notebooks', userid, MOCAPlugin.projectName),
             internalDirs = ['lib', 'lib/moca_components', 'lib/moca_groups', 'lib/moca_ddmodels',
                 'src',
                 'utils',  'utils/moca_plotutils',
@@ -231,7 +232,7 @@ define([
                     throw err;
                 }
                 else {
-                    MOCACodeGen.logger.info(fileAbsPath + ' saved on the server');
+                    MOCAPlugin.logger.info(fileAbsPath + ' saved on the server');
                 }
             });
         };
@@ -333,8 +334,8 @@ define([
             }
         });
 
-        MOCACodeGen.sendNotification("Generated python files for MOCA on the server.");
-        MOCACodeGen.logger.info('Generated python files for MOCA on the server.');
+        MOCAPlugin.sendNotification("Generated python files for MOCA on the server.");
+        MOCAPlugin.logger.info('Generated python files for MOCA on the server.');
     };
 
     /**
@@ -348,26 +349,26 @@ define([
      * The other methods which are called from inside this method are called in CodeGeneratorUtils context,
      * so in them `this` refers to CodeGeneratorLib.
      *
-     * @param MOCACodeGen - Reference of the code generator
-     * @param {string} pluginInvocation - The name of the meta-type of the modeling entity
-     *                                  from where the plugin is invoked
+     * @param MOCAPlugin - Reference of the MOCACodeGenerator plugin
+     * @param {string} pluginInvocation
+     *      - The name of the meta-type of the modeling entity from where the plugin is invoked
      * @param dataModel - In-memory object which represents of the modeling entities
-     * @returns deferred.promise - Returns a deferred promise which needs to be resolved
+     * @returns {Promise} Promise object resolving to the downloadable artifact blob (is resolved in another method)
      */
     CodeGeneratorLib.prototype.generateArtifact = function (pluginInvocation, dataModel) {
-        var MOCACodeGen = this,
+        var MOCAPlugin = this,
             filesToAdd = {},
             deferred = new Q.defer(),
             artifact = null;
 
         if (pluginInvocation === 'ROOT')
-            artifact = MOCACodeGen.blobClient.createArtifact('MOCA');
+            artifact = MOCAPlugin.blobClient.createArtifact('MOCA');
         else if (pluginInvocation === 'Problem')
-            artifact = MOCACodeGen.blobClient.createArtifact(dataModel.problems[0].name);
+            artifact = MOCAPlugin.blobClient.createArtifact(dataModel.problems[0].name);
         else if (pluginInvocation === 'ProcessFlow')
-            artifact = MOCACodeGen.blobClient.createArtifact(dataModel.processFlows[0].name);
+            artifact = MOCAPlugin.blobClient.createArtifact(dataModel.processFlows[0].name);
         else if (pluginInvocation === 'DataDrivenComponent')
-            artifact = MOCACodeGen.blobClient.createArtifact(dataModel.ddComps[0].name);
+            artifact = MOCAPlugin.blobClient.createArtifact(dataModel.ddComps[0].name);
 
         // parse dataModel for mismatching ontology link
         // TODO: Do this with the help of validator framework
@@ -399,22 +400,22 @@ define([
         // (if the 'window' object is undefined, it's executed on the server-side)
         if (typeof window === 'undefined') {
             // Save the files on the server side
-            CodeGeneratorLib.prototype.savePythonSourceFiles(MOCACodeGen, dataModel);
+            CodeGeneratorLib.prototype.savePythonSourceFiles(MOCAPlugin, dataModel);
         }
         else {
             if (pluginInvocation === 'ROOT') {
                 filesToAdd['MOCA.json'] = JSON.stringify(dataModel, null, 2);
                 filesToAdd['MOCA_metadata.json'] = JSON.stringify({
-                    projectId: MOCACodeGen.projectId,
-                    commitHash: MOCACodeGen.commitHash,
-                    branchName: MOCACodeGen.branchName,
+                    projectId: MOCAPlugin.projectId,
+                    commitHash: MOCAPlugin.commitHash,
+                    branchName: MOCAPlugin.branchName,
                     timeStamp: (new Date()).toISOString(),
-                    pluginVersion: MOCACodeGen.getVersion()
+                    pluginVersion: MOCAPlugin.getVersion()
                 }, null, 2);
             }
 
             // Save the files using the blobClient and give them as a downloadable handle
-            CodeGeneratorLib.prototype.downloadPythonSourceFiles(MOCACodeGen, filesToAdd, dataModel, deferred, artifact);
+            CodeGeneratorLib.prototype.downloadPythonSourceFiles(MOCAPlugin, filesToAdd, dataModel, deferred, artifact);
         }
 
         return deferred.promise;

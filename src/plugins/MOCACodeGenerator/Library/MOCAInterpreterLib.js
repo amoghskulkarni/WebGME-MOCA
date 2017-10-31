@@ -11,14 +11,20 @@ define([
      */
     var MOCAInterpreterLib = function () {};
 
-    MOCAInterpreterLib.prototype.getParameterData = function(MOCACodegen, parameterNode) {
+    /**
+     * The method to get the data from a Parameter node (port)
+     * @param MOCAPlugin - Reference of the MOCACodeGenerator plugin
+     * @param parameterNode - The Parameter node
+     * @returns {Promise} - Promise object resolving to the data of the Parameter node
+     */
+    MOCAInterpreterLib.prototype.getParameterData = function(MOCAPlugin, parameterNode) {
         var deferred = new Q.defer(),
             parameterData = {
-                name: MOCACodegen.core.getAttribute(parameterNode, 'name'),
+                name: MOCAPlugin.core.getAttribute(parameterNode, 'name'),
                 value: null
             };
 
-        var valueString = MOCACodegen.core.getAttribute(parameterNode, 'Value').toString();
+        var valueString = MOCAPlugin.core.getAttribute(parameterNode, 'Value').toString();
         if (valueString.indexOf('.') === -1)
             valueString += ".0";
 
@@ -28,16 +34,23 @@ define([
         return deferred.promise;
     };
 
-
-    MOCAInterpreterLib.prototype.getUnknownData = function(MOCACodegen, unknownNode) {
+    /**
+     * The method to get the data from an Unknown node (port)
+     * P.S. The type of the modeling entity itself is "Unknown", the node type is not unknown here.
+     *
+     * @param MOCAPlugin - Reference of the MOCACodeGenerator plugin
+     * @param unknownNode - The Unknown node
+     * @returns {Promise} - Promise object resolving to the data of the Unknown node
+     */
+    MOCAInterpreterLib.prototype.getUnknownData = function(MOCAPlugin, unknownNode) {
         var deferred = new Q.defer(),
             unknownData = {
-                name: MOCACodegen.core.getAttribute(unknownNode, 'name'),
+                name: MOCAPlugin.core.getAttribute(unknownNode, 'name'),
                 value: null,
-                type: MOCACodegen.core.getAttribute(unknownNode, 'Type')
+                type: MOCAPlugin.core.getAttribute(unknownNode, 'Type')
             };
 
-        var valueString = MOCACodegen.core.getAttribute(unknownNode, 'Value').toString();
+        var valueString = MOCAPlugin.core.getAttribute(unknownNode, 'Value').toString();
         if (valueString.indexOf('.') === -1)
             valueString += ".0";
 
