@@ -13,7 +13,7 @@ define([
     'common/util/xmljsonconverter',
     'plugin/MOCACodeGenerator/MOCACodeGenerator/Templates/Templates',
     'q',
-    'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/FileIO'
+    'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/CodeGenerationUtils'
 ], function (
     PluginConfig,
     PluginBase,
@@ -22,7 +22,7 @@ define([
     Converter,
     TEMPLATES,
     Q,
-    fileIOUtils) {
+    codeGenUtils) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
@@ -1134,9 +1134,9 @@ define([
     };
 
 
-    MOCACodeGenerator.prototype.generateArtifact = fileIOUtils.generateArtifact;
-    MOCACodeGenerator.prototype.savePythonSourceFiles = fileIOUtils.savePythonSourceFiles;
-    MOCACodeGenerator.prototype.downloadPythonSourceFiles = fileIOUtils.downloadPythonSourceFiles;
+    MOCACodeGenerator.prototype.generateArtifact = codeGenUtils.generateArtifact;
+    MOCACodeGenerator.prototype.savePythonSourceFiles = codeGenUtils.savePythonSourceFiles;
+    MOCACodeGenerator.prototype.downloadPythonSourceFiles = codeGenUtils.downloadPythonSourceFiles;
 
     return MOCACodeGenerator;
 });
