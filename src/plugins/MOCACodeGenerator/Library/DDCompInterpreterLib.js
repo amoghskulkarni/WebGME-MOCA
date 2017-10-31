@@ -7,6 +7,7 @@ define([
     'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/ConnectionInterpreterLib',
     'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/MOCAInterpreterLib'
 ], function (Q, connInterpreter, mocaInterpreter) {
+
     /**
      * The class giving handles to interpreter methods for DataDrivenComponent and related entities
      * @constructor

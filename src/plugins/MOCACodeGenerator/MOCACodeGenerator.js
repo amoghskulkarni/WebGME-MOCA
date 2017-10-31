@@ -15,7 +15,8 @@ define([
     'q',
     'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/CodeGeneratorLib',
     'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/DDCompInterpreterLib',
-    'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/MOCAInterpreterLib'
+    'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/MOCAInterpreterLib',
+    'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/ProcessFlowInterpreterLib'
 ], function (
     PluginConfig,
     PluginBase,
@@ -26,7 +27,8 @@ define([
     Q,
     codeGenLib,
     ddCompInterpreterLib,
-    mocaInterpreterLib) {
+    mocaInterpreterLib,
+    procFlowInterpreterLib) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
@@ -301,99 +303,10 @@ define([
         }
     };
 
-    /**********************************************************************************************************/
-    /* DES i.e. ProcessFlow interpreter methods */
-    MOCACodeGenerator.prototype.getProcessFlowData = function (processFlowNode) {
-        var self = this,
-            processFlowData = {
-                name: self.core.getAttribute(processFlowNode, 'name'),
-                simend: self.core.getAttribute(processFlowNode, 'SimulationEndTime'),
-                processes: [],
-                buffers: [],
-                connections: []
-            },
-            processPromises = [],
-            bufferPromises = [],
-            connectionPromises = [];
-
-        return self.core.loadChildren(processFlowNode)
-            .then(function(children) {
-                for (var i = 0; i < children.length; i++) {
-                    var childMetaType = self.core.getAttribute(self.getMetaType(children[i]), 'name');
-                    if (childMetaType === 'Process')
-                        processPromises.push(self.getProcessData(children[i]));
-                    else if (childMetaType === 'Buffer')
-                        bufferPromises.push(self.getBufferData(children[i]));
-                    else if (childMetaType === 'ProcToBuffFlow' || childMetaType === 'BuffToProcFlow')
-                        connectionPromises.push(self.getMaterialFlowData(children[i]));
-                }
-
-                return Q.all(processPromises);
-            })
-            .then(function (processesData) {
-                processFlowData.processes = processesData;
-                return Q.all(bufferPromises);
-            })
-            .then(function (buffersData) {
-                processFlowData.buffers = buffersData;
-                return Q.all(connectionPromises);
-            })
-            .then(function (connectionsData) {
-                processFlowData.connections = connectionsData;
-                return processFlowData;
-            });
-    };
-
-
-    MOCACodeGenerator.prototype.getProcessData = function (processNode) {
-        var self = this,
-            processData = {
-                name: self.core.getAttribute(processNode, 'name'),
-                processingTime: self.core.getAttribute(processNode, 'ProcessingTime'),
-                processShiftOffTime: self.core.getAttribute(processNode, 'ProcessOFFTime'),
-                processShiftOnTime: self.core.getAttribute(processNode, 'ProcessONTime')
-            };
-        return processData;
-    };
-
-
-    MOCACodeGenerator.prototype.getBufferData = function (bufferNode) {
-        var self = this,
-            bufferData = {
-                name: self.core.getAttribute(bufferNode, 'name'),
-                size: self.core.getAttribute(bufferNode, 'Size')
-            };
-        return bufferData;
-    };
-
-
-    MOCACodeGenerator.prototype.getMaterialFlowData = function (connectionNode) {
-        var self = this,
-            deferred = Q.defer(),
-            connectionData = {
-                name: self.core.getAttribute(connectionNode, 'name'),
-                src: "",
-                dst: ""
-            };
-
-        self.core.loadPointer(connectionNode, 'src', function (err, srcNode) {
-            if (err) {
-                deferred.reject(new Error(err))
-            } else {
-                connectionData.src = self.core.getAttribute(srcNode, 'name');
-                self.core.loadPointer(connectionNode, 'dst', function (err, dstNode) {
-                    if (err) {
-                        deferred.reject(new Error(err));
-                    } else {
-                        connectionData.dst = self.core.getAttribute(dstNode, 'name');
-                        deferred.resolve(connectionData);
-                    }
-                });
-            }
-        });
-
-        return deferred.promise;
-    };
+    /**
+     * Method to intrepret a ProcessFlow and its constituents
+     */
+    MOCACodeGenerator.prototype.getProcessFlowData = procFlowInterpreterLib.getProcessFlowData;
 
     /**
      * Method to interpret a Data-driven component and its constituents

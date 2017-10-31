@@ -6,6 +6,7 @@ define([
     'q',
     'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/ConnectionInterpreterLib'
 ], function (Q, connInterpreter) {
+
     /**
      * The class containing utilities to generate code
      * @constructor
@@ -467,19 +468,21 @@ define([
         return MOCAPlugin.core.loadChildren(problemNode)
             .then(function(children) {
                 for (var i = 0; i < children.length; i++) {
-                    if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'Component')
+                    var childMetaType = MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name');
+
+                    if (childMetaType === 'Component')
                         compInstancePromises.push(MOCAInterpreterLib.prototype.getCompInstanceData(MOCAPlugin, children[i]));
-                    else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'Group')
+                    else if (childMetaType === 'Group')
                         groupInstancePromises.push(MOCAInterpreterLib.prototype.getGroupInstanceData(MOCAPlugin, children[i]));
-                    else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'DesVarToInConn')
+                    else if (childMetaType === 'DesVarToInConn')
                         desvarPromises.push(MOCAInterpreterLib.prototype.getDesignVariableData(MOCAPlugin, children[i]));
-                    else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'OutToObjConn')
+                    else if (childMetaType === 'OutToObjConn')
                         objectivePromises.push(MOCAInterpreterLib.prototype.getObjectiveData(MOCAPlugin, children[i]));
-                    else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'PortToRecConn')
+                    else if (childMetaType === 'PortToRecConn')
                         recordPromises.push(MOCAInterpreterLib.prototype.getRecordData(MOCAPlugin, children[i]));
-                    else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'PortToConstraintConn')
+                    else if (childMetaType === 'PortToConstraintConn')
                         constraintPromises.push(MOCAInterpreterLib.prototype.getConstraintData(MOCAPlugin, children[i]));
-                    else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'DataConn')
+                    else if (childMetaType === 'DataConn')
                         connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, children[i]));
 
                 }
