@@ -1,8 +1,14 @@
 define([
     'plugin/MOCACodeGenerator/MOCACodeGenerator/Templates/Templates',
-    'common/util/ejs'
-], function (TEMPLATES, ejs) {
-    var FileIOUtils = function () {
+    'common/util/ejs',
+    'q'
+], function (TEMPLATES, ejs, Q) {
+
+    /**
+     * The class containing utilities to generate code
+     * @constructor
+     */
+    var CodeGenerationUtils = function () {
         this.FILES = [
             {
                 name: 'components',
@@ -49,9 +55,17 @@ define([
         ];
     };
 
-    FileIOUtils.prototype.constructor = FileIOUtils;
+    CodeGenerationUtils.prototype.constructor = CodeGenerationUtils;
 
-    FileIOUtils.prototype.downloadPythonSourceFiles = function (MOCACodeGen, filesToAdd, dataModel, deferred, artifact) {
+    /**
+     * The function which returns blob containing artifacts (code) when the MOCACodeGenerator is run on the client
+     * @param MOCACodeGen - Reference of the code generator
+     * @param filesToAdd - Dictionary to be passed to blob client
+     * @param dataModel - In-memory object which represents of the modeling entities
+     * @param deferred - Object for notifying that the promise has been resolved
+     * @param artifact - The blob client container (with appropriate name) to populate
+     */
+    CodeGenerationUtils.prototype.downloadPythonSourceFiles = function (MOCACodeGen, filesToAdd, dataModel, deferred, artifact) {
         var genFileName = "";
 
         this.FILES.forEach(function (fileInfo) {
@@ -132,7 +146,6 @@ define([
                 for (i = 0; i < dataModel.ddComps.length; i++) {
                     // genFileName = 'MOCA_GeneratedCode/src/' + dataModel.processFlows[i].name + '.py';
                     genIpynbFile = 'MOCA_GeneratedCode/' + dataModel.ddComps[i].name + '.ipynb';
-                    // filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]);
                     filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.ddComps[i]);
                 }
             }
@@ -180,7 +193,12 @@ define([
         });
     };
 
-    FileIOUtils.prototype.savePythonSourceFiles = function (MOCACodeGen, filesToAdd, dataModel, deferred, artifact) {
+    /**
+     * The function which saves the code on the server's filesystem when the MOCACodeGenerator is run on the server
+     * @param MOCACodeGen - Reference of the code generator
+     * @param dataModel - In-memory object which represents of the modeling entities
+     */
+    CodeGenerationUtils.prototype.savePythonSourceFiles = function (MOCACodeGen, dataModel) {
         var mkdirp = require('mkdirp'),
             path = require('path'),
             fs = require('fs');
@@ -310,9 +328,85 @@ define([
         });
 
         MOCACodeGen.sendNotification("Generated python files for MOCA on the server.");
-
         MOCACodeGen.logger.info('Generated python files for MOCA on the server.');
     };
 
-    return FileIOUtils.prototype;
+    /**
+     * The function which converts the interpreted model into artifacts (code)
+     * and either saves it on the server's filesystem or gives the option
+     * to download it on the client (depending upon what is selected while invoking it).
+     * Also, checks the ontology rules.
+     *
+     * @param MOCACodeGen - Reference of the code generator
+     * @param {string} pluginInvocation - The name of the meta-type of the modeling entity
+     *                                  from where the plugin is invoked
+     * @param dataModel - In-memory object which represents of the modeling entities
+     * @returns deferred.promise - Returns a deferred promise which needs to be resolved
+     */
+    CodeGenerationUtils.prototype.generateArtifact = function (MOCACodeGen, pluginInvocation, dataModel) {
+        var filesToAdd = {},
+            deferred = new Q.defer(),
+            artifact = null;
+
+        if (pluginInvocation === 'ROOT')
+            artifact = MOCACodeGen.blobClient.createArtifact('MOCA');
+        else if (pluginInvocation === 'Problem')
+            artifact = MOCACodeGen.blobClient.createArtifact(dataModel.problems[0].name);
+        else if (pluginInvocation === 'ProcessFlow')
+            artifact = MOCACodeGen.blobClient.createArtifact(dataModel.processFlows[0].name);
+        else if (pluginInvocation === 'DataDrivenComponent')
+            artifact = MOCACodeGen.blobClient.createArtifact(dataModel.ddComps[0].name);
+
+        if (pluginInvocation === 'ROOT') {
+            filesToAdd['MOCA.json'] = JSON.stringify(dataModel, null, 2);
+            filesToAdd['MOCA_metadata.json'] = JSON.stringify({
+                projectId: MOCACodeGen.projectId,
+                commitHash: MOCACodeGen.commitHash,
+                branchName: MOCACodeGen.branchName,
+                timeStamp: (new Date()).toISOString(),
+                pluginVersion: MOCACodeGen.getVersion()
+            }, null, 2);
+        }
+
+        // parse dataModel for mismatching ontology link
+        // TODO: Do this with the help of validator framework
+        /*for (var i = 0; i < dataModel.groups.length; i++) {
+            // for every group, check every data connection
+            for (var j = 0; j < dataModel.groups[i].connections.length; j++) {
+                if (dataModel.groups[i].connections[j].srcOnto !== dataModel.groups[i].connections[j].dstOnto) {
+                    alert('WARNING: In Group ' + dataModel.groups[i].name
+                        + ', port ' + dataModel.groups[i].connections[j].src + ' of ' + dataModel.groups[i].connections[j].srcParent
+                        + ' is associated to different ontological element than that of '
+                        + 'port ' + dataModel.groups[i].connections[j].dst + ' of ' + dataModel.groups[i].connections[j].dstParent);
+                }
+            }
+        }*/
+
+        /*for (var i = 0; i < dataModel.problems.length; i++) {
+            // for every group, check every data connection
+            for (var j = 0; j < dataModel.problems[i].connections.length; j++) {
+                if (dataModel.problems[i].connections[j].srcOnto !== dataModel.problems[i].connections[j].dstOnto) {
+                    alert('WARNING: In Problem ' + dataModel.problems[i].name
+                        + ', port ' + dataModel.problems[i].connections[j].src + ' of ' + dataModel.problems[i].connections[j].srcParent
+                        + ' is associated to different ontological element than that of '
+                        + 'port ' + dataModel.problems[i].connections[j].dst + ' of ' + dataModel.problems[i].connections[j].dstParent);
+                }
+            }
+        }*/
+
+        // Check if the plugin is executed in the client (browser) or server context
+        // (if the 'window' object is undefined, it's executed on the server-side)
+        if (typeof window === 'undefined') {
+            // Save the files on the server side
+            this.savePythonSourceFiles(MOCACodeGen, dataModel);
+        }
+        else {
+            // Save the files using the blobClient and give them as a downloadable handle
+            this.downloadPythonSourceFiles(MOCACodeGen, filesToAdd, dataModel, deferred, artifact);
+        }
+
+        return deferred.promise;
+    };
+
+    return CodeGenerationUtils.prototype;
 });

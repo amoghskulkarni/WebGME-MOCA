@@ -136,16 +136,16 @@ define([
                 // Create JSON files for the models only if the plugin is invoked at the ROOT
                 if (self.getMetaType(nodeObject) === null) {
                     self.logger.info(JSON.stringify(dataModel, null, 4));
-                    return self.generateArtifact('ROOT', dataModel);
+                    return self.generateArtifact(self, 'ROOT', dataModel);
                 }
                 else if (self.core.getAttribute(self.getMetaType(nodeObject), 'name') === 'Problem') {
-                    return self.generateArtifact('Problem', dataModel);
+                    return self.generateArtifact(self, 'Problem', dataModel);
                 }
                 else if (self.core.getAttribute(self.getMetaType(nodeObject), 'name') === 'ProcessFlow') {
-                    return self.generateArtifact('ProcessFlow', dataModel);
+                    return self.generateArtifact(self, 'ProcessFlow', dataModel);
                 }
                 else if (self.core.getAttribute(self.getMetaType(nodeObject), 'name') === 'DataDrivenComponent') {
-                    return self.generateArtifact('DataDrivenComponent', dataModel);
+                    return self.generateArtifact(self, 'DataDrivenComponent', dataModel);
                 }
             })
             .then(function () {
@@ -1134,74 +1134,7 @@ define([
     };
 
 
-    MOCACodeGenerator.prototype.generateArtifact = function (pluginInvocation, dataModel) {
-        var self = this,
-            filesToAdd = {},
-            deferred = new Q.defer(),
-            artifact = null;
-            //userid = WebGMEGlobal.userInfo._id;
-        if (pluginInvocation === 'ROOT')
-            artifact = self.blobClient.createArtifact('MOCA');
-        else if (pluginInvocation === 'Problem')
-            artifact = self.blobClient.createArtifact(dataModel.problems[0].name);
-        else if (pluginInvocation === 'ProcessFlow')
-            artifact = self.blobClient.createArtifact(dataModel.processFlows[0].name);
-        else if (pluginInvocation === 'DataDrivenComponent')
-            artifact = self.blobClient.createArtifact(dataModel.ddComps[0].name);
-
-        if (pluginInvocation === 'ROOT') {
-            filesToAdd['MOCA.json'] = JSON.stringify(dataModel, null, 2);
-            filesToAdd['MOCA_metadata.json'] = JSON.stringify({
-                projectId: self.projectId,
-                commitHash: self.commitHash,
-                branchName: self.branchName,
-                timeStamp: (new Date()).toISOString(),
-                pluginVersion: self.getVersion()
-            }, null, 2);
-        }
-
-        // parse dataModel for mismatching ontology link
-        // TODO: Do this with the help of validator framework
-        /*for (var i = 0; i < dataModel.groups.length; i++) {
-            // for every group, check every data connection
-            for (var j = 0; j < dataModel.groups[i].connections.length; j++) {
-                if (dataModel.groups[i].connections[j].srcOnto !== dataModel.groups[i].connections[j].dstOnto) {
-                    alert('WARNING: In Group ' + dataModel.groups[i].name
-                        + ', port ' + dataModel.groups[i].connections[j].src + ' of ' + dataModel.groups[i].connections[j].srcParent
-                        + ' is associated to different ontological element than that of '
-                        + 'port ' + dataModel.groups[i].connections[j].dst + ' of ' + dataModel.groups[i].connections[j].dstParent);
-                }
-            }
-        }*/
-
-        /*for (var i = 0; i < dataModel.problems.length; i++) {
-            // for every group, check every data connection
-            for (var j = 0; j < dataModel.problems[i].connections.length; j++) {
-                if (dataModel.problems[i].connections[j].srcOnto !== dataModel.problems[i].connections[j].dstOnto) {
-                    alert('WARNING: In Problem ' + dataModel.problems[i].name
-                        + ', port ' + dataModel.problems[i].connections[j].src + ' of ' + dataModel.problems[i].connections[j].srcParent
-                        + ' is associated to different ontological element than that of '
-                        + 'port ' + dataModel.problems[i].connections[j].dst + ' of ' + dataModel.problems[i].connections[j].dstParent);
-                }
-            }
-        }*/
-
-        // Check if the plugin is executed in the client (browser) or server context
-        // (if the 'window' object is undefined, it's executed on the server-side)
-        if (typeof window === 'undefined') {
-            // Save the files on the server side
-            self.savePythonSourceFiles(this, filesToAdd, dataModel, deferred, artifact);
-        }
-        else {
-            // Save the files using the blobClient and give them as a downloadable handle
-            // self.downloadPythonSourceFiles(filesToAdd, dataModel, deferred, artifact);
-            self.downloadPythonSourceFiles(this, filesToAdd, dataModel, deferred, artifact);
-        }
-
-        return deferred.promise;
-    };
-
-
+    MOCACodeGenerator.prototype.generateArtifact = fileIOUtils.generateArtifact;
     MOCACodeGenerator.prototype.savePythonSourceFiles = fileIOUtils.savePythonSourceFiles;
     MOCACodeGenerator.prototype.downloadPythonSourceFiles = fileIOUtils.downloadPythonSourceFiles;
 
