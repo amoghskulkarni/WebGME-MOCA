@@ -43,7 +43,6 @@ define([
     var MOCACodeGenerator = function () {
         // Call base class' constructor.
         PluginBase.call(this);
-        this.pluginMetadata = pluginMetadata;
     };
 
     MOCACodeGenerator.metadata = pluginMetadata;
@@ -256,7 +255,7 @@ define([
                             // Call a recursive function which in turn populates the promise lists.
                             // Had to use a recursive function because a group can contain groups and the hierarchy
                             // can be arbitrarily deep.
-                            recursivePromises.push(self.recursivelyPopulateGroupContents(this, componentPromises, groupPromises, children[i]));
+                            recursivePromises.push(self.recursivelyPopulateGroupContents(componentPromises, groupPromises, children[i]));
                         }
                     }
                     return Q.all(recursivePromises);
@@ -304,7 +303,7 @@ define([
     };
 
     /**
-     * Method to intrepret a ProcessFlow and its constituents
+     * Method to interpret a ProcessFlow and its constituents
      */
     MOCACodeGenerator.prototype.getProcessFlowData = procFlowInterpreterLib.getProcessFlowData;
 
@@ -319,6 +318,7 @@ define([
     MOCACodeGenerator.prototype.getComponentData = mocaInterpreterLib.getComponentData;
     MOCACodeGenerator.prototype.getGroupData = mocaInterpreterLib.getGroupData;
     MOCACodeGenerator.prototype.getProblemData = mocaInterpreterLib.getProblemData;
+    MOCACodeGenerator.prototype.getOriginalBase = mocaInterpreterLib.getOriginalBase;
     MOCACodeGenerator.prototype.recursivelyPopulateGroupContents = mocaInterpreterLib.recursivelyPopulateGroupContents;
 
     /**
