@@ -148,8 +148,9 @@ define([
                 }
             } else if (fileInfo.name === 'ddcomp') {
                 for (i = 0; i < dataModel.ddComps.length; i++) {
-                    // genFileName = 'MOCA_GeneratedCode/src/' + dataModel.processFlows[i].name + '.py';
-                    genIpynbFile = 'MOCA_GeneratedCode/' + dataModel.ddComps[i].name + '.ipynb';
+                    ddCompName = dataModel.ddComps[i].name;
+
+                    genIpynbFile = 'MOCA_GeneratedCode/lib/moca_ddmodels/' + ddCompName + '/' + dataModel.ddComps[i].name + '.ipynb';
                     filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.ddComps[i]);
                 }
             }
@@ -323,9 +324,9 @@ define([
                 }
             } else if (fileInfo.name === 'ddcomp') {
                 for (i = 0; i < dataModel.ddComps.length; i++) {
-                    // genFileName = path.join(baseDir, 'src', dataModel.processFlows[i].name + '.py');
-                    genIpynbFile = path.join(baseDir, dataModel.ddComps[i].name + '.ipynb');
-                    // saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]));
+                    ddCompName = dataModel.ddComps[i].name;
+
+                    genIpynbFile = path.join(baseDir, 'lib', 'moca_ddmodels', ddCompName, ddCompName + '.ipynb');
                     saveFileToPath(genIpynbFile, ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.ddComps[i]));
                 }
             }
