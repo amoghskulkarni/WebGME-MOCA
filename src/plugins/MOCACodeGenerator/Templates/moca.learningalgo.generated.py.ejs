@@ -2,10 +2,12 @@
 from sklearn.model_selection import train_test_split
 from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.externals import joblib
 
-from math import sqrt
 import numpy as np
+from math import sqrt
 from matplotlib import pyplot as plt
+from time import time
 
 <%
     var featureString = '';
@@ -20,7 +22,7 @@ from matplotlib import pyplot as plt
     }
 
     var labelString = '';
-    for (var i = 0; i < labelPorts.length; i++) {
+    for (i = 0; i < labelPorts.length; i++) {
         labelString += labelPorts[i].name
         if (i < labelPorts.length - 1) {
             labelString += ', ';
@@ -36,7 +38,7 @@ class <%= name %>():
         # Get features
         self.features = {}
 <%
-    for (var i = 0; i < featurePorts.length; i++) {
+    for (i = 0; i < featurePorts.length; i++) {
 -%>
         self.features['<%= featurePorts[i].name %>'] = <%= featurePorts[i].name %>
 <%
@@ -46,7 +48,7 @@ class <%= name %>():
         # Get labels
         self.labels = {}
 <%
-    for (var i = 0; i < labelPorts.length; i++) {
+    for (i = 0; i < labelPorts.length; i++) {
 -%>
         self.labels['<%= labelPorts[i].name %>'] = <%= labelPorts[i].name %>
 <%
@@ -59,10 +61,9 @@ class <%= name %>():
         self.y_train = None
         self.y_test = None
 
-        # Placeholder for the trained model
-        self.trained_model = None
+        # Placeholder: List for the trained models
+        self.trained_models = []
 
-    # TODO: Train the model
     def train(self):
         np.random.seed()
 
@@ -77,8 +78,24 @@ class <%= name %>():
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(in_values, out_values, test_size=0.1)
 
-        lin_regr = linear_model.LinearRegression()
-        self.trained_model = lin_regr.fit(self.X_train, self.y_train)
+        ml_model = None
+        unique_id_for_model = ''
+<%
+    // TODO: add other algorithms
+    if (algorithm === 'Linear') {
+-%>
+        ml_model = linear_model.LinearRegression()
+        ml_model.fit(self.X_train, self.y_train)
+<%
+    }
+-%>
+        if ml_model is not None:
+            unique_id_for_model = '<%= name %>_' + str(int(time() * 1000000))
+            joblib.dump(ml_model, unique_id_for_model + '.pkl')
+
+            print "Trained model " + unique_id_for_model + "saved."
+        else:
+            print "Model not trained."
 
     def predict(self):
         y_pred = self.trained_model.predict(X=self.X_test)
