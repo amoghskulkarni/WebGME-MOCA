@@ -95,5 +95,5 @@ define([
             });
     };
 
-    return ProcessFlowInterpreterLib;
+    return ProcessFlowInterpreterLib.prototype;
 });

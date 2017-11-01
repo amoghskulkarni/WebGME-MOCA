@@ -43,6 +43,7 @@ define([
     var MOCACodeGenerator = function () {
         // Call base class' constructor.
         PluginBase.call(this);
+        this.pluginMetadata = pluginMetadata;
     };
 
     MOCACodeGenerator.metadata = pluginMetadata;
