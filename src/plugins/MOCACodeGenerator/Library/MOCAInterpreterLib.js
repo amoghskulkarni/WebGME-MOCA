@@ -14,11 +14,10 @@ define([
     var MOCAInterpreterLib = function () {};
 
     /**
-     * A helper function which recursively finds out the original base, in case there is an arbitrarily deep hierarchy
-     * of the Groups. This results from the object representation in WebGME rather than the object representation in
+     * A recursive method which finds out the original base of the given node, in case there is of arbitrarily deep hierarchy
+     * of the Groups. This results from the object representation in WebGME and not from the object representation in
      * the modeling language.
      *
-     * @param MOCAPlugin - Reference of the MOCACodeGenerator plugin
      * @param compOrGroup {string} - String providing the information about if the method is called for a Component or
      *      a Group
      * @param promiseList - The list of Promise objects that is populated and carried forward through the calls
@@ -26,8 +25,9 @@ define([
      * @retuns {Promise} - The list of Promise objects that are for the original Components/Groups base entities
      *      (defined in the ComponentLibrary/GroupLibrary etc.)
      */
-    var getOriginalBase = function(MOCAPlugin, compOrGroup, promiseList, node) {
-        var baseToPush = null;
+    MOCAInterpreterLib.prototype.getOriginalBase = function(compOrGroup, promiseList, node) {
+        var MOCAPlugin = this,
+            baseToPush = null;
         if (compOrGroup === 'Component') {
             baseToPush = MOCAPlugin.core.getBase(node);
             while (MOCAPlugin.core.getAttribute(MOCAPlugin.core.getParent(baseToPush), 'name') !== 'ComponentLibrary'
@@ -48,7 +48,6 @@ define([
      * A recursive method which goes through a Group and finds out what Group(s) and/or Component(s) are instantiated
      * in it. It has to be recursive, because a Group can contain a Group - in which case the same function is called.
      *
-     * @param MOCAPlugin - Reference of the MOCACodeGenerator plugin
      * @param componentPromises - The list containing Promise objects for the Components. It is carried forward in
      *      recursive calls.
      * @param groupPromises - The list containing Promise objects for the Groups. It is carried forward in the recursive
@@ -56,11 +55,12 @@ define([
      * @param groupNode - The Group node
      * @returns {Promise} - The list of Promise objects that are for the Groups contained by the Group node
      */
-    MOCAInterpreterLib.prototype.recursivelyPopulateGroupContents = function(MOCAPlugin, componentPromises, groupPromises, groupNode) {
-        var recursivePromises = [];
+    MOCAInterpreterLib.prototype.recursivelyPopulateGroupContents = function(componentPromises, groupPromises, groupNode) {
+        var MOCAPlugin = this,
+            recursivePromises = [];
 
         // Traverse to its base class through the instance tree
-        getOriginalBase('Group', groupPromises, groupNode);
+        MOCAInterpreterLib.prototype.getOriginalBase('Group', groupPromises, groupNode);
 
         return MOCAPlugin.core.loadChildren(groupNode)
             .then(function (children) {
@@ -68,7 +68,7 @@ define([
                     // If it is a Component..
                     if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]) , 'name') === 'Component') {
                         // Traverse to its base class through the instance tree
-                        getOriginalBase('Component', componentPromises, children[i]);
+                        MOCAInterpreterLib.prototype.getOriginalBase('Component', componentPromises, children[i]);
                     }
                     // If it is a Group (be careful here!)..
                     else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]) , 'name') === 'Group') {
