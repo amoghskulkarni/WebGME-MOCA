@@ -62,7 +62,7 @@ class <%= name %>():
         self.y_test = None
 
         # Placeholder: List for the trained models
-        self.trained_models = []
+        self.trained_model = None
 
     def train(self):
         np.random.seed()
@@ -78,22 +78,21 @@ class <%= name %>():
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(in_values, out_values, test_size=0.1)
 
-        ml_model = None
         unique_id_for_model = ''
 <%
     // TODO: add other algorithms
     if (algorithm === 'Linear') {
 -%>
-        ml_model = linear_model.LinearRegression()
-        ml_model.fit(self.X_train, self.y_train)
+        self.trained_model = linear_model.LinearRegression()
+        self.trained_model.fit(self.X_train, self.y_train)
 <%
     }
 -%>
-        if ml_model is not None:
+        if self.trained_model is not None:
             unique_id_for_model = '<%= name %>_' + str(int(time() * 1000000))
-            joblib.dump(ml_model, unique_id_for_model + '.pkl')
+            joblib.dump(self.trained_model, unique_id_for_model + '.pkl')
 
-            print "Trained model " + unique_id_for_model + "saved."
+            print "Trained model " + unique_id_for_model + " saved."
         else:
             print "Model not trained."
 
