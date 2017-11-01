@@ -24,19 +24,19 @@
     for (var i = 0; i < dataSources.length; i++) {
 -%>
                 ,"\n"
-                ,"from lib.moca_ddmodels.<%= name %>.data_sources.<%= dataSources[i].name %> import <%= dataSources[i].name %>"
+                ,"from data_sources.<%= dataSources[i].name %> import <%= dataSources[i].name %>"
 <%
     }
     for (var i = 0; i < dataPreprocs.length; i++) {
 -%>
                 ,"\n"
-                ,"from lib.moca_ddmodels.<%= name %>.preprocs.<%= dataPreprocs[i].name %> import <%= dataPreprocs[i].name %>"
+                ,"from preprocs.<%= dataPreprocs[i].name %> import <%= dataPreprocs[i].name %>"
 <%
     }
     for (var i = 0; i < learningAlgorithms.length; i++) {
 -%>
                 ,"\n"
-                ,"from lib.moca_ddmodels.<%= name %>.learning_algos.<%= learningAlgorithms[i].name %> import <%= learningAlgorithms[i].name %>"
+                ,"from learning_algos.<%= learningAlgorithms[i].name %> import <%= learningAlgorithms[i].name %>"
 <%
     }
 -%>

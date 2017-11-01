@@ -88,11 +88,13 @@
     // This next function retrieves the relevant node information for the widget
     MOCANotebookVisualizerControl.prototype._getObjectDescriptor = function (nodeId) {
         var node = this._client.getNode(nodeId),
+            nodeMeta = this._client.getNode(node.getMetaTypeId()),
             objDescriptor;
         if (node) {
             objDescriptor = {
                 id: node.getId(),
                 name: node.getAttribute(nodePropertyNames.Attributes.name),
+                metaTypeName: nodeMeta.getAttribute(nodePropertyNames.Attributes.name),
                 childrenIds: node.getChildrenIds(),
                 parentId: node.getParentId(),
                 isConnection: GMEConcepts.isConnection(nodeId),
