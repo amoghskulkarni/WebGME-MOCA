@@ -30,6 +30,7 @@ define(['js/util',
             this._btnSave = this._dialog.find('.btn-save').first();
             this._title = this._dialog.find('.modal-header').first();
             this._codearea = this._dialog.find('#codearea').first();
+            this._code_editor_modal = this._dialog.find('#code-editor-modal').first();
 
             /* Create CodeMirror Editor with options */
             var codemirrorEditorOptions = {
@@ -48,7 +49,7 @@ define(['js/util',
             this.editor = CodeMirror.fromTextArea(
                               this._codearea.get(0),
                               codemirrorEditorOptions);
-            this.editor.setSize(null, 150);
+            this.editor.setSize(null, 300);
             this.text = ''; // Keep track modified text in editor
         };
 
@@ -88,6 +89,7 @@ define(['js/util',
             // Listener on event when dialog is shown
             // Use callback to show editor after Modal window is shown.
             this._dialog.on('shown.bs.modal', function () {
+                self._code_editor_modal.css('max-height', $(window).height() * 0.7);
                 self.editor.setValue(self.text);
                 self.editor.refresh();
             });
@@ -96,6 +98,7 @@ define(['js/util',
             this._dialog.on('hidden.bs.modal', function () {
                 self._dialog.empty();
                 self._dialog.remove();
+                self.editor.refresh();
             });
         };
 
