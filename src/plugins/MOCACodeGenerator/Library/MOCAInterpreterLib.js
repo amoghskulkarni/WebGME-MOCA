@@ -33,14 +33,14 @@ define([
             while (MOCAPlugin.core.getAttribute(MOCAPlugin.core.getParent(baseToPush), 'name') !== 'ComponentLibrary'
             || MOCAPlugin.core.getAttribute(MOCAPlugin.core.getBase(baseToPush), 'name') !== 'Component')
                 baseToPush = MOCAPlugin.core.getBase(baseToPush);
-            promiseList.push(MOCAInterpreterLib.prototype.getComponentData(MOCAPlugin, baseToPush));
+            promiseList.push(MOCAPlugin.getComponentData(baseToPush));
         }
         else if (compOrGroup === 'Group') {
             baseToPush = MOCAPlugin.core.getBase(node);
             while (MOCAPlugin.core.getAttribute(MOCAPlugin.core.getParent(baseToPush), 'name') !== 'GroupLibrary'
             || MOCAPlugin.core.getAttribute(MOCAPlugin.core.getBase(baseToPush), 'name') !== 'Group')
                 baseToPush = MOCAPlugin.core.getBase(baseToPush);
-            promiseList.push(MOCAInterpreterLib.prototype.getGroupData(baseToPush));
+            promiseList.push(MOCAPlugin.getGroupData(baseToPush));
         }
     };
 
@@ -81,12 +81,12 @@ define([
 
     /**
      * The method to get the data from a Component (defined in a ComponentLibrary)
-     * @param MOCAPlugin - Reference of the MOCACodeGenerator plugin
      * @param componentNode - The Component node
      * @returns {Promise} - Promise object resolving to the data of the Component node
      */
-    MOCAInterpreterLib.prototype.getComponentData = function(MOCAPlugin, componentNode) {
-        var componentData = {
+    MOCAInterpreterLib.prototype.getComponentData = function(componentNode) {
+        var MOCAPlugin = this,
+            componentData = {
                 name: MOCAPlugin.core.getAttribute(componentNode, 'name'),
                 type: MOCAPlugin.core.getAttribute(componentNode, 'Type'),
                 force_fd: MOCAPlugin.core.getAttribute(componentNode, 'ForceFD'),
@@ -121,12 +121,12 @@ define([
 
     /**
      * The method to get the data of a Group (defined in a GroupLibrary)
-     * @param MOCAPlugin - Reference of the MOCACodeGenerator plugin
      * @param groupNode - The Group node
      * @returns {Promise} - Promise object resolving to the data of the Group node
      */
-    MOCAInterpreterLib.prototype.getGroupData = function(MOCAPlugin, groupNode) {
-        var groupData = {
+    MOCAInterpreterLib.prototype.getGroupData = function(groupNode) {
+        var MOCAPlugin = this,
+            groupData = {
                 name: MOCAPlugin.core.getAttribute(groupNode, 'name'),
                 algebraicLoop: MOCAPlugin.core.getAttribute(groupNode, 'AlgebraicLoop'),
                 compInstances: [],
