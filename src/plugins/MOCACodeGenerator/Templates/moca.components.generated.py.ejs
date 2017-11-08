@@ -22,17 +22,11 @@ for (var j = 0; j < parameters.length; j++) {
 <%
 // Generate "add_output" and "add_state" statements
 for (var j = 0; j < unknowns.length; j++) {
-    var unknown_type;
-    if (unknowns[j].type == 'Output') {
-        unknown_type = 'output';
-    } else {
-        unknown_type = 'state';
-    }
-    valueString = unknowns[j].value;
+    var valueString = unknowns[j].value;
     if (valueString.indexOf('.') === -1)
         valueString += '.0';
 -%>
-        self.add_<%= unknown_type %>('<%= unknowns[j].name %>', val=<%= unknowns[j].value %>)
+        self.add_output('<%= unknowns[j].name %>', val=<%= unknowns[j].value %>)
 <%
 }
 -%>
