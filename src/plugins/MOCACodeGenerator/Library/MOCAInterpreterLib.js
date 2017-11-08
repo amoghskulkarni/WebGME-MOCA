@@ -33,14 +33,14 @@ define([
             while (MOCAPlugin.core.getAttribute(MOCAPlugin.core.getParent(baseToPush), 'name') !== 'ComponentLibrary'
             || MOCAPlugin.core.getAttribute(MOCAPlugin.core.getBase(baseToPush), 'name') !== 'Component')
                 baseToPush = MOCAPlugin.core.getBase(baseToPush);
-            promiseList.push(MOCAInterpreterLib.prototype.getComponentData(MOCAPlugin, baseToPush));
+            promiseList.push(MOCAPlugin.getComponentData(baseToPush));
         }
         else if (compOrGroup === 'Group') {
             baseToPush = MOCAPlugin.core.getBase(node);
             while (MOCAPlugin.core.getAttribute(MOCAPlugin.core.getParent(baseToPush), 'name') !== 'GroupLibrary'
             || MOCAPlugin.core.getAttribute(MOCAPlugin.core.getBase(baseToPush), 'name') !== 'Group')
                 baseToPush = MOCAPlugin.core.getBase(baseToPush);
-            promiseList.push(MOCAInterpreterLib.prototype.getGroupData(baseToPush));
+            promiseList.push(MOCAPlugin.getGroupData(baseToPush));
         }
     };
 
@@ -81,12 +81,12 @@ define([
 
     /**
      * The method to get the data from a Component (defined in a ComponentLibrary)
-     * @param MOCAPlugin - Reference of the MOCACodeGenerator plugin
      * @param componentNode - The Component node
      * @returns {Promise} - Promise object resolving to the data of the Component node
      */
-    MOCAInterpreterLib.prototype.getComponentData = function(MOCAPlugin, componentNode) {
-        var componentData = {
+    MOCAInterpreterLib.prototype.getComponentData = function(componentNode) {
+        var MOCAPlugin = this,
+            componentData = {
                 name: MOCAPlugin.core.getAttribute(componentNode, 'name'),
                 type: MOCAPlugin.core.getAttribute(componentNode, 'Type'),
                 force_fd: MOCAPlugin.core.getAttribute(componentNode, 'ForceFD'),
@@ -121,12 +121,12 @@ define([
 
     /**
      * The method to get the data of a Group (defined in a GroupLibrary)
-     * @param MOCAPlugin - Reference of the MOCACodeGenerator plugin
      * @param groupNode - The Group node
      * @returns {Promise} - Promise object resolving to the data of the Group node
      */
-    MOCAInterpreterLib.prototype.getGroupData = function(MOCAPlugin, groupNode) {
-        var groupData = {
+    MOCAInterpreterLib.prototype.getGroupData = function(groupNode) {
+        var MOCAPlugin = this,
+            groupData = {
                 name: MOCAPlugin.core.getAttribute(groupNode, 'name'),
                 algebraicLoop: MOCAPlugin.core.getAttribute(groupNode, 'AlgebraicLoop'),
                 compInstances: [],
@@ -145,7 +145,7 @@ define([
                     else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'Group')
                         groupInstancePromises.push(MOCAInterpreterLib.prototype.getGroupInstanceData(children[i]));
                     else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'DataConn')
-                        connectionPromises.push(connInterpreter.getConnectionData(children[i]));
+                        connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, children[i]));
                 }
 
                 return Q.all(compInstancePromises);
@@ -270,7 +270,7 @@ define([
                 designvariableData.lower = MOCAPlugin.core.getAttribute(designvariableNode, 'Lower');
                 designvariableData.value = MOCAPlugin.core.getAttribute(designvariableNode, 'Value');
                 designvariableData.setByDriver = MOCAPlugin.core.getAttribute(designvariableNode, 'SetByDriver');
-                connectionPromises.push(connInterpreter.getConnectionData(desvarToInConnNode));
+                connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, desvarToInConnNode));
 
                 return Q.all(connectionPromises);
             })
@@ -298,7 +298,7 @@ define([
         return MOCAPlugin.core.loadPointer(outToObjConnNode, 'dst')
             .then(function(objectiveNode) {
                 objectiveData.name = MOCAPlugin.core.getAttribute(objectiveNode, 'name');
-                connectionPromises.push(connInterpreter.getConnectionData(outToObjConnNode));
+                connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, outToObjConnNode));
 
                 return Q.all(connectionPromises);
             })
@@ -326,7 +326,7 @@ define([
         return MOCAPlugin.core.loadPointer(portToRecConnNode, 'dst')
             .then(function(recordNode) {
                 recordData.name = MOCAPlugin.core.getAttribute(recordNode, 'name');
-                connectionPromises.push(connInterpreter.getConnectionData(portToRecConnNode));
+                connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, portToRecConnNode));
 
                 return Q.all(connectionPromises);
             })
@@ -373,7 +373,7 @@ define([
                 constraintData.lower = MOCAPlugin.core.getAttribute(constraintNode, 'Lower').toString();
 
                 // Get the connection data as well (for src and srcParent)
-                connectionPromises.push(connInterpreter.getConnectionData(portToConstraintConnNode));
+                connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, portToConstraintConnNode));
 
                 return Q.all(connectionPromises);
             })
@@ -418,8 +418,7 @@ define([
         var deferred = new Q.defer(),
             unknownData = {
                 name: MOCAPlugin.core.getAttribute(unknownNode, 'name'),
-                value: null,
-                type: MOCAPlugin.core.getAttribute(unknownNode, 'Type')
+                value: null
             };
 
         var valueString = MOCAPlugin.core.getAttribute(unknownNode, 'Value').toString();
