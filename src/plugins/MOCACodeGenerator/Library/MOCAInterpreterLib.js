@@ -145,7 +145,7 @@ define([
                     else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'Group')
                         groupInstancePromises.push(MOCAInterpreterLib.prototype.getGroupInstanceData(children[i]));
                     else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'DataConn')
-                        connectionPromises.push(connInterpreter.getConnectionData(children[i]));
+                        connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, children[i]));
                 }
 
                 return Q.all(compInstancePromises);
@@ -270,7 +270,7 @@ define([
                 designvariableData.lower = MOCAPlugin.core.getAttribute(designvariableNode, 'Lower');
                 designvariableData.value = MOCAPlugin.core.getAttribute(designvariableNode, 'Value');
                 designvariableData.setByDriver = MOCAPlugin.core.getAttribute(designvariableNode, 'SetByDriver');
-                connectionPromises.push(connInterpreter.getConnectionData(desvarToInConnNode));
+                connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, desvarToInConnNode));
 
                 return Q.all(connectionPromises);
             })
@@ -298,7 +298,7 @@ define([
         return MOCAPlugin.core.loadPointer(outToObjConnNode, 'dst')
             .then(function(objectiveNode) {
                 objectiveData.name = MOCAPlugin.core.getAttribute(objectiveNode, 'name');
-                connectionPromises.push(connInterpreter.getConnectionData(outToObjConnNode));
+                connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, outToObjConnNode));
 
                 return Q.all(connectionPromises);
             })
@@ -326,7 +326,7 @@ define([
         return MOCAPlugin.core.loadPointer(portToRecConnNode, 'dst')
             .then(function(recordNode) {
                 recordData.name = MOCAPlugin.core.getAttribute(recordNode, 'name');
-                connectionPromises.push(connInterpreter.getConnectionData(portToRecConnNode));
+                connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, portToRecConnNode));
 
                 return Q.all(connectionPromises);
             })
@@ -373,7 +373,7 @@ define([
                 constraintData.lower = MOCAPlugin.core.getAttribute(constraintNode, 'Lower').toString();
 
                 // Get the connection data as well (for src and srcParent)
-                connectionPromises.push(connInterpreter.getConnectionData(portToConstraintConnNode));
+                connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, portToConstraintConnNode));
 
                 return Q.all(connectionPromises);
             })
