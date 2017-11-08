@@ -418,8 +418,7 @@ define([
         var deferred = new Q.defer(),
             unknownData = {
                 name: MOCAPlugin.core.getAttribute(unknownNode, 'name'),
-                value: null,
-                type: MOCAPlugin.core.getAttribute(unknownNode, 'Type')
+                value: null
             };
 
         var valueString = MOCAPlugin.core.getAttribute(unknownNode, 'Value').toString();
