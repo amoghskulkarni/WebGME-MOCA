@@ -186,10 +186,11 @@ define([
         var MOCAPlugin = this,
             ddComponentData = {
                 name: MOCAPlugin.core.getAttribute(ddComponentNode, 'name'),
+                learnedModel: MOCAPlugin.core.getAttribute(ddComponentNode, 'LearnedModel'),
                 dataSources: [],
                 dataPreprocs: [],
                 learningAlgorithms: [],
-                params: [],
+                parameters: [],
                 unknowns: [],
                 connections: []
             },
@@ -238,7 +239,7 @@ define([
                 return Q.all(paramPromises);
             })
             .then(function (paramsData) {
-                ddComponentData.params = paramsData;
+                ddComponentData.parameters = paramsData;
                 return Q.all(unknownPromises);
             })
             .then(function (unknownsData) {
