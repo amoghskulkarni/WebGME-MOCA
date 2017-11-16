@@ -35,7 +35,7 @@ for (var j = 0; j < unknowns.length; j++) {
         self.deriv_options['type'] = 'fd'
 
         # Load the learned model using joblib dump
-        self.learned_model = joblib.load('<%= learnedModel %>.pkl')
+        self.learned_model = joblib.load('lib/moca_ddmodels/<%= name %>/<%= learnedModel %>.pkl')
 
     def solve_nonlinear(self, params, unknowns, resids):
         # Assigning shorthand(s) to the parameter(s)
