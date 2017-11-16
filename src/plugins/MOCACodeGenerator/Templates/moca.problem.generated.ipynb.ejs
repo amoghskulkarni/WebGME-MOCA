@@ -59,21 +59,6 @@
       "# Assign values to design variable(s)."
       ,"\n"
 <%
-var recorderDictionary = {
-    'Dump': {
-        'package': 'DumpRecorder',
-        'outputFile': 'out/' + name + '.txt'
-    },
-    'Specific': {
-        'package': 'SqliteRecorder',
-        'outputFile': 'out/' + name + '.sqlite3'
-    },
-    'CSV': {
-        'package': 'CsvRecorder',
-        'outputFile': 'out/' + name + '.csv'
-    }
-}
-
 for (var i = 0; i < desvars.length; i++) {
     var valueString = desvars[i].value.toString();
     if (valueString.indexOf('.') === -1) {
@@ -297,9 +282,9 @@ if (recorder === '(None)') {
     },
     "outputs": [],
     "source": [
-        "from IPython.display import FileLinks",
+        "utils.MOCAparseutils import ResultsAccessUtils",
         "\n",
-        "FileLinks('./out/*')"
+        "ResultsAccessUtils().get_result_files()"
     ]
   }
 <%

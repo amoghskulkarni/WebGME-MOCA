@@ -33,3 +33,10 @@ class SqliteParseUtils:
 
     def getTimestampValues(self):
         return self.__getValues('timestamp', None)
+
+class ResultsAccessUtils:
+    def __init__(self):
+        pass
+    def get_result_files(self):
+        from IPython.display import FileLinks
+        FileLinks('./out/text/')
