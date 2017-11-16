@@ -12,7 +12,7 @@ from lib.moca_components.<%= compInstances[j].base %> import <%= compInstances[j
 // Generate the code for import statement for data driven components
 for (var j = 0; j < ddCompInstances.length; j++) {
 -%>
-from lib.moca_ddmodels.<%= ddCompInstances[j].base %> import <%= ddCompInstances[j].base %>__MOCAComponent
+from lib.moca_ddmodels.<%= ddCompInstances[j].base %>.<%= ddCompInstances[j].base %>__MOCAComponent import <%= ddCompInstances[j].base %>__MOCAComponent
 <%
 }
 for (var j = 0; j < groupInstances.length; j++) {
