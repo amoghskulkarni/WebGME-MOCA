@@ -50,7 +50,7 @@ for (var j = 0; j < parameters.length; j++) {
 
         ## TODO: Feed the **vector** of parameters to the learned model
         ## (and not the hardcoded first element of the parameter)
-        [<%= unknowns[0].name %>] = self.learned_model.predict(X=[<%= parameters[0].name %>])
+        [[<%= unknowns[0].name %>]] = self.learned_model.predict(X=[[<%= parameters[0].name %>]])
 
         # Assign the value(s) to unknown(s)
 <%
