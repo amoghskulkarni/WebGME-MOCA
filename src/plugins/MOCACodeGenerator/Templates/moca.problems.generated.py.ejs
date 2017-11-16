@@ -95,7 +95,7 @@ for (var j = 0; j < ddCompInstances.length; j++) {
             promotesString += ', ';
     }
 -%>
-        self.add('<%= ddCompInstances[j].name %>', <%= ddCompInstances[j].base %>__MOCAComponent(), promotes=[<%- promotesString %>])
+        self.add('<%= ddCompInstances[j].name %>', <%= ddCompInstances[j].base %>, promotes=[<%- promotesString %>])
 <%
 }
 -%>
