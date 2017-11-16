@@ -59,6 +59,21 @@
       "# Assign values to design variable(s)."
       ,"\n"
 <%
+var recorderDictionary = {
+    'Dump': {
+        'package': 'DumpRecorder',
+        'outputFile': 'out/' + name + '.txt'
+    },
+    'Specific': {
+        'package': 'SqliteRecorder',
+        'outputFile': 'out/' + name + '.sqlite3'
+    },
+    'CSV': {
+        'package': 'CsvRecorder',
+        'outputFile': 'out/' + name + '.csv'
+    }
+}
+
 for (var i = 0; i < desvars.length; i++) {
     var valueString = desvars[i].value.toString();
     if (valueString.indexOf('.') === -1) {
@@ -254,7 +269,8 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
   }
 <%
     } // if the model has "specific" recorder (sqlite)
-} else { // if the recorder is neither "dump" nor "specific"
+}
+if (recorder === '(None)') {
 -%>
   ,{
    "cell_type": "markdown",
@@ -262,6 +278,29 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
    "source": [
     "No recorder selected."
    ]
+  }
+<%
+} else {
+-%>
+  ,{
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+    "The results of the analysis are -"
+    ]
+  }
+  ,{
+    "cell_type": "code",
+    "execution_count": null,
+    "metadata": {
+        "collapsed": true
+    },
+    "outputs": [],
+    "source": [
+        "from IPython.display import FileLinks",
+        "\n",
+        "FileLinks('./out/*')
+    ]
   }
 <%
 }
