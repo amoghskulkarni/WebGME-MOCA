@@ -179,7 +179,9 @@ define([
 
         // Create out directory for storing output files in case of recorders
         // TODO: Create only directory (creating a dummy placeholder file for now)
-        var outDirName = 'MOCA_GeneratedCode/out/dummy.txt';
+        var outDirName = 'MOCA_GeneratedCode/out/bin/dummy';
+        filesToAdd[outDirName] = '';
+        outDirName = 'MOCA_GeneratedCode/out/bin/dummy';
         filesToAdd[outDirName] = '';
 
         // Create a batch file to launch ipython notebook
@@ -221,7 +223,7 @@ define([
             internalDirs = ['lib', 'lib/moca_components', 'lib/moca_groups', 'lib/moca_ddmodels',
                 'src',
                 'utils',  'utils/moca_plotutils',
-                'out'],
+                'out', 'out/bin', 'out/text'],
             genFileName = "";
 
         for (var i = 0; i < dataModel.ddComps.length; i++) {
@@ -250,7 +252,7 @@ define([
                     console.log('Directory created successfully!');
             });
 
-            if (internalDir !== 'out') {
+            if (internalDir !== 'out' && internalDir !== 'out/bin' && internalDir !== 'out/text') {
                 var initFileName = path.join(baseDir, internalDir, '__init__.py');
                 saveFileToPath(initFileName, '# A boilerplate file to enable this directory to be imported as a module');
             }
