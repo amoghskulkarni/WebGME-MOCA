@@ -59,11 +59,12 @@ class <%= name %>_PlotUtils:
                              '<%= records[records.length-1].connection[0].srcParent %>.<%= records[records.length-1].connection[0].src %>':  <%= records[records.length-1].connection[0].srcParent %>_<%= records[records.length-1].connection[0].src %>__values })
         # step calculation
 <%
+    var stepSample = Math.pow(parseInt(doeSamples), desvars.length - 1);
     for (var j = 0; j < desvars.length; j++) {
         if (desvars[j].setByDriver) {
 -%>
         <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values__sorted = sorted(<%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values)
-        self.<%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__step = <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values__sorted[<%= doeSamples %>] - <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values__sorted[0]
+        self.<%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__step = <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values__sorted[<%= stepSample %>] - <%= desvars[j].connection[0].dstParent %>_<%= desvars[j].connection[0].dst %>__values__sorted[0]
 <%
         }
     }
