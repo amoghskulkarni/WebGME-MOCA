@@ -3,48 +3,46 @@
 # Static imports
 from openmdao.api import IndepVarComp, Group, Problem
 <%
+var driverDictionary = {
+    'ScipyOptimizer': 'ScipyOptimizer',
+    'FullFactorialDOE': 'FullFactorialDriver'
+}
+var recorderDictionary = {
+    'Dump': {
+        'package': 'DumpRecorder',
+        'outputFile': 'out/' + name + '.txt'
+    },
+    'Specific': {
+        'package': 'SqliteRecorder',
+        'outputFile': 'out/' + name + '.sqlite3'
+    },
+    'CSV': {
+        'package': 'CsvRecorder',
+        'outputFile': 'out/' + name + '.csv'
+    }
+}
 // Generate the code for import statement for components
-for (var j = 0; j < compInstances.length; j++) {
+for (var i = 0; i < compInstances.length; i++) {
 -%>
-from lib.moca_components.<%= compInstances[j].base %> import <%= compInstances[j].base %>
+from lib.moca_components.<%= compInstances[i].base %> import <%= compInstances[i].base %>
 <%
 }
 // Generate the code for import statement for data driven components
-for (var j = 0; j < ddCompInstances.length; j++) {
+for (i = 0; i < ddCompInstances.length; i++) {
 -%>
-from lib.moca_ddmodels.<%= ddCompInstances[j].base %>.<%= ddCompInstances[j].base %>__MOCAComponent import <%= ddCompInstances[j].base %>
+from lib.moca_ddmodels.<%= ddCompInstances[i].base %>.<%= ddCompInstances[i].base %>__MOCAComponent import <%= ddCompInstances[i].base %>
 <%
 }
-for (var j = 0; j < groupInstances.length; j++) {
+for (i = 0; i < groupInstances.length; i++) {
 -%>
-from lib.moca_groups.<%= groupInstances[j].base %> import <%= groupInstances[j].base %>
+from lib.moca_groups.<%= groupInstances[i].base %> import <%= groupInstances[i].base %>
 <%
 }
 -%>
 
 # Dynamic imports
-<%
-if (driver === 'ScipyOptimizer') {
--%>
-from openmdao.api import ScipyOptimizer
-<%
-} else if (driver === 'FullFactorialDOE') {
--%>
-from openmdao.api import FullFactorialDriver
-<%
-}
--%>
-<%
-if (recorder === 'Dump') {
--%>
-from openmdao.api import DumpRecorder
-<%
-} else if (recorder === 'Specific') {
--%>
-from openmdao.api import SqliteRecorder
-<%
-}
--%>
+from openmdao.api import <%= driverDictionary[driver] %>
+from openmdao.api import <%= recorderDictionary[recorder]['package'] %>
 <%
 if (algebraicLoop) {
 -%>
@@ -57,9 +55,10 @@ class RootGroup(Group):
     def __init__(self):
         super(RootGroup, self).__init__()
 
+        # Add design variables (independently varying components)
 <%
 // add() statements for design variables
-for (var i = 0; i < desvars.length; i++) {
+for (i = 0; i < desvars.length; i++) {
     var valueString = desvars[i].value.toString();
     if (valueString.indexOf('.') === -1) {
         valueString += '.0';
@@ -69,75 +68,82 @@ for (var i = 0; i < desvars.length; i++) {
 <%
 }
 -%>
+
+        # Add component instances
 <%
 // Generate the code for add() statements for components -
 // add instances of components
-for (var j = 0; j < compInstances.length; j++) {
+for (i = 0; i < compInstances.length; i++) {
     promotesString = '';
-    for (var k = 0; k < compInstances[j].promotes.length; k++) {
-        promotesString += "'" + compInstances[j].promotes[k] + "'";
-        if (k != compInstances[j].promotes.length - 1)
+    for (var j = 0; j < compInstances[i].promotes.length; j++) {
+        promotesString += "'" + compInstances[i].promotes[j] + "'";
+        if (j != compInstances[i].promotes.length - 1)
             promotesString += ', ';
     }
 -%>
-        self.add('<%= compInstances[j].name %>', <%= compInstances[j].base %>(), promotes=[<%- promotesString %>])
-<%
-}
--%>
-<%
-// Generate the code for add() statements for components -
-// add instances of components
-for (var j = 0; j < ddCompInstances.length; j++) {
-    promotesString = '';
-    for (var k = 0; k < ddCompInstances[j].promotes.length; k++) {
-        promotesString += "'" + ddCompInstances[j].promotes[k] + "'";
-        if (k != ddCompInstances[j].promotes.length - 1)
-            promotesString += ', ';
-    }
--%>
-        self.add('<%= ddCompInstances[j].name %>', <%= ddCompInstances[j].base %>(), promotes=[<%- promotesString %>])
-<%
-}
--%>
-<%
-// Generate the code for add() statements for groups -
-// add instances of groups
-for (var j = 0; j < groupInstances.length; j++) {
-    var promotesString = '';
-    for (var k = 0; k < groupInstances[j].promotes.length; k++) {
-        promotesString += "'" + groupInstances[j].promotes[k] + "'";
-        if (k != groupInstances[j].promotes.length - 1)
-            promotesString += ', ';
-    }
--%>
-        self.add('<%= groupInstances[j].name %>', <%= groupInstances[j].base %>(), promotes=[<%- promotesString %>])
+        self.add('<%= compInstances[i].name %>', <%= compInstances[i].base %>(), promotes=[<%- promotesString %>])
 <%
 }
 -%>
 
+        # Add data-driven component instances
+<%
+// Generate the code for add() statements for components -
+// add instances of components
+for (i = 0; i < ddCompInstances.length; i++) {
+    promotesString = '';
+    for (j = 0; j < ddCompInstances[i].promotes.length; j++) {
+        promotesString += "'" + ddCompInstances[i].promotes[j] + "'";
+        if (j != ddCompInstances[i].promotes.length - 1)
+            promotesString += ', ';
+    }
+-%>
+        self.add('<%= ddCompInstances[i].name %>', <%= ddCompInstances[i].base %>(), promotes=[<%- promotesString %>])
+<%
+}
+-%>
+
+        # Add group instances
+<%
+// Generate the code for add() statements for groups -
+// add instances of groups
+for (i = 0; i < groupInstances.length; i++) {
+    var promotesString = '';
+    for (j = 0; j < groupInstances[i].promotes.length; j++) {
+        promotesString += "'" + groupInstances[i].promotes[j] + "'";
+        if (j != groupInstances[i].promotes.length - 1)
+            promotesString += ', ';
+    }
+-%>
+        self.add('<%= groupInstances[i].name %>', <%= groupInstances[i].base %>(), promotes=[<%- promotesString %>])
+<%
+}
+-%>
+
+        # Add connections between the ports
 <%
 // Generate the code for connect() statements for connections between ports
-for (var j = 0; j < connections.length; j++) {
+for (i = 0; i < connections.length; i++) {
 -%>
-        self.connect('<%= connections[j].srcParent %>.<%= connections[j].src %>', '<%= connections[j].dstParent %>.<%= connections[j].dst %>')
+        self.connect('<%= connections[i].srcParent %>.<%= connections[i].src %>', '<%= connections[i].dstParent %>.<%= connections[i].dst %>')
 <%
 }
 -%>
 <%
 // Generate the code for connect() statements for connections
 // between IndepVarComps' ports and ports
-for (var j = 0; j < desvars.length; j++) {
+for (i = 0; i < desvars.length; i++) {
 -%>
-        self.connect('<%= desvars[j].name %>.<%= desvars[j].connection[0].dst %>', '<%= desvars[j].connection[0].dstParent %>.<%= desvars[j].connection[0].dst %>')
+        self.connect('<%= desvars[i].name %>.<%= desvars[i].connection[0].dst %>', '<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %>')
 <%
 }
 -%>
+
+        # Special solvers for handling algebraic loops
 <%
 // Change nl_solver and ln_driver in case of algebraic loop
 if (algebraicLoop) {
 -%>
-
-        # Special solvers for handling algebraic loops
         self.nl_solver = NLGaussSeidel()
         self.nl_solver.options['atol'] = 1.0e-12
         self.ln_solver = ScipyGMRES()
@@ -145,22 +151,24 @@ if (algebraicLoop) {
 }
 -%>
 
+
 class <%= name %>(Problem):
     def __init__(self):
         super(<%= name %>, self).__init__()
 
         self.root = RootGroup()
+
+        # Add driver
 <%
 // Driver settings
 if (driver === 'ScipyOptimizer') {
 -%>
-
         self.driver = ScipyOptimizer()
         self.driver.options['optimizer'] = 'SLSQP'
 
 <%
-    for (var i = 0; i < constraints.length; i++) {
-        limitsString = '';
+    for (i = 0; i < constraints.length; i++) {
+        var limitsString = '';
         if (constraints[i].enableUpper) {
             limitsString = 'upper=';
             valueString = constraints[i].upper;
@@ -185,55 +193,21 @@ if (driver === 'ScipyOptimizer') {
 <%
 } else if (driver === 'FullFactorialDOE') {
 -%>
-
         self.driver = FullFactorialDriver(<%= doeSamples %>)
 <%
 }
 -%>
-<%
-// add recorder
-if (recorder === 'Dump') {
--%>
 
-        rec = DumpRecorder('out/<%= name %>_dumpfile')
+        # Add recorder to the driver
+        rec = <%= recorderDictionary[recorder]['package'] %>('<%= recorderDictionary[recorder]['outputFile'] %>')
         rec.options['record_params'] = True
         rec.options['record_metadata'] = True
         self.driver.add_recorder(rec)
-<%
-} else if (recorder === 'Specific') {
-//        var incWord = "'" + "includes" + "'";
-//        var incString = '';
-//        for (var i = 0; i < desvars.length; i++) {
-//            if (desvars[i].setByDriver) {
-//                // construct incString
-//                incString += "'" + desvars[i].connection[0].dstParent + "." + desvars[i].connection[0].dst + "'";
-//                incString += ", ";
-//            }
-//        }
-//        for (var i = 0; i < records.length; i++) {
-//            // construct incString
-//            incString += "'" + records[i].connection[0].srcParent + "." + records[i].connection[0].src + "'";
-//            if (i != records.length - 1)
-//                incString += ", ";
-//        }
-//        if (incString === "")
-//            incString = "'" + "*" + "'";
 
-//        Add this to the generated code block if the above code is to be uncommented
-//        rec.options[ %= incWord % ] = [ %= incString % ]
--%>
-
-        rec = SqliteRecorder('out/<%= name %>_sqlitefile')
-        rec.options['record_params'] = True
-        rec.options['record_metadata'] = True
-        self.driver.add_recorder(rec)
-<%
-}
--%>
-
+        # Let the driver know about design variables
 <%
 // add_desvar() statements for design variables
-for (var i = 0; i < desvars.length; i++) {
+for (i = 0; i < desvars.length; i++) {
     if (desvars[i].setByDriver) {
         var upperString = desvars[i].upper.toString(),
             lowerString = desvars[i].lower.toString();
@@ -249,12 +223,17 @@ for (var i = 0; i < desvars.length; i++) {
     }
 }
 -%>
+
+        # Add objective (in case of optimization)
+        # Adding multiple objectives can cause erroneous behavior
 <%
-// add_objective() statements for objectives
-for (var i = 0; i < objectives.length; i++) {
+if (driver === 'ScipyOptimizer') {
+    // add_objective() statements for objectives -- although only 1 objective is supported
+    for (i = 0; i < objectives.length; i++) {
 -%>
         self.driver.add_objective('<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>')
 <%
+    }
 }
 -%>
         self.setup()
@@ -278,7 +257,7 @@ if (driver === 'ScipyOptimizer') {
     print "\tObjective(s):"
     print "\t------------"
 <%
-    for (var i = 0; i < objectives.length; i++) {
+    for (i = 0; i < objectives.length; i++) {
 -%>
     print("\t\t<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %> = %f" % (top['<%= objectives[i].connection[0].srcParent %>.<%= objectives[i].connection[0].src %>']))
 <%
@@ -287,7 +266,7 @@ if (driver === 'ScipyOptimizer') {
     print "\tDesign variable(s):"
     print "\t------------------"
 <%
-    for (var i = 0; i < desvars.length; i++) {
+    for (i = 0; i < desvars.length; i++) {
 -%>
     print("\t\t<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %> = %f" % (top['<%= desvars[i].connection[0].dstParent %>.<%= desvars[i].connection[0].dst %>']))
 <%
