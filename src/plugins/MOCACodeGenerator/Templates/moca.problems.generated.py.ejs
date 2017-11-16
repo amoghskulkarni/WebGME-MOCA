@@ -9,6 +9,12 @@ for (var j = 0; j < compInstances.length; j++) {
 from lib.moca_components.<%= compInstances[j].base %> import <%= compInstances[j].base %>
 <%
 }
+// Generate the code for import statement for data driven components
+for (var j = 0; j < ddCompInstances.length; j++) {
+-%>
+from lib.moca_ddmodels.<%= ddCompInstances[j].base %>.<%= ddCompInstances[j].base %>__MOCAComponent import <%= ddCompInstances[j].base %>
+<%
+}
 for (var j = 0; j < groupInstances.length; j++) {
 -%>
 from lib.moca_groups.<%= groupInstances[j].base %> import <%= groupInstances[j].base %>
@@ -75,6 +81,21 @@ for (var j = 0; j < compInstances.length; j++) {
     }
 -%>
         self.add('<%= compInstances[j].name %>', <%= compInstances[j].base %>(), promotes=[<%- promotesString %>])
+<%
+}
+-%>
+<%
+// Generate the code for add() statements for components -
+// add instances of components
+for (var j = 0; j < ddCompInstances.length; j++) {
+    promotesString = '';
+    for (var k = 0; k < ddCompInstances[j].promotes.length; k++) {
+        promotesString += "'" + ddCompInstances[j].promotes[k] + "'";
+        if (k != ddCompInstances[j].promotes.length - 1)
+            promotesString += ', ';
+    }
+-%>
+        self.add('<%= ddCompInstances[j].name %>', <%= ddCompInstances[j].base %>(), promotes=[<%- promotesString %>])
 <%
 }
 -%>

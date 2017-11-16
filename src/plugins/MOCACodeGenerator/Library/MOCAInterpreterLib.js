@@ -42,6 +42,13 @@ define([
                 baseToPush = MOCAPlugin.core.getBase(baseToPush);
             promiseList.push(MOCAPlugin.getGroupData(baseToPush));
         }
+        else if (compOrGroup === 'DataDrivenComponent') {
+            baseToPush = MOCAPlugin.core.getBase(node);
+            while (MOCAPlugin.core.getAttribute(MOCAPlugin.core.getParent(baseToPush), 'name') !== 'ComponentLibrary'
+            || MOCAPlugin.core.getAttribute(MOCAPlugin.core.getBase(baseToPush), 'name') !== 'DataDrivenComponent')
+                baseToPush = MOCAPlugin.core.getBase(baseToPush);
+            promiseList.push(MOCAPlugin.getDDComponentData(baseToPush));
+        }
     };
 
     /**
@@ -66,13 +73,14 @@ define([
             .then(function (children) {
                 for (var i = 0; i < children.length; i++) {
                     // If it is a Component..
-                    if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]) , 'name') === 'Component') {
+                    if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]) , 'name') === 'Component'
+                        || MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]) , 'name') === 'DataDrivenComponent') {
                         // Traverse to its base class through the instance tree
                         MOCAInterpreterLib.prototype.getOriginalBase('Component', componentPromises, children[i]);
                     }
                     // If it is a Group (be careful here!)..
                     else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]) , 'name') === 'Group') {
-                        recursivePromises.push(MOCAInterpreterLib.prototype.recursivelyPopulateGroupContents(MOCAPlugin, componentPromises, groupPromises, children[i]));
+                        recursivePromises.push(MOCAInterpreterLib.prototype.recursivelyPopulateGroupContents(componentPromises, groupPromises, children[i]));
                     }
                 }
                 return recursivePromises;
@@ -118,6 +126,42 @@ define([
                 return componentData;
             });
     };
+
+    // /**
+    //  * The method to get the data from a DataDrivenComponent (defined in a ComponentLibrary)
+    //  * @param ddComponentNode - The DataDrivenComponent node
+    //  * @returns {Promise} - Promise object resolving to the data of the DataDrivenComponent node
+    //  */
+    // MOCAInterpreterLib.prototype.getDDComponentData = function(ddComponentNode) {
+    //     var MOCAPlugin = this,
+    //         ddComponentData = {
+    //             name: MOCAPlugin.core.getAttribute(ddComponentNode, 'name'),
+    //             parameters: [],
+    //             unknowns: []
+    //         },
+    //         parameterPromises = [],
+    //         unknownPromises = [];
+    //
+    //     return MOCAPlugin.core.loadChildren(ddComponentNode)
+    //         .then(function(children) {
+    //             for (var i = 0; i < children.length; i++) {
+    //                 if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'Parameter')
+    //                     parameterPromises.push(MOCAInterpreterLib.prototype.getParameterData(MOCAPlugin, children[i]));
+    //                 else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'Unknown')
+    //                     unknownPromises.push(MOCAInterpreterLib.prototype.getUnknownData(MOCAPlugin, children[i]));
+    //             }
+    //
+    //             return Q.all(parameterPromises);
+    //         })
+    //         .then(function (parametersData) {
+    //             ddComponentData.parameters = parametersData;
+    //             return Q.all(unknownPromises);
+    //         })
+    //         .then(function (unknownsData) {
+    //             ddComponentData.unknowns = unknownsData;
+    //             return ddComponentData;
+    //         });
+    // };
 
     /**
      * The method to get the data of a Group (defined in a GroupLibrary)
@@ -201,6 +245,46 @@ define([
             })
             .then(function() {
                 return compInstancesData;
+            });
+    };
+
+    /**
+     * The method to get the data from an instance node of a DataDrivenComponent node
+     * @param MOCAPlugin - Reference of the MOCACodeGenerator plugin
+     * @param ddCompInstanceNode - The instance node of a DataDrivenComponent node
+     * @returns {Promise} - Promise object resolving to the data of the instance node of a DataDrivenComponent
+     */
+    MOCAInterpreterLib.prototype.getDDCompInstanceData = function (MOCAPlugin, ddCompInstanceNode) {
+        var ddCompInstancesData = {
+            name: MOCAPlugin.core.getAttribute(ddCompInstanceNode, 'name'),
+            base: MOCAPlugin.core.getAttribute(MOCAPlugin.core.getBase(ddCompInstanceNode), 'name'),
+            promotes: []
+        };
+
+        return MOCAPlugin.core.loadChildren(ddCompInstanceNode)
+            .then(function(children) {
+                var promotePromises = [];
+                for (var i = 0; i < children.length; i++) {
+                    promotePromises.push(MOCAPlugin.core.loadCollection(children[i], 'dst')
+                        .then(function(connections) {
+                            var pointerPromises = [];
+                            for (var j = 0; j < connections.length; j++) {
+                                if (MOCAPlugin.core.getAttribute(connections[j], 'name') === 'PrToPortAssoc') {
+                                    pointerPromises.push(MOCAPlugin.core.loadPointer(connections[j], 'dst'));
+                                }
+                            }
+                            return Q.all(pointerPromises);
+                        })
+                        .then(function(dstNodes) {
+                            for (var j = 0; j < dstNodes.length; j++) {
+                                ddCompInstancesData.promotes.push(MOCAPlugin.core.getAttribute(dstNodes[j], 'name'));
+                            }
+                        })
+                    );
+                }
+            })
+            .then(function() {
+                return ddCompInstancesData;
             });
     };
 
@@ -450,6 +534,7 @@ define([
                 algebraicLoop: MOCAPlugin.core.getAttribute(problemNode, 'AlgebraicLoop'),
                 constraints: [],
                 compInstances: [],
+                ddCompInstances: [],
                 groupInstances: [],
                 connections: [],
                 desvars: [],
@@ -458,6 +543,7 @@ define([
             },
             constraintPromises = [],
             compInstancePromises = [],
+            ddCompInstancePromises = [],
             groupInstancePromises = [],
             connectionPromises = [],
             desvarPromises = [],
@@ -483,7 +569,8 @@ define([
                         constraintPromises.push(MOCAInterpreterLib.prototype.getConstraintData(MOCAPlugin, children[i]));
                     else if (childMetaType === 'DataConn')
                         connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, children[i]));
-
+                    else if (childMetaType === 'DataDrivenComponent')
+                        ddCompInstancePromises.push(MOCAInterpreterLib.prototype.getDDCompInstanceData(MOCAPlugin, children[i]))
                 }
 
                 return Q.all(compInstancePromises);
@@ -514,6 +601,10 @@ define([
             })
             .then(function (constraintsData) {
                 problemData.constraints = constraintsData;
+                return Q.all(ddCompInstancePromises);
+            })
+            .then(function (ddCompInstancesData) {
+                problemData.ddCompInstances = ddCompInstancesData;
                 return problemData;
             });
     };
