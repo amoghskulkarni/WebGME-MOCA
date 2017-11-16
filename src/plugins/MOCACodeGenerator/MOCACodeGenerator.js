@@ -251,6 +251,11 @@ define([
                             // Traverse to its base class through the instance tree
                             self.getOriginalBase('Component', componentPromises, children[i]);
                         }
+                        // If it is a DataDrivenComponent..
+                        else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'DataDrivenComponent') {
+                            // Traverse to its base class through the instance tree
+                            self.getOriginalBase('DataDrivenComponent', ddComponentPromises, children[i]);
+                        }
                         // If it is a Group..
                         else if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') === 'Group') {
                             // Call a recursive function which in turn populates the promise lists.
@@ -266,6 +271,10 @@ define([
                 })
                 .then(function (componentsData) {
                     dataModel.comps = componentsData;
+                    return Q.all(ddComponentPromises);
+                })
+                .then(function (ddComponentsData) {
+                    dataModel.ddComps = ddComponentsData;
                     return Q.all(groupPromises);
                 })
                 .then(function (groupsData) {
