@@ -193,7 +193,6 @@ if (driver === 'ScipyOptimizer') {
         f = open('out/text/<%= name %>.csv', 'w')
         rec = CsvRecorder(f)
         rec.options['record_params'] = True
-        rec.options['record_metadata'] = True
         self.driver.add_recorder(rec)
 <%
 if (driver === 'FullFactorialDOE') {

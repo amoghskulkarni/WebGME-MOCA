@@ -7,7 +7,7 @@ from sqlitedict import SqliteDict
 class SqliteParseUtils:
     def __init__(self, top):
         # Get the database filename.
-        self.filename = top.driver.recorders._recorders[0].out_iterations.filename
+        self.filename = top.driver.recorders._recorders[2].out_iterations.filename
 
         # Wait for analysis to finish.
         top.cleanup()
