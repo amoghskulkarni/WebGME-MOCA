@@ -60,6 +60,7 @@ define([
         },
         {
             name: 'ddcomp',
+            template: 'moca.ddcomponents.generated.py.ejs',
             ipynbfile: 'moca.ddcomp.generated.ipynb.ejs'
         }
     ];
@@ -154,8 +155,11 @@ define([
                 for (i = 0; i < dataModel.ddComps.length; i++) {
                     ddCompName = dataModel.ddComps[i].name;
 
+                    genFileName = 'MOCA_GeneratedCode/lib/moca_ddmodels/' + ddCompName + '/' + dataModel.ddComps[i].name + '__MOCAComponent.py';
                     genIpynbFile = 'MOCA_GeneratedCode/lib/moca_ddmodels/' + ddCompName + '/' + dataModel.ddComps[i].name + '.ipynb';
+
                     filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.ddComps[i]);
+                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i]);
                 }
             }
         });
@@ -175,7 +179,9 @@ define([
 
         // Create out directory for storing output files in case of recorders
         // TODO: Create only directory (creating a dummy placeholder file for now)
-        var outDirName = 'MOCA_GeneratedCode/out/dummy.txt';
+        var outDirName = 'MOCA_GeneratedCode/out/bin/dummy';
+        filesToAdd[outDirName] = '';
+        outDirName = 'MOCA_GeneratedCode/out/bin/dummy';
         filesToAdd[outDirName] = '';
 
         // Create a batch file to launch ipython notebook
@@ -217,7 +223,7 @@ define([
             internalDirs = ['lib', 'lib/moca_components', 'lib/moca_groups', 'lib/moca_ddmodels',
                 'src',
                 'utils',  'utils/moca_plotutils',
-                'out'],
+                'out', 'out/bin', 'out/text'],
             genFileName = "";
 
         for (var i = 0; i < dataModel.ddComps.length; i++) {
@@ -246,7 +252,7 @@ define([
                     console.log('Directory created successfully!');
             });
 
-            if (internalDir !== 'out') {
+            if (internalDir !== 'out' && internalDir !== 'out/bin' && internalDir !== 'out/text') {
                 var initFileName = path.join(baseDir, internalDir, '__init__.py');
                 saveFileToPath(initFileName, '# A boilerplate file to enable this directory to be imported as a module');
             }
@@ -331,7 +337,10 @@ define([
                     ddCompName = dataModel.ddComps[i].name;
 
                     genIpynbFile = path.join(baseDir, 'lib', 'moca_ddmodels', ddCompName, ddCompName + '.ipynb');
+                    genFileName = path.join(baseDir, 'lib', 'moca_ddmodels', ddCompName, ddCompName + '__MOCAComponent.py');
+
                     saveFileToPath(genIpynbFile, ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.ddComps[i]));
+                    saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.ddComps[i]));
                 }
             }
         });

@@ -188,7 +188,7 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
    ]
   }
 <%
-} else if (driver === 'FullFactorialDOE' && recorder !== '(None)') {
+} else if (driver === 'FullFactorialDOE') {
 -%>
   ,{
    "cell_type": "markdown",
@@ -199,20 +199,6 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
       ,"*Recording*"
    ]
   }
-<%
-    if (recorder === 'Dump') {
--%>
-  ,{
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-      "The recorder used is dump recorder, which creates the dumpfile in /out directory.\n"
-      ,"It contains all the values of parameters and unknowns in human readable format.\n"
-    ]
-  }
-<%
-    } else if (recorder === 'Specific') {
--%>
   ,{
    "cell_type": "markdown",
    "metadata": {},
@@ -253,19 +239,28 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
    ]
   }
 <%
-    } // if the model has "specific" recorder (sqlite)
-} else { // if the recorder is neither "dump" nor "specific"
--%>
-  ,{
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "No recorder selected."
-   ]
-  }
-<%
 }
 -%>
+  ,{
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
+    "The results of the analysis are -"
+    ]
+  }
+  ,{
+    "cell_type": "code",
+    "execution_count": null,
+    "metadata": {
+        "collapsed": true
+    },
+    "outputs": [],
+    "source": [
+        "from utils.MOCAparseutils import ResultsAccessUtils",
+        "\n",
+        "ResultsAccessUtils().get_result_files()"
+    ]
+  }
  ],
   "metadata": {
   "kernelspec": {
