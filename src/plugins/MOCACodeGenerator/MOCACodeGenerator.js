@@ -171,9 +171,11 @@ define([
                         else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'GroupLibrary') {
                             // Load its children (use GroupLibraryPromises for that) and then get their groupData
                             groupLibraryPromises.push(self.core.loadChildren(children[i])
-                                .then(function (groups) {
-                                    for (var j = 0; j < groups.length; j++) {
-                                        groupPromises.push(self.getGroupData(groups[j]));
+                                .then(function (grandchildren) {
+                                    for (var j = 0; j < grandchildren.length; j++) {
+                                        if (self.core.getAttribute(self.getMetaType(grandchildren[j]), 'name') === 'Group') {
+                                            groupPromises.push(self.getGroupData(grandchildren[j]));
+                                        }
                                     }
                                 })
                             );
@@ -182,9 +184,11 @@ define([
                         else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'ProcessFlowLibrary'){
                             // Load its children (use ProcessFlowLibraryPromises for that) and then get their ProcessFlowData
                             processFlowLibraryPromises.push(self.core.loadChildren(children[i])
-                                .then(function (processFlows) {
-                                    for (var j = 0; j < processFlows.length; j++) {
-                                        processFlowPromises.push(self.getProcessFlowData(processFlows[j]));
+                                .then(function (grandchildren) {
+                                    for (var j = 0; j < grandchildren.length; j++) {
+                                        if (self.core.getAttribute(self.getMetaType(grandchildren[j]), 'name') === 'ProcessFlow') {
+                                            processFlowPromises.push(self.getProcessFlowData(grandchildren[j]));
+                                        }
                                     }
                                 })
                             );
@@ -193,9 +197,11 @@ define([
                         else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'ProblemLibrary') {
                             // Load its children (use ProblemLibraryPromises for that) and then get their ProblemData
                             problemLibraryPromises.push(self.core.loadChildren(children[i])
-                                .then(function (problems) {
-                                    for (var j = 0; j < problems.length; j++) {
-                                        problemPromises.push(self.getProblemData(problems[j]));
+                                .then(function (grandchildren) {
+                                    for (var j = 0; j < grandchildren.length; j++) {
+                                        if (self.core.getAttribute(self.getMetaType(grandchildren[j]), 'name') === 'Problem') {
+                                            problemPromises.push(self.getProblemData(grandchildren[j]));
+                                        }
                                     }
                                 })
                             );
