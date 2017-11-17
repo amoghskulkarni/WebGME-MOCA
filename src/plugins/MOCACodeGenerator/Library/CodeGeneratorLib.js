@@ -259,7 +259,7 @@ define([
                     console.log('Directory created successfully!');
             });
 
-            if (internalDir.indexOf('out') !== -1) {
+            if (internalDir.indexOf('out') === -1) {
                 var initFileName = path.join(baseDir, internalDir, '__init__.py');
                 saveFileToPath(initFileName, '# A boilerplate file to enable this directory to be imported as a module');
             }
