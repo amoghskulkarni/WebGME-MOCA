@@ -180,8 +180,8 @@ define([
         // Create out directory for storing output files in case of recorders
         // TODO: Create only directory (creating a dummy placeholder file for now)
         for (i = 0; i < dataModel.problems.length; i++) {
-            var outBinBaseDir = 'MOCA_GeneratedCode/out/bin',
-                outTextBaseDir = 'MOCA_GeneratedCode/out/text';
+            var outBinBaseDir = 'MOCA_GeneratedCode/out/bin/',
+                outTextBaseDir = 'MOCA_GeneratedCode/out/text/';
             filesToAdd[outBinBaseDir + dataModel.problems[i].name + '/dummy'] = '';
             filesToAdd[outTextBaseDir + dataModel.problems[i].name + '/dummy'] = '';
         }
