@@ -188,7 +188,7 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
    ]
   }
 <%
-} else if (driver === 'FullFactorialDOE' && recorder !== '(None)') {
+} else if (driver === 'FullFactorialDOE') {
 -%>
   ,{
    "cell_type": "markdown",
@@ -199,20 +199,6 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
       ,"*Recording*"
    ]
   }
-<%
-    if (recorder === 'Dump') {
--%>
-  ,{
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-      "The recorder used is dump recorder, which creates the dumpfile in /out directory.\n"
-      ,"It contains all the values of parameters and unknowns in human readable format.\n"
-    ]
-  }
-<%
-    } else if (recorder === 'Specific') {
--%>
   ,{
    "cell_type": "markdown",
    "metadata": {},
@@ -253,19 +239,7 @@ if (driver === 'ScipyOptimizer' || driver === 'Default (run once)') {
    ]
   }
 <%
-    } // if the model has "specific" recorder (sqlite)
 }
-if (recorder === '(None)') {
--%>
-  ,{
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "No recorder selected."
-   ]
-  }
-<%
-} else {
 -%>
   ,{
     "cell_type": "markdown",

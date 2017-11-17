@@ -530,7 +530,6 @@ define([
                 name: MOCAPlugin.core.getAttribute(problemNode, 'name'),
                 driver: MOCAPlugin.core.getAttribute(problemNode, 'Driver'),
                 doeSamples: MOCAPlugin.core.getAttribute(problemNode, 'Samples'),
-                recorder: MOCAPlugin.core.getAttribute(problemNode, 'Recorder'),
                 algebraicLoop: MOCAPlugin.core.getAttribute(problemNode, 'AlgebraicLoop'),
                 constraints: [],
                 compInstances: [],

@@ -7,20 +7,6 @@ var driverDictionary = {
     'ScipyOptimizer': 'ScipyOptimizer',
     'FullFactorialDOE': 'FullFactorialDriver'
 }
-var recorderDictionary = {
-    'Dump': {
-        'package': 'DumpRecorder',
-        'outputFile': 'out/text/' + name + '.txt'
-    },
-    'Specific': {
-        'package': 'SqliteRecorder',
-        'outputFile': 'out/bin/' + name + '.sqlite3'
-    },
-    'CSV': {
-        'package': 'CsvRecorder',
-        'outputFile': 'out/text/' + name + '.csv'
-    }
-}
 // Generate the code for import statement for components
 for (var i = 0; i < compInstances.length; i++) {
 -%>
@@ -42,7 +28,7 @@ from lib.moca_groups.<%= groupInstances[i].base %> import <%= groupInstances[i].
 
 # Dynamic imports
 from openmdao.api import <%= driverDictionary[driver] %>
-from openmdao.api import <%= recorderDictionary[recorder]['package'] %>
+from openmdao.api import DumpRecorder, SqliteRecorder, CsvRecorder
 <%
 if (algebraicLoop) {
 -%>
@@ -198,12 +184,25 @@ if (driver === 'ScipyOptimizer') {
 }
 -%>
 
-        # Add recorder to the driver
-        rec = <%= recorderDictionary[recorder]['package'] %>('<%= recorderDictionary[recorder]['outputFile'] %>')
+        # Add recorders to the driver
+        rec = DumpRecorder('out/text/<%= name %>.txt')
         rec.options['record_params'] = True
         rec.options['record_metadata'] = True
         self.driver.add_recorder(rec)
-
+        rec = CsvRecorder('out/text/<%= name %>.csv')
+        rec.options['record_params'] = True
+        rec.options['record_metadata'] = True
+        self.driver.add_recorder(rec)
+<%
+if (driver === 'FullFactorialDOE') {
+-%>
+        rec = SqliteRecorder('out/bin/<%= name %>.sqlite3')
+        rec.options['record_params'] = True
+        rec.options['record_metadata'] = True
+        self.driver.add_recorder(rec)
+<%
+}
+-%>
         # Let the driver know about design variables
 <%
 // add_desvar() statements for design variables
