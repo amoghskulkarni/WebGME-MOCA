@@ -37,6 +37,6 @@ class SqliteParseUtils:
 class ResultsAccessUtils:
     def __init__(self):
         pass
-    def get_result_files(self):
+    def get_result_files(self, problem_name):
         from IPython.display import FileLinks
-        return FileLinks('./out/text/')
+        return FileLinks('./out/text/' + problem_name + '/')

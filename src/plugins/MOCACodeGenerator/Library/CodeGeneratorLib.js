@@ -179,10 +179,12 @@ define([
 
         // Create out directory for storing output files in case of recorders
         // TODO: Create only directory (creating a dummy placeholder file for now)
-        var outDirName = 'MOCA_GeneratedCode/out/bin/dummy';
-        filesToAdd[outDirName] = '';
-        outDirName = 'MOCA_GeneratedCode/out/bin/dummy';
-        filesToAdd[outDirName] = '';
+        for (i = 0; i < dataModel.problems.length; i++) {
+            var outBinBaseDir = 'MOCA_GeneratedCode/out/bin',
+                outTextBaseDir = 'MOCA_GeneratedCode/out/text';
+            filesToAdd[outBinBaseDir + dataModel.problems[i].name + '/dummy'] = '';
+            filesToAdd[outTextBaseDir + dataModel.problems[i].name + '/dummy'] = '';
+        }
 
         // Create a batch file to launch ipython notebook
         var ipynbLaunchScriptName = 'MOCA_GeneratedCode/launch_iPythonNotebook.bat';
@@ -233,6 +235,11 @@ define([
             internalDirs.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/learning_algos');
         }
 
+        for (i = 0; i < dataModel.problems.length; i++) {
+            internalDirs.push('out/text/' + dataModel.problems[i].name);
+            internalDirs.push('out/bin/' + dataModel.problems[i].name);
+        }
+
         var saveFileToPath = function (fileAbsPath, text) {
             fs.writeFile(fileAbsPath, text, function (err) {
                 if (err) {
@@ -252,7 +259,7 @@ define([
                     console.log('Directory created successfully!');
             });
 
-            if (internalDir !== 'out' && internalDir !== 'out/bin' && internalDir !== 'out/text') {
+            if (internalDir.indexOf('out') !== -1) {
                 var initFileName = path.join(baseDir, internalDir, '__init__.py');
                 saveFileToPath(initFileName, '# A boilerplate file to enable this directory to be imported as a module');
             }
