@@ -186,18 +186,18 @@ if (driver === 'ScipyOptimizer') {
 -%>
 
         # Add recorders to the driver
-        rec = DumpRecorder('out/text/<%= name %>.txt')
+        rec = DumpRecorder('out/text/<%= name %>/<%= name %>.txt')
         rec.options['record_params'] = True
         rec.options['record_metadata'] = True
         self.driver.add_recorder(rec)
-        f = open('out/text/<%= name %>.csv', 'w')
+        f = open('out/text/<%= name %>/<%= name %>.csv', 'w')
         rec = CsvRecorder(f)
         rec.options['record_params'] = True
         self.driver.add_recorder(rec)
 <%
 if (driver === 'FullFactorialDOE') {
 -%>
-        rec = SqliteRecorder('out/bin/<%= name %>.sqlite3')
+        rec = SqliteRecorder('out/bin/<%= name %>/<%= name %>.sqlite3')
         rec.options['record_params'] = True
         rec.options['record_metadata'] = True
         self.driver.add_recorder(rec)
