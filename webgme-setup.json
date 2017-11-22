@@ -14,6 +14,10 @@
       "MOCACodeGenerator": {
         "src": "src\\plugins\\MOCACodeGenerator",
         "test": "test\\plugins\\MOCACodeGenerator"
+      },
+      "DatabasePopulator": {
+        "src": "src/plugins/DatabasePopulator",
+        "test": "test/plugins/DatabasePopulator"
       }
     },
     "seeds": {},
