@@ -9,9 +9,6 @@ define([
     'plugin/PluginConfig',
     'plugin/PluginBase',
     'text!./metadata.json',
-    'common/util/ejs',
-    'common/util/xmljsonconverter',
-    'plugin/MOCACodeGenerator/MOCACodeGenerator/Templates/Templates',
     'q',
     'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/CodeGeneratorLib',
     'plugin/MOCACodeGenerator/MOCACodeGenerator/Library/DDCompInterpreterLib',
@@ -21,9 +18,6 @@ define([
     PluginConfig,
     PluginBase,
     pluginMetadata,
-    ejs,
-    Converter,
-    TEMPLATES,
     Q,
     codeGenLib,
     ddCompInterpreterLib,
@@ -244,7 +238,7 @@ define([
                 });
         }
 
-        // If the code generator is invoked from a problem
+        // If the code generator is invoked from a Problem
         else if (self.core.getAttribute(self.getMetaType(rootNode), 'name') === 'Problem') {
             var recursivePromises = [];
             // Load all the children of the problem
@@ -295,7 +289,7 @@ define([
                 })
         }
 
-        // If the code generator is invoked from a problem
+        // If the code generator is invoked from a ProcessFlow
         else if (self.core.getAttribute(self.getMetaType(rootNode), 'name') === 'ProcessFlow') {
             // No need to recursively populate anything here, this is not a recursive structure as of yet
             processFlowPromises.push(self.getProcessFlowData(rootNode));

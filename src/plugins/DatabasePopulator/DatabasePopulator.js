@@ -10,11 +10,13 @@
 define([
     'plugin/PluginConfig',
     'text!./metadata.json',
-    'plugin/PluginBase'
+    'plugin/PluginBase',
+    'q'
 ], function (
     PluginConfig,
     pluginMetadata,
-    PluginBase) {
+    PluginBase,
+    Q) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
@@ -57,25 +59,38 @@ define([
         // These are all instantiated at this point.
         var self = this,
             nodeObject;
+        nodeObject = this.activeNode;
 
+        self.getDataModel(nodeObject)
+            .then(function(dataModel) {
+                // This is where the data-logging part goes
+                // dummy: print the databases
+                var mkdirp = require('mkdirp'),
+                    path = require('path'),
+                    fs = require('fs');
 
-        // Using the logger.
-        self.logger.debug('This is a debug message.');
-        self.logger.info('This is an info message.');
-        self.logger.warn('This is a warning message.');
-        self.logger.error('This is an error message.');
+                var baseDir = path.join('..', 'WebGME-MOCA_data', 'dummy_out', 'db'),
+                    saveFileToPath = function (fileAbsPath, text) {
+                        fs.writeFile(fileAbsPath, text, function (err) {
+                            if (err) {
+                                throw err;
+                            }
+                            else {
+                                self.logger.info(fileAbsPath + ' saved on the server');
+                            }
+                        });
+                    };
 
-        // Using the coreAPI to make changes.
+                mkdirp.sync(path.join(baseDir), function (err) {
+                    if (err)
+                        console.error(err);
+                    else
+                        console.log('Directory created successfully!');
+                });
 
-        nodeObject = self.activeNode;
-
-        self.core.setAttribute(nodeObject, 'name', 'My new obj');
-        self.core.setRegistry(nodeObject, 'position', {x: 70, y: 70});
-
-
-        // This will save the changes. If you don't want to save;
-        // exclude self.save and call callback directly from this scope.
-        self.save('DatabasePopulator updated model.')
+                var genFileName = path.join(baseDir, 'dbs.txt');
+                saveFileToPath(genFileName, JSON.stringify(dataModel, null, 2));
+            })
             .then(function () {
                 self.result.setSuccess(true);
                 callback(null, self.result);
@@ -85,6 +100,46 @@ define([
                 callback(err, self.result);
             });
 
+    };
+
+    DatabasePopulator.prototype.getDataModel = function(rootNode) {
+        var self = this,
+            metaType = self.core.getAttribute(self.getMetaType(rootNode), 'name'),
+            dataModel = {
+                databases: []
+            },
+            databasePromises = [];
+
+        if (metaType === 'DatabaseLibrary') {
+            return self.core.loadChildren(rootNode)
+                .then(function (children) {
+                    for (var i = 0; i < children.length; i++) {
+                        if (self.core.getAttribute(self.getMetaType(children[i]) , 'name') === 'Database') {
+                            databasePromises.push(self.getDatabaseData(children[i]));
+                        }
+                    }
+
+                    return Q.all(databasePromises);
+                })
+                .then(function (databasesData) {
+                    dataModel.databases = databasesData;
+                    return dataModel;
+                })
+        } else if (metaType === 'Database') {
+            dataModel.databases.push(self.getDatabaseData(rootNode));
+            return dataModel;
+        }
+    };
+
+    DatabasePopulator.prototype.getDatabaseData = function(databaseNode) {
+        return {
+            name: this.core.getAttribute(databaseNode, 'name'),
+            mtcAgentURL: this.core.getAttribute(databaseNode, 'MTConnectAgentURL'),
+            csv: this.core.getAttribute(databaseNode, 'CSVFile'),
+            dbName: this.core.getAttribute(databaseNode, 'DBName'),
+            dbHost: this.core.getAttribute(databaseNode, 'Host'),
+            dbPortNo: this.core.getAttribute(databaseNode, 'Port')
+        };
     };
 
     return DatabasePopulator;
