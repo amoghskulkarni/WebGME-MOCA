@@ -96,7 +96,8 @@ define([
                     var papaConfig = {
                         header: true
                     };
-                    var csvData = papaparse.parse(dataModel.databases[0].csv, papaConfig);
+                    var csvData = papaparse.parse(dataModel.databases[0].csv, papaConfig),
+                        datapoints = [];
 
                     // if the CSV file contains three columns ('measurement' and 'value' and 'timestamp'),
                     // then log the data into the mtconnect database
@@ -105,9 +106,31 @@ define([
                         || (csvData.meta.fields.indexOf('value') === -1)
                         || (csvData.meta.fields.indexOf('timestamp') === -1)) {
                         // TODO: Show a message of which columns are absent
+                        self.result.setError('One of the columns is missing!');
                     } else {
                         // TODO: Log the data
                         saveFileToPath(genFileName, JSON.stringify(csvData, null, 2));
+                        var Influx = require('influx');
+                        const influx = new Influx.InfluxDB({
+                            host: dataModel.databases[0].dbHost,
+                            database: dataModel.databases[0].dbName
+                        });
+                        for (var i = 0; i < csvData.data.length; i++) {
+                            datapoints.push({
+                                measurement: csvData.data[i]['measurement'],
+                                // tags: {
+                                //     partid: parseInt(thisPlateID),
+                                //     deviceName: deviceStream.$.name,
+                                //     deviceUuid: deviceStream.$.uuid,
+                                //     componentName: componentStream.$.name,
+                                //     componentId: componentStream.$.componentId,
+                                //     dataItemId: sample.$.dataItemId
+                                // },
+                                fields: {value: csvData.data[i]['value']},
+                                timestamp: Date.parse(csvData.data[i]['timestamp']) * 1000000
+                            });
+                        }
+                        influx.writePoints(datapoints);
                     }
                 } else {
                     // TODO: Use workers in case of multiple database elements
