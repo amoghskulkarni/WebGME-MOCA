@@ -145,7 +145,7 @@
     };
 
     MOCANotebookVisualizerControl.prototype._onUnload = function (gmeId) {
-        this._widget.removeNode(gmeId);
+        // this._widget.removeNode(gmeId);
     };
 
     MOCANotebookVisualizerControl.prototype._stateActiveObjectChanged = function (model, activeObjectId) {

@@ -144,7 +144,7 @@ define([
     };
 
     MOCAGrafanaVisualizerControl.prototype._onUnload = function (gmeId) {
-        this._widget.removeNode(gmeId);
+        // this._widget.removeNode(gmeId);
     };
 
     MOCAGrafanaVisualizerControl.prototype._stateActiveObjectChanged = function (model, activeObjectId) {
