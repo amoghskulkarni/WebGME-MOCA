@@ -63,7 +63,7 @@ define([
 
         self.getDataModel(nodeObject)
             .then(function(dataModel) {
-                // dummy: print the databases
+                // TODO: remove this dummy
                 var mkdirp = require('mkdirp'),
                     path = require('path'),
                     fs = require('fs');
@@ -88,7 +88,7 @@ define([
                 });
 
                 var genFileName = path.join(baseDir, 'dbs.txt');
-                // saveFileToPath(genFileName, JSON.stringify(dataModel, null, 2));
+                saveFileToPath(genFileName, JSON.stringify(dataModel, null, 2));
 
                 // Parse the datamodel for csv content
                 var papaparse = require('papaparse');
@@ -102,35 +102,34 @@ define([
                     // if the CSV file contains three columns ('measurement' and 'value' and 'timestamp'),
                     // then log the data into the mtconnect database
                     // else, raise the error
-                    if ((csvData.meta.fields.indexOf('measurement') === -1)
-                        || (csvData.meta.fields.indexOf('value') === -1)
-                        || (csvData.meta.fields.indexOf('timestamp') === -1)) {
-                        // TODO: Show a message of which columns are absent
-                        self.result.setError('One of the columns is missing!');
+                    if (csvData.meta.fields.indexOf('measurement') === -1) {
+                        throw new Error('"measurement" column is missing in the CSV input')
+                    } else if (csvData.meta.fields.indexOf('value') === -1) {
+                        throw new Error('"value" column is missing in the CSV input')
+                    } else if (csvData.meta.fields.indexOf('timestamp') === -1) {
+                        throw new Error('"timestamp" column is missing in the CSV input')
                     } else {
-                        // TODO: Log the data
-                        saveFileToPath(genFileName, JSON.stringify(csvData, null, 2));
                         var Influx = require('influx');
                         const influx = new Influx.InfluxDB({
                             host: dataModel.databases[0].dbHost,
                             database: dataModel.databases[0].dbName
                         });
                         for (var i = 0; i < csvData.data.length; i++) {
+                            var tags = {};
+                            for (var j = 0; j < csvData.meta.fields.length; j++) {
+                                var fieldName = csvData.meta.fields[j];
+                                if (!(fieldName === 'measurement' || fieldName === 'value' || fieldName === 'timestamp')) {
+                                    tags[fieldName] = csvData.data[i][fieldName];
+                                }
+                            }
                             datapoints.push({
                                 measurement: csvData.data[i]['measurement'],
-                                // tags: {
-                                //     partid: parseInt(thisPlateID),
-                                //     deviceName: deviceStream.$.name,
-                                //     deviceUuid: deviceStream.$.uuid,
-                                //     componentName: componentStream.$.name,
-                                //     componentId: componentStream.$.componentId,
-                                //     dataItemId: sample.$.dataItemId
-                                // },
+                                tags: tags,
                                 fields: {value: csvData.data[i]['value']},
                                 timestamp: Date.parse(csvData.data[i]['timestamp']) * 1000000
                             });
                         }
-                        influx.writePoints(datapoints);
+                        return influx.writePoints(datapoints)
                     }
                 } else {
                     // TODO: Use workers in case of multiple database elements

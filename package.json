@@ -15,7 +15,8 @@
     "path": "^0.12.7",
     "http-proxy": "^1.15.1",
     "express-http-proxy": "latest",
-    "papaparse": "latest"
+    "papaparse": "latest",
+    "influx": "latest"
   },
   "devDependencies": {
     "mocha": "^2.2.5",
