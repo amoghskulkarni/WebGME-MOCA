@@ -87,22 +87,47 @@ define([
                             host: dataModel.databases[0].dbHost,
                             database: dataModel.databases[0].dbName
                         });
-                        for (var i = 0; i < csvData.data.length; i++) {
-                            var tags = {};
-                            for (var j = 0; j < csvData.meta.fields.length; j++) {
-                                var fieldName = csvData.meta.fields[j];
-                                if (!(fieldName === 'measurement' || fieldName === 'value' || fieldName === 'timestamp')) {
-                                    tags[fieldName] = csvData.data[i][fieldName];
+                        influx.getDatabaseNames()
+                            .then(function (dbNames) {
+                                if (dbNames.indexOf(dataModel.databases[0].dbName) !== -1) {
+                                    for (var i = 0; i < csvData.data.length; i++) {
+                                        var tags = {};
+                                        for (var j = 0; j < csvData.meta.fields.length; j++) {
+                                            var fieldName = csvData.meta.fields[j];
+                                            if (!(fieldName === 'measurement' || fieldName === 'value' || fieldName === 'timestamp')) {
+                                                tags[fieldName] = csvData.data[i][fieldName];
+                                            }
+                                        }
+                                        datapoints.push({
+                                            measurement: csvData.data[i]['measurement'],
+                                            tags: tags,
+                                            fields: {value: csvData.data[i]['value']},
+                                            timestamp: Date.parse(csvData.data[i]['timestamp']) * 1000000
+                                        });
+                                    }
+                                    return influx.writePoints(datapoints)
+                                } else {
+                                    influx.createDatabase(dataModel.databases[0].dbName)
+                                        .then(function () {
+                                            for (var i = 0; i < csvData.data.length; i++) {
+                                                var tags = {};
+                                                for (var j = 0; j < csvData.meta.fields.length; j++) {
+                                                    var fieldName = csvData.meta.fields[j];
+                                                    if (!(fieldName === 'measurement' || fieldName === 'value' || fieldName === 'timestamp')) {
+                                                        tags[fieldName] = csvData.data[i][fieldName];
+                                                    }
+                                                }
+                                                datapoints.push({
+                                                    measurement: csvData.data[i]['measurement'],
+                                                    tags: tags,
+                                                    fields: {value: csvData.data[i]['value']},
+                                                    timestamp: Date.parse(csvData.data[i]['timestamp']) * 1000000
+                                                });
+                                            }
+                                            return influx.writePoints(datapoints)
+                                        });
                                 }
-                            }
-                            datapoints.push({
-                                measurement: csvData.data[i]['measurement'],
-                                tags: tags,
-                                fields: {value: csvData.data[i]['value']},
-                                timestamp: Date.parse(csvData.data[i]['timestamp']) * 1000000
                             });
-                        }
-                        return influx.writePoints(datapoints)
                     }
                 } else {
                     // TODO: Use workers in case of multiple database elements
