@@ -63,33 +63,6 @@ define([
 
         self.getDataModel(nodeObject)
             .then(function(dataModel) {
-                // TODO: remove this dummy
-                var mkdirp = require('mkdirp'),
-                    path = require('path'),
-                    fs = require('fs');
-
-                var baseDir = path.join('..', 'WebGME-MOCA_data', 'dummy_out', 'db'),
-                    saveFileToPath = function (fileAbsPath, text) {
-                        fs.writeFile(fileAbsPath, text, function (err) {
-                            if (err) {
-                                throw err;
-                            }
-                            else {
-                                self.logger.info(fileAbsPath + ' saved on the server');
-                            }
-                        });
-                    };
-
-                mkdirp.sync(path.join(baseDir), function (err) {
-                    if (err)
-                        console.error(err);
-                    else
-                        console.log('Directory created successfully!');
-                });
-
-                var genFileName = path.join(baseDir, 'dbs.txt');
-                saveFileToPath(genFileName, JSON.stringify(dataModel, null, 2));
-
                 // Parse the datamodel for csv content
                 var papaparse = require('papaparse');
                 if (dataModel.databases.length === 1) {
