@@ -118,6 +118,12 @@ define([
     };
 
 
+    /**
+     * The method which parses the modeling element (and its children) where the plugin is invoked from. After parsing
+     * the modeling elements, the method generates an in-memory object for the same.
+     * @param rootNode - The node (or the modeling element) where the plugin is invoked from
+     * @returns The object for the node to be parsed
+     */
     MOCACodeGenerator.prototype.generateDataModel = function (rootNode) {
         var self = this,
             dataModel = {

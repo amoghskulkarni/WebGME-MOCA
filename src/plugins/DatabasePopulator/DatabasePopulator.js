@@ -63,7 +63,6 @@ define([
 
         self.getDataModel(nodeObject)
             .then(function(dataModel) {
-                // This is where the data-logging part goes
                 // dummy: print the databases
                 var mkdirp = require('mkdirp'),
                     path = require('path'),
@@ -89,7 +88,30 @@ define([
                 });
 
                 var genFileName = path.join(baseDir, 'dbs.txt');
-                saveFileToPath(genFileName, JSON.stringify(dataModel, null, 2));
+                // saveFileToPath(genFileName, JSON.stringify(dataModel, null, 2));
+
+                // Parse the datamodel for csv content
+                var papaparse = require('papaparse');
+                if (dataModel.databases.length === 1) {
+                    var papaConfig = {
+                        header: true
+                    };
+                    var csvData = papaparse.parse(dataModel.databases[0].csv, papaConfig);
+
+                    // if the CSV file contains three columns ('measurement' and 'value' and 'timestamp'),
+                    // then log the data into the mtconnect database
+                    // else, raise the error
+                    if ((csvData.meta.fields.indexOf('measurement') === -1)
+                        || (csvData.meta.fields.indexOf('value') === -1)
+                        || (csvData.meta.fields.indexOf('timestamp') === -1)) {
+                        // TODO: Show a message of which columns are absent
+                    } else {
+                        // TODO: Log the data
+                        saveFileToPath(genFileName, JSON.stringify(csvData, null, 2));
+                    }
+                } else {
+                    // TODO: Use workers in case of multiple database elements
+                }
             })
             .then(function () {
                 self.result.setSuccess(true);
@@ -102,6 +124,13 @@ define([
 
     };
 
+    /**
+     * The method which parses the database library or a database depending upon where the plugin is invoked from.
+     * After parsing, the method generates an in-memory object for the same which is used to populate the
+     * databases in question.
+     * @param rootNode - The node (or the modeling element) where the plugin is invoked from
+     * @returns The object for the node to be parsed
+     */
     DatabasePopulator.prototype.getDataModel = function(rootNode) {
         var self = this,
             metaType = self.core.getAttribute(self.getMetaType(rootNode), 'name'),
@@ -126,11 +155,19 @@ define([
                     return dataModel;
                 })
         } else if (metaType === 'Database') {
-            dataModel.databases.push(self.getDatabaseData(rootNode));
-            return dataModel;
+            var listToAssign = [];
+            listToAssign.push(self.getDatabaseData(rootNode));
+            dataModel.databases = listToAssign;
+            return Promise.resolve(dataModel);
         }
     };
 
+    /**
+     * The method to parse a database modeling element
+     * @param databaseNode
+     * @returns {{name: (GmeCommon.OutAttr | string | *), mtcAgentURL: (GmeCommon.OutAttr | string | *), csv: (GmeCommon.OutAttr | string | *), dbName: (GmeCommon.OutAttr | string | *), dbHost: (GmeCommon.OutAttr | string | *), dbPortNo: (GmeCommon.OutAttr | string | *)}}
+     *  - The object containing the data for the node to be parsed
+     */
     DatabasePopulator.prototype.getDatabaseData = function(databaseNode) {
         return {
             name: this.core.getAttribute(databaseNode, 'name'),
