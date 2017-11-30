@@ -67,7 +67,7 @@ define([
             recursivePromises = [];
 
         // Traverse to its base class through the instance tree
-        MOCAInterpreterLib.prototype.getOriginalBase('Group', groupPromises, groupNode);
+        MOCAPlugin.getOriginalBase('Group', groupPromises, groupNode);
 
         return MOCAPlugin.core.loadChildren(groupNode)
             .then(function (children) {
@@ -76,11 +76,11 @@ define([
                     if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]) , 'name') === 'Component'
                         || MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]) , 'name') === 'DataDrivenComponent') {
                         // Traverse to its base class through the instance tree
-                        MOCAInterpreterLib.prototype.getOriginalBase('Component', componentPromises, children[i]);
+                        MOCAPlugin.getOriginalBase('Component', componentPromises, children[i]);
                     }
                     // If it is a Group (be careful here!)..
                     else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]) , 'name') === 'Group') {
-                        recursivePromises.push(MOCAInterpreterLib.prototype.recursivelyPopulateGroupContents(componentPromises, groupPromises, children[i]));
+                        recursivePromises.push(MOCAPlugin.recursivelyPopulateGroupContents(componentPromises, groupPromises, children[i]));
                     }
                 }
                 return recursivePromises;
@@ -185,9 +185,9 @@ define([
             .then(function(children) {
                 for (var i = 0; i < children.length; i++) {
                     if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'Component')
-                        compInstancePromises.push(MOCAInterpreterLib.prototype.getCompInstanceData(children[i]));
+                        compInstancePromises.push(MOCAInterpreterLib.prototype.getCompInstanceData(MOCAPlugin, children[i]));
                     else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'Group')
-                        groupInstancePromises.push(MOCAInterpreterLib.prototype.getGroupInstanceData(children[i]));
+                        groupInstancePromises.push(MOCAInterpreterLib.prototype.getGroupInstanceData(MOCAPlugin, children[i]));
                     else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'DataConn')
                         connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, children[i]));
                 }
