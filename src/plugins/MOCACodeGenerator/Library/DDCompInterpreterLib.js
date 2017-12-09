@@ -192,7 +192,8 @@ define([
                 learningAlgorithms: [],
                 parameters: [],
                 unknowns: [],
-                connections: []
+                connections: [],
+                logicalConnections: []
             },
             dataSourcePromises = [],
             dataPreprocPromises = [],
@@ -248,6 +249,29 @@ define([
             })
             .then(function (connectionsData) {
                 ddComponentData.connections = connectionsData;
+                for(var i = 0; i < ddComponentData.connections.length; i++) {
+                    var connection_1 = ddComponentData.connections[i];
+                    if (connection_1.name === 'OutToLabelAssoc') {
+                        for (var j = 0; j < ddComponentData.connections.length; j++) {
+                            var connection_2 = ddComponentData.connections[j];
+                            if (connection_2.name === 'UnknownToLabelAssoc') {
+                                if (connection_1.src === connection_2.src) {
+                                    // TODO: Save the connection as the logical connection
+                                }
+                            }
+                        }
+                    }
+                    else if (connection_1.name === 'OutToFeatureAssoc') {
+                        for (var j = 0; j < ddComponentData.connections.length; j++) {
+                            var connection_2 = ddComponentData.connections[j];
+                            if (connection_2.name === 'ParamToFeatureAssoc') {
+                                if (connection_1.src === connection_2.src) {
+                                    // TODO: Save the connection as the logical connection
+                                }
+                            }
+                        }
+                    }
+                }
                 return ddComponentData;
             })
     };
