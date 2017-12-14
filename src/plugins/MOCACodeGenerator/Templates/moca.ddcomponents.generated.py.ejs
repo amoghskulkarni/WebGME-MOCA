@@ -41,7 +41,7 @@ for (var j = 0; j < unknowns.length; j++) {
 
     def solve_nonlinear(self, params, unknowns, resids):
         ## Feed the **vector** of parameters to the learned model
-        [[<%= unknowns[0].name %>]] = self.learned_model.predict(X=[params[feature_key] for feature_key in self.features_list])
+        [[<%= unknowns[0].name %>]] = self.learned_model.predict(X=[[params[feature_key] for feature_key in self.features_list]])
 
         # Assign the value(s) to unknown(s)
         unknowns['<%= unknowns[0].name %>'] = <%= unknowns[0].name %>
