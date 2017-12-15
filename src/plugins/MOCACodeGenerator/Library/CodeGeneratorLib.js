@@ -116,8 +116,10 @@ define([
                 }
             } else if (fileInfo.name === 'process flows') {
                 for (i = 0; i < dataModel.processFlows.length; i++) {
-                    genFileName = 'MOCA_GeneratedCode/lib/moca_desmodels/' + dataModel.processFlows[i].name + '.py';
-                    genIpynbFile = 'MOCA_GeneratedCode/lib/moca_desmodels/' + dataModel.processFlows[i].name + '.ipynb';
+                    var procFlowName = dataModel.processFlows[i].name;
+
+                    genFileName = 'MOCA_GeneratedCode/lib/moca_desmodels/' + procFlowName + '/' + procFlowName + '.py';
+                    genIpynbFile = 'MOCA_GeneratedCode/lib/moca_desmodels/' + procFlowName + '/' + procFlowName + '.ipynb';
                     filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]);
                     filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.processFlows[i]);
                 }
