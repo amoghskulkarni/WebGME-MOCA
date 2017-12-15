@@ -71,6 +71,10 @@ define(['css!./styles/MOCANotebookVisualizerWidget.css'], function () {
             return "http://moca.isis.vanderbilt.edu/ipython/notebooks/" + WebGMEGlobal.userInfo._id + "/"
                 + desc.projectName + "/lib/moca_ddmodels/"
                 + desc.name + "/" + desc.name + ".ipynb";
+        } else if (desc.metaTypeName === 'ProcessFlow') {
+            return "http://moca.isis.vanderbilt.edu/ipython/notebooks/" + WebGMEGlobal.userInfo._id + "/"
+                + desc.projectName + "/lib/moca_desmodels/"
+                + desc.name + "/" + desc.name + ".ipynb";
         }
     };
 

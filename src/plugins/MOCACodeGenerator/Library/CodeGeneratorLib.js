@@ -116,8 +116,8 @@ define([
                 }
             } else if (fileInfo.name === 'process flows') {
                 for (i = 0; i < dataModel.processFlows.length; i++) {
-                    genFileName = 'MOCA_GeneratedCode/src/' + dataModel.processFlows[i].name + '.py';
-                    genIpynbFile = 'MOCA_GeneratedCode/' + dataModel.processFlows[i].name + '.ipynb';
+                    genFileName = 'MOCA_GeneratedCode/lib/moca_desmodels/' + dataModel.processFlows[i].name + '.py';
+                    genIpynbFile = 'MOCA_GeneratedCode/lib/moca_desmodels/' + dataModel.processFlows[i].name + '.ipynb';
                     filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]);
                     filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.processFlows[i]);
                 }
@@ -165,12 +165,16 @@ define([
         });
 
         // Create __init__.py file in the lib, src and util directories each
-        var subdirectories = ['lib', 'lib/moca_components', 'lib/moca_groups', 'src', 'utils', 'utils/moca_plotutils', 'lib/moca_ddmodels'];
+        var subdirectories = ['lib', 'src', 'utils', 'utils/moca_plotutils',
+            'lib/moca_components', 'lib/moca_groups', 'lib/moca_ddmodels', 'lib/moca_desmodels'];
         for (var i = 0; i < dataModel.ddComps.length; i++) {
             subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name);
             subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/preprocs');
             subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/data_sources');
             subdirectories.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/learning_algos');
+        }
+        for (i = 0; i < dataModel.processFlows.length; i++) {
+            subdirectories.push('lib/moca_desmodels/' + dataModel.processFlows[i].name);
         }
         for (i = 0; i < subdirectories.length; i++) {
             var initFileName = 'MOCA_GeneratedCode/' + subdirectories[i] + '/__init__.py';
@@ -190,7 +194,7 @@ define([
         var ipynbLaunchScriptName = 'MOCA_GeneratedCode/launch_iPythonNotebook.bat';
         filesToAdd[ipynbLaunchScriptName] = 'echo off\njupyter notebook --port=9999';
 
-        //TODO Add the static files too.
+        //TODO: Add the static files too.
         MOCAPlugin.logger.info('Generated python files for MOCA to download on client.');
 
         artifact.addFiles(filesToAdd, function (err) {
@@ -222,7 +226,7 @@ define([
 
         var userid = MOCAPlugin.projectId.split('+')[0],
             baseDir = path.join('..', 'WebGME-MOCA_data', 'notebooks', userid, MOCAPlugin.projectName),
-            internalDirs = ['lib', 'lib/moca_components', 'lib/moca_groups', 'lib/moca_ddmodels',
+            internalDirs = ['lib', 'lib/moca_components', 'lib/moca_groups', 'lib/moca_ddmodels', 'lib/moca_desmodels',
                 'src',
                 'utils',  'utils/moca_plotutils',
                 'out', 'out/bin', 'out/text'],
@@ -233,6 +237,10 @@ define([
             internalDirs.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/preprocs');
             internalDirs.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/data_sources');
             internalDirs.push('lib/moca_ddmodels/' + dataModel.ddComps[i].name + '/learning_algos');
+        }
+
+        for (i = 0; i < dataModel.processFlows.length; i++) {
+            internalDirs.push('lib/moca_desmodels/' + dataModel.processFlows[i].name);
         }
 
         for (i = 0; i < dataModel.problems.length; i++) {
@@ -289,8 +297,8 @@ define([
                 }
             } else if (fileInfo.name === 'process flows') {
                 for (i = 0; i < dataModel.processFlows.length; i++) {
-                    genFileName = path.join(baseDir, 'src', dataModel.processFlows[i].name + '.py');
-                    genIpynbFile = path.join(baseDir, dataModel.processFlows[i].name + '.ipynb');
+                    genFileName = path.join(baseDir, 'lib', 'moca_desmodels', dataModel.processFlows[i].name, dataModel.processFlows[i].name + '.py');
+                    genIpynbFile = path.join(baseDir, 'lib', 'moca_desmodels', dataModel.processFlows[i].name, dataModel.processFlows[i].name + '.ipynb');
                     saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]));
                     saveFileToPath(genIpynbFile, ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.processFlows[i]));
                 }
