@@ -22,12 +22,58 @@ define([
      *      should be off in minutes)
      */
     ProcessFlowInterpreterLib.prototype.getProcessData = function (MOCAPlugin, processNode) {
-        return {
-                name: MOCAPlugin.core.getAttribute(processNode, 'name'),
-                processingTime: MOCAPlugin.core.getAttribute(processNode, 'ProcessingTime'),
-                processShiftOffTime: MOCAPlugin.core.getAttribute(processNode, 'ProcessOFFTime'),
-                processShiftOnTime: MOCAPlugin.core.getAttribute(processNode, 'ProcessONTime')
-        }
+        var processData = {
+            name: MOCAPlugin.core.getAttribute(processNode, 'name'),
+            processingTime: {
+                name: 'processing_time',
+                value: MOCAPlugin.core.getAttribute(processNode, 'ProcessingTime')
+            },
+            processShiftOffTime: {
+                name: 'process_shift_off_time',
+                value: MOCAPlugin.core.getAttribute(processNode, 'ProcessOFFTime')
+            },
+            processShiftOnTime: {
+                name: 'process_shift_on_time',
+                value: MOCAPlugin.core.getAttribute(processNode, 'ProcessONTime')
+            },
+            children: []
+        };
+        var childrenPromises = [];
+
+        return MOCAPlugin.core.loadChildren(processNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name');
+
+                    if (childMetaType === 'ProcessONTime') {
+                        processData.processShiftOnTime.value = MOCAPlugin.core.getAttribute(children[i], 'value');
+                    } else if (childMetaType === 'ProcessOFFTime') {
+                        processData.processShiftOffTime.value = MOCAPlugin.core.getAttribute(children[i], 'value');
+                    } else if (childMetaType === 'ProcessingTime') {
+                        processData.processingTime.value = MOCAPlugin.core.getAttribute(children[i], 'value');
+                    } else if (childMetaType === 'UnexpectedMaintenance') {
+                        childrenPromises.push(ProcessFlowInterpreterLib.prototype.getUnexpectedMaintData(MOCAPlugin, children[i]));
+                    }
+                }
+            })
+    };
+
+    /**
+     * The method to get the data of an UnexpectedMaintenance element
+     */
+    ProcessFlowInterpreterLib.prototype.getUnexpectedMaintData = function (MOCAPlugin, unexpectedMaintNode) {
+        var unexpectedMaintData = {
+            name: MOCAPlugin.core.getAttribute(unexpectedMaintNode, 'name'),
+            durationMean: MOCAPlugin.core.getAttribute(unexpectedMaintNode, 'DurationMean'),
+            mtbf: MOCAPlugin.core.getAttribute(unexpectedMaintNode, 'MTBF')
+        };
+
+        return MOCAPlugin.core.loadChildren(unexpectedMaintNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    // TODO: Get the data for UnexpectedMaintenance children
+                }
+            });
     };
 
     /**
