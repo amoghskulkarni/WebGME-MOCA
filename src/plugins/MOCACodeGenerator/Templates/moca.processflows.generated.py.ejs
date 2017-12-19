@@ -33,7 +33,7 @@ for (var i=0; i < processes.length; i++) {
 <%
 for (var i=0; i< buffers.length; i++) {
 -%>
-        self.<%= buffers[i].name %> = simpy.Store(self.env, capacity=<%= buffers[i].size %>)
+        self.<%= buffers[i].name %> = simpy.Store(self.env, capacity=<%= buffers[i].size.value %>)
 <%
 }
 -%>
@@ -46,11 +46,11 @@ for (var i=0; i < processes.length; i++) {
         while True:
             # Start production
             <%= processes[i].name %>_proc = simpy_env.process(self.<%= processes[i].name %>__business_logic(simpy_env))
-            yield simpy_env.timeout(<%= processes[i].processShiftOnTime %>)
+            yield simpy_env.timeout(<%= processes[i].processShiftOnTime.value %>)
 
             # Stop production
             <%= processes[i].name %>_proc.interrupt("end_of_shift")
-            yield simpy_env.timeout(<%= processes[i].processShiftOffTime %>)
+            yield simpy_env.timeout(<%= processes[i].processShiftOffTime.value %>)
 
     def <%= processes[i].name %>__business_logic(self, simpy_env):
         # A unique item ID needs to be associated with every item to push it into buffers (restriction by SimPy)
@@ -70,7 +70,7 @@ for (var i=0; i < processes.length; i++) {
 -%>
 
                 # Simulate production
-                yield simpy_env.timeout(<%= processes[i].processingTime %>)
+                yield simpy_env.timeout(<%= processes[i].processingTime.value %>)
 
                 # Put the processed material into the buffer (assumption: process is storing the part in only one buffer)
 <%
