@@ -172,6 +172,71 @@ define([
     };
 
     /**
+     * The method to get the data of the interface to MOCA elements (Parameters and Unknowns). The usual method to get
+     * the data of a connection cannot be used because the information to be retrieved is non-uniform and depends upon
+     * the type of dst and dstParent.
+     * @param MOCAPlugin
+     * @param connectionNode
+     */
+    ProcessFlowInterpreterLib.prototype.getInterfaceData = function (MOCAPlugin, connectionNode) {
+        var deferred = Q.defer(),
+            connectionData = {
+                src: null,
+                srcMeta: null,
+                srcOnto: "",
+                dst: null,
+                dstMeta: null,
+                dstParent: null,
+                dstParentMeta: null,
+                dstGrandParent: null,
+                dstGrandParentMeta: null,
+                dstOnto: ""
+            };
+
+        MOCAPlugin.core.loadPointer(connectionNode, 'src', function (err, srcNode) {
+            if (err) {
+                deferred.reject(new Error(err))
+            } else {
+                var srcMeta = MOCAPlugin.getMetaType(srcNode);
+
+                connectionData.src = MOCAPlugin.core.getAttribute(srcNode, 'name');
+
+                var srcMetaName = MOCAPlugin.core.getAttribute(srcMeta, 'name');
+                if (srcMetaName === 'Parameter') {
+                    connectionData.srcMeta = 'in';
+                } else if (srcMetaName === 'Unknown') {
+                    connectionData.srcMeta = 'out';
+                }
+
+                MOCAPlugin.core.loadPointer(connectionNode, 'dst', function (err, dstNode) {
+                    if (err) {
+                        deferred.reject(new Error(err));
+                    } else {
+                        var dstParent = MOCAPlugin.core.getParent(dstNode),
+                            dstMeta = MOCAPlugin.getMetaType(dstNode),
+                            dstParentMeta = MOCAPlugin.getMetaType(dstParent),
+                            dstGrandParent = MOCAPlugin.core.getParent(dstParent),
+                            dstGrandParentMeta = MOCAPlugin.getMetaType(dstGrandParent);
+
+                        connectionData.dst = MOCAPlugin.core.getAttribute(dstNode, 'name');
+                        connectionData.dstMeta = MOCAPlugin.core.getAttribute(dstMeta, 'name');
+                        connectionData.dstParent = MOCAPlugin.core.getAttribute(dstParent, 'name');
+                        connectionData.dstParentMeta = MOCAPlugin.core.getAttribute(dstParentMeta, 'name');
+                        if (dstParentMeta !== 'Process' || dstParentMeta !== 'Buffer') {
+                            connectionData.dstGrandParent = MOCAPlugin.core.getAttribute(dstGrandParent, 'name');
+                            connectionData.dstGrandParentMeta = MOCAPlugin.core.getAttribute(dstGrandParentMeta, 'name');
+                        }
+
+                        deferred.resolve(connectionData);
+                    }
+                });
+            }
+        });
+
+        return deferred.promise;
+    };
+
+    /**
      * The method to get the data from a ProcessFlow node. This method will be called from the MOCACodeGenerator
      * plugin class. This will internally collect all the data from the Problem's children using the
      * methods of this class (written above). This method will be called from the context of MOCACodeGenerator,
@@ -187,11 +252,13 @@ define([
                 simend: MOCAPlugin.core.getAttribute(processFlowNode, 'SimulationEndTime'),
                 processes: [],
                 buffers: [],
-                connections: []
+                connections: [],
+                desInterfaces: []
             },
             processPromises = [],
             bufferPromises = [],
-            connectionPromises = [];
+            connectionPromises = [],
+            desInterfacePromises = [];
 
         return MOCAPlugin.core.loadChildren(processFlowNode)
             .then(function(children) {
@@ -202,9 +269,10 @@ define([
                         processPromises.push(ProcessFlowInterpreterLib.prototype.getProcessData(MOCAPlugin, children[i]));
                     } else if (childMetaType === 'Buffer') {
                         bufferPromises.push(ProcessFlowInterpreterLib.prototype.getBufferData(MOCAPlugin, children[i]));
-                    } else if (childMetaType === 'ProcToBuffFlow' || childMetaType === 'BuffToProcFlow'
-                            || childMetaType === 'ParamToDESInAssoc' || childMetaType === 'UnknownToDESOutAssoc') {
+                    } else if (childMetaType === 'ProcToBuffFlow' || childMetaType === 'BuffToProcFlow') {
                         connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, children[i]));
+                    } else if (childMetaType === 'ParamToDESInAssoc' || childMetaType === 'UnknownToDESOutAssoc') {
+                        desInterfacePromises.push(ProcessFlowInterpreterLib.prototype.getInterfaceData(MOCAPlugin, children[i]));
                     }
                 }
 
@@ -220,8 +288,12 @@ define([
             })
             .then(function (connectionsData) {
                 processFlowData.connections = connectionsData;
+                return Q.all(desInterfacePromises);
+            })
+            .then(function (desInterfacesData) {
+                processFlowData.desInterfaces = desInterfacesData;
                 return processFlowData;
-            });
+            })
     };
 
     return ProcessFlowInterpreterLib.prototype;
