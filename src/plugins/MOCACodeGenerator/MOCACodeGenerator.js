@@ -263,7 +263,7 @@ define([
                             self.getOriginalBase('DataDrivenComponent', ddComponentPromises, children[i]);
                         }
                         // If it is a ProcessFlow..
-                        else if (self.core.getAttribute(self.getMetaType(children[i], 'name') === 'ProcessFlow')) {
+                        else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'ProcessFlow') {
                             self.getOriginalBase('ProcessFlow', processFlowPromises, children[i]);
                         }
                         // If it is a Group..
