@@ -1,0 +1,80 @@
+#!/usr/bin/python
+from openmdao.api import Component
+from <%= name %> import <%= name %>__SimPy_simulation
+
+<%
+// Generate the code the component
+-%>
+class <%= name %>(Component):
+    def __init__(self):
+        super(<%= name %>, self).__init__()
+<%
+// Generate "add_param" statements
+for (var i = 0; i < desInterfaces.length; i++) {
+    var desInterface = desInterfaces[i];
+    if (desInterface.srcMeta === 'in') {
+        var valueString = desInterface.srcValue;
+-%>
+        self.add_param('<%= desInterface.src %>', val=int(<%= valueString %>))
+<%
+    }
+}
+-%>
+<%
+// Generate "add_output" and "add_state" statements
+for (i = 0; i < desInterfaces.length; i++) {
+    desInterface = desInterfaces[i];
+    if (desInterface.srcMeta === 'out') {
+        valueString = desInterface.srcValue;
+-%>
+        self.add_output('<%= desInterface.src %>', val=int(<%= valueString %>))
+<%
+    }
+}
+-%>
+
+        self.deriv_options['type'] = 'fd'
+
+    def solve_nonlinear(self, params, unknowns, resids):
+        ## Feed the **vector** of parameters to the DES model
+        parameters = {}
+<%
+for (i = 0; i < desInterfaces.length; i++) {
+    desInterface = desInterfaces[i];
+    // If the desInterface is a Parameter
+    if (desInterface.srcMeta === 'in') {
+        // if the param / result is a child of the process/buffer itself
+        if (desInterface.dstGrandParent === null) {
+-%>
+        parameters['<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>'] = params['<%= desInterface.src %>']
+<%
+        } else {
+-%>
+        parameters['<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>'] = params['<%= desInterface.src %>']
+<%
+        }
+    }
+}
+-%>
+        des_model = <%= name %>__SimPy_simulation(params=parameters)
+        results = des_model.simulate()
+
+        # Assign the value(s) to unknown(s)
+<%
+for (i = 0; i < desInterfaces.length; i++) {
+    desInterface = desInterfaces[i];
+    // If the desInterface is a Unknown
+    if (desInterface.srcMeta === 'out') {
+        // if the param / result is a child of the process/buffer itself
+        if (desInterface.dstGrandParent === null) {
+-%>
+        unknowns['<%= desInterface.src %>'] = results['<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>']
+<%
+        } else {
+-%>
+        unknowns['<%= desInterface.src %>'] = results['<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>']
+<%
+        }
+    }
+}
+-%>

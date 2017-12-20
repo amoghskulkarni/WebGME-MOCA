@@ -47,6 +47,10 @@ define([
             ipynbfile: 'moca.processflow.generated.ipynb.ejs'
         },
         {
+            name: 'process flows MOCA component',
+            template: 'moca.procflowcomps.generated.py.ejs'
+        },
+        {
             name: 'preprocessors',
             template: 'moca.preprocs.generated.py.ejs'
         },
@@ -122,6 +126,13 @@ define([
                     genIpynbFile = 'MOCA_GeneratedCode/lib/moca_desmodels/' + procFlowName + '/' + procFlowName + '.ipynb';
                     filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]);
                     filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.processFlows[i]);
+                }
+            } else if (fileInfo.name === 'process flows MOCA component') {
+                for (i = 0; i < dataModel.processFlows.length; i++) {
+                    procFlowName = dataModel.processFlows[i].name;
+
+                    genFileName = 'MOCA_GeneratedCode/lib/moca_desmodels/' + procFlowName + '/' + procFlowName + '__MOCAComponent.py';
+                    filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]);
                 }
             } else if (fileInfo.name === 'preprocessors') {
                 for (i = 0; i < dataModel.ddComps.length; i++) {
@@ -303,6 +314,12 @@ define([
                     genIpynbFile = path.join(baseDir, 'lib', 'moca_desmodels', dataModel.processFlows[i].name, dataModel.processFlows[i].name + '.ipynb');
                     saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]));
                     saveFileToPath(genIpynbFile, ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.processFlows[i]));
+                }
+            }
+            else if (fileInfo.name === 'process flows MOCA component') {
+                for (i = 0; i < dataModel.processFlows.length; i++) {
+                    genFileName = path.join(baseDir, 'lib', 'moca_desmodels', dataModel.processFlows[i].name, dataModel.processFlows[i].name + '__MOCAComponent.py');
+                    saveFileToPath(genFileName, ejs.render(TEMPLATES[fileInfo.template], dataModel.processFlows[i]));
                 }
             }
             else if (fileInfo.name === 'parsing utilities') {
