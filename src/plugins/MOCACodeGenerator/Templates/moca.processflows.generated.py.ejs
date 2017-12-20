@@ -1,19 +1,22 @@
 import simpy
 
 class <%= name %>__SimPy_simulation():
-    def __init__(self):
+    def __init__(self, params, results):
 <%
 for (var i = 0; i < desInterfaces.length; i++) {
-    // if the param / result is a child of the process/buffer itself
     var desInterface = desInterfaces[i];
-    if (desInterface.dstGrandParent !== null) {
+    // If the desInterface is a Parameter
+    if (desInterface.srcMeta === 'in') {
+        // if the param / result is a child of the process/buffer itself
+        if (desInterface.dstGrandParent === null) {
 -%>
-        self.<%= desInterface.dstParent %>__<%= desInterface.dstMeta %> = <%= desInterface.dstParent %>__<%= desInterface.dstMeta %>
+        self.<%= desInterface.dstParent %>__<%= desInterface.dstMeta %> = params['<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>']
 <%
-    } else if (desInterface.dstGrandParent === null) {
+        } else {
 -%>
-        self.<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %> = <%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>
+        self.<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %> = params['<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>']
 <%
+        }
     }
 }
 -%>
@@ -48,9 +51,24 @@ for (i = 0; i < processes.length; i++) {
         # SimPy stores for buffers
 <%
 for (i = 0; i< buffers.length; i++) {
+    if (buffers[i].size.desParam === false) {
 -%>
         self.<%= buffers[i].name %> = simpy.Store(self.env, capacity=<%= buffers[i].size.value %>)
 <%
+    } else {
+        var desInterfaceIndex = -1;
+        for (var j = 0; j < desInterfaces.length; j++) {
+            if ((desInterfaces[j].dstMeta === 'Size') && (desInterfaces[j].dstParent === buffers[i].name)) {
+                desInterfaceIndex = j;
+                break;
+            }
+        }
+        if (desInterfaceIndex != -1) {
+-%>
+        self.<%= buffers[i].name %> = simpy.Store(self.env, capacity=self.<%= desInterfaces[desInterfaceIndex].dstParent %>__<%= desInterfaces[desInterfaceIndex].dstMeta %>)
+<%
+        }
+    }
 }
 -%>
 
@@ -62,11 +80,49 @@ for (i = 0; i < processes.length; i++) {
         while True:
             # Start production
             <%= processes[i].name %>_proc = simpy_env.process(self.<%= processes[i].name %>__business_logic(simpy_env))
+<%
+    if (processes[i].processShiftOnTime.desParam === false) {
+-%>
             yield simpy_env.timeout(<%= processes[i].processShiftOnTime.value %>)
+<%
+    } else {
+        desInterfaceIndex = -1;
+        for (j = 0; j < desInterfaces.length; j++) {
+            if ((desInterfaces[j].dstMeta === 'ProcessONTime') && (desInterfaces[j].dstParent === processes[i].name)) {
+                desInterfaceIndex = j;
+                break;
+            }
+        }
+        if (desInterfaceIndex != -1) {
+-%>
+            yield simpy_env.timeout(self.<%= desInterfaces[desInterfaceIndex].dstParent %>__<%= desInterfaces[desInterfaceIndex].dstMeta %>)
+<%
+        }
+    }
+-%>
 
             # Stop production
             <%= processes[i].name %>_proc.interrupt("end_of_shift")
+<%
+    if (processes[i].processShiftOnTime.desParam === false) {
+-%>
             yield simpy_env.timeout(<%= processes[i].processShiftOffTime.value %>)
+<%
+    } else {
+        desInterfaceIndex = -1;
+        for (j = 0; j < desInterfaces.length; j++) {
+            if ((desInterfaces[j].dstMeta === 'ProcessOFFTime') && (desInterfaces[j].dstParent === processes[i].name)) {
+                desInterfaceIndex = j;
+                break;
+            }
+        }
+        if (desInterfaceIndex != -1) {
+-%>
+            yield simpy_env.timeout(self.<%= desInterfaces[desInterfaceIndex].dstParent %>__<%= desInterfaces[desInterfaceIndex].dstMeta %>)
+<%
+        }
+    }
+-%>
 
     def <%= processes[i].name %>__business_logic(self, simpy_env):
         # A unique item ID needs to be associated with every item to push it into buffers (restriction by SimPy)
@@ -76,7 +132,7 @@ for (i = 0; i < processes.length; i++) {
                 # Get the input material (or in case of processes at the start of the chain, don't do anything)
 <%
     // Filter every such connection for which this process is dst
-    for (var j = 0; j < connections.length; j++) {
+    for (j = 0; j < connections.length; j++) {
         if (connections[j].name == 'BuffToProcFlow' && connections[j].dst == processes[i].name) {
 -%>
                 yield self.<%= connections[j].src %>.get()
@@ -86,7 +142,26 @@ for (i = 0; i < processes.length; i++) {
 -%>
 
                 # Simulate production
+<%
+    if (processes[i].processingTime.desParam === false) {
+%>
                 yield simpy_env.timeout(<%= processes[i].processingTime.value %>)
+<%
+    } else {
+        desInterfaceIndex = -1;
+        for (j = 0; j < desInterfaces.length; j++) {
+            if ((desInterfaces[j].dstMeta === 'ProcessingTime') && (desInterfaces[j].dstParent === processes[i].name)) {
+                desInterfaceIndex = j;
+                break;
+            }
+        }
+        if (desInterfaceIndex != -1) {
+-%>
+                yield simpy_env.timeout(self.<%= desInterfaces[desInterfaceIndex].dstParent %>__<%= desInterfaces[desInterfaceIndex].dstMeta %>)
+<%
+        }
+    }
+-%>
 
                 # Put the processed material into the buffer (assumption: process is storing the part in only one buffer)
 <%
@@ -123,4 +198,23 @@ for (i = 0; i < buffers.length; i++) {
 
     # Method to simulate the SimPy simulation
     def simulate(self):
+        results = {}
         self.env.run(until=<%= simend %>)
+<%
+for (i = 0; i < desInterfaces.length; i++) {
+    desInterface = desInterfaces[i];
+    // If the desInterface is a Parameter
+    if (desInterface.srcMeta === 'out') {
+    // if the param / result is a child of the process/buffer itself
+        if (desInterface.dstGrandParent === null) {
+-%>
+        results['<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>'] = self.<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>
+<%
+        } else {
+-%>
+        results['<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>'] = self.<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>
+<%
+        }
+    }
+}
+-%>

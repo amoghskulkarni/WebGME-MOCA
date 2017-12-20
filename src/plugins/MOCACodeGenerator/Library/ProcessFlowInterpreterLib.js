@@ -222,7 +222,9 @@ define([
                         connectionData.dstMeta = MOCAPlugin.core.getAttribute(dstMeta, 'name');
                         connectionData.dstParent = MOCAPlugin.core.getAttribute(dstParent, 'name');
                         connectionData.dstParentMeta = MOCAPlugin.core.getAttribute(dstParentMeta, 'name');
-                        if (dstParentMeta !== 'Process' || dstParentMeta !== 'Buffer') {
+                        if ((connectionData.dstParentMeta === 'UnexpectedMaintenance')
+                            || (connectionData.dstParentMeta === 'UsageBasedMaintenance')
+                            || (connectionData.dstParentMeta === 'TimeBasedMaintenance')) {
                             connectionData.dstGrandParent = MOCAPlugin.core.getAttribute(dstGrandParent, 'name');
                             connectionData.dstGrandParentMeta = MOCAPlugin.core.getAttribute(dstGrandParentMeta, 'name');
                         }
