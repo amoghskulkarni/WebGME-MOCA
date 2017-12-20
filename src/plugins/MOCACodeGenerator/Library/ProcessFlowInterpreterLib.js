@@ -153,7 +153,7 @@ define([
             name: MOCAPlugin.core.getAttribute(bufferNode, 'name'),
             size: {
                 desParam: false,
-                name: MOCAPlugin.core.getAttribute(bufferNode, 'Size')
+                value: MOCAPlugin.core.getAttribute(bufferNode, 'Size')
             }
         };
 
