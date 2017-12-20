@@ -186,12 +186,13 @@ define([
                 srcMeta: null,
                 srcOnto: "",
                 dst: null,
+                dstValue: null,
                 dstMeta: null,
+                dstOnto: "",
                 dstParent: null,
                 dstParentMeta: null,
                 dstGrandParent: null,
-                dstGrandParentMeta: null,
-                dstOnto: ""
+                dstGrandParentMeta: null
             };
 
         MOCAPlugin.core.loadPointer(connectionNode, 'src', function (err, srcNode) {
@@ -220,6 +221,9 @@ define([
                             dstParentMeta = MOCAPlugin.getMetaType(dstParent),
                             dstGrandParent = MOCAPlugin.core.getParent(dstParent),
                             dstGrandParentMeta = MOCAPlugin.getMetaType(dstGrandParent);
+                        if (srcMetaName === 'Parameter') {
+                            connectionData.dstValue = MOCAPlugin.core.getAttribute(dstNode, 'value');
+                        }
 
                         connectionData.dst = MOCAPlugin.core.getAttribute(dstNode, 'name');
                         connectionData.dstMeta = MOCAPlugin.core.getAttribute(dstMeta, 'name');

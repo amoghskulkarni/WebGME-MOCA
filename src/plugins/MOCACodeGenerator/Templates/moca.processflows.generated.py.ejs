@@ -22,6 +22,26 @@ for (var i = 0; i < desInterfaces.length; i++) {
 }
 -%>
             pass
+        else:
+<%
+for (var i = 0; i < desInterfaces.length; i++) {
+    var desInterface = desInterfaces[i];
+    // If the desInterface is a Parameter
+    if (desInterface.srcMeta === 'in') {
+    // if the param / result is a child of the process/buffer itself
+        if (desInterface.dstGrandParent === null) {
+-%>
+            self.<%= desInterface.dstParent %>__<%= desInterface.dstMeta %> = <%= desInterface.dstValue %>
+<%
+        } else {
+-%>
+            self.<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %> = <%= desInterface.dstValue %>
+<%
+        }
+    }
+}
+-%>
+            pass
 
         # SimPy environment
         self.env = simpy.Environment()
