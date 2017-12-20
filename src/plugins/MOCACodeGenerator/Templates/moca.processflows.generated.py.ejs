@@ -58,6 +58,18 @@ for (i = 0; i < buffers.length; i++) {
 -%>
         }
 
+        # Simulation results
+        self.simulation_results = {}
+<%
+for (i = 0; i < processes.length; i++) {
+-%>
+        self.simulation_results['<%= processes[i].name %>__TotalPartsProduced'] = 0
+        self.simulation_results['<%= processes[i].name %>__TotalWaitingTime'] = 0
+<%
+}
+-%>
+
+
         # SimPy process for monitoring simulation
         self.sim_monitor = self.env.process(self.monitor(self.env))
 
@@ -154,6 +166,8 @@ for (i = 0; i < processes.length; i++) {
                 # Get the input material (or in case of processes at the start of the chain, don't do anything)
 <%
     // Filter every such connection for which this process is dst
+    // TODO: Not all processes will need from every upstream buffer, some will need from only 1 of them to function
+    // (AND/OR functions of the incoming buffer)
     for (j = 0; j < connections.length; j++) {
         if (connections[j].name == 'BuffToProcFlow' && connections[j].dst == processes[i].name) {
 -%>
@@ -184,6 +198,8 @@ for (i = 0; i < processes.length; i++) {
         }
     }
 -%>
+                # Increment the number of parts produced
+                self.simulation_results['<%= processes[i].name %>__TotalPartsProduced'] += 1
 
                 # Put the processed material into the buffer (assumption: process is storing the part in only one buffer)
 <%
@@ -230,13 +246,14 @@ for (i = 0; i < desInterfaces.length; i++) {
     // if the param / result is a child of the process/buffer itself
         if (desInterface.dstGrandParent === null) {
 -%>
-        results['<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>'] = self.<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>
+        results['<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>'] = self.simulation_results['<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>']
 <%
         } else {
 -%>
-        results['<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>'] = self.<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>
+        results['<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>'] = self.simulation_results['<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>']
 <%
         }
     }
 }
 -%>
+        return results
