@@ -14,16 +14,12 @@ for (var i = 0; i < desInterfaces.length; i++) {
 -%>
         self.add_param('<%= desInterfaces[i].src %>', val=<%= desInterfaces[i].srcValue %>)
 <%
-    }
 }
--%>
-<%
 // Generate "add_output" and "add_state" statements
 for (i = 0; i < desInterfaces.length; i++) {
 -%>
-        self.add_output('<%= desInterfaces[i].src %>', val=int(<%= desInterfaces[i].srcValue %>))
+        self.add_output('<%= desInterfaces[i].src %>', val=<%= desInterfaces[i].srcValue %>)
 <%
-    }
 }
 -%>
 
