@@ -19,7 +19,7 @@ for (var i = 0; i < desInterfaces.length; i++) {
 }
 // Generate "add_output" and "add_state" statements
 for (i = 0; i < desInterfaces.length; i++) {
-    if (desInterface[i].srcMeta === 'out') {
+    if (desInterfaces[i].srcMeta === 'out') {
 -%>
         self.add_output('<%= desInterfaces[i].src %>', val=<%= desInterfaces[i].srcValue %>)
 <%
