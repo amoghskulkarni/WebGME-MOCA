@@ -12,16 +12,22 @@ class <%= name %>(Component):
 // Generate "add_param" statements
 for (var i = 0; i < desInterfaces.length; i++) {
     if (desInterfaces[i].srcMeta === 'in') {
+        var valueString = desInterfaces[i].srcValue;
+        if (valueString.indexOf('.') === -1)
+            valueString += '.0';
 -%>
-        self.add_param('<%= desInterfaces[i].src %>', val=<%= desInterfaces[i].srcValue %>)
+        self.add_param('<%= desInterfaces[i].src %>', val=<%= valueString %>)
 <%
     }
 }
 // Generate "add_output" and "add_state" statements
 for (i = 0; i < desInterfaces.length; i++) {
     if (desInterfaces[i].srcMeta === 'out') {
+        valueString = desInterfaces[i].srcValue;
+        if (valueString.indexOf('.') === -1)
+            valueString += '.0';
 -%>
-        self.add_output('<%= desInterfaces[i].src %>', val=<%= desInterfaces[i].srcValue %>)
+        self.add_output('<%= desInterfaces[i].src %>', val=<%= valueString %>)
 <%
     }
 }
