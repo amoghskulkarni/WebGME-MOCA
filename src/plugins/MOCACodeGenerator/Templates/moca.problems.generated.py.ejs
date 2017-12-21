@@ -21,7 +21,7 @@ from lib.moca_ddmodels.<%= ddCompInstances[i].base %>.<%= ddCompInstances[i].bas
 }
 for (i = 0 ; i < processFlowInstances.length; i++) {
 -%>
-from lib.moca_desmodels.<%= processFlowInstances[i].base %>.<%= processFlowInstances[i].base %>__MOCAComponent import <%= processFlowInstances[i].base %>__SimPy_simulation
+from lib.moca_desmodels.<%= processFlowInstances[i].base %>.<%= processFlowInstances[i].base %>__MOCAComponent import <%= processFlowInstances[i].base %>
 <%
 }
 for (i = 0; i < groupInstances.length; i++) {
@@ -95,6 +95,7 @@ for (i = 0; i < ddCompInstances.length; i++) {
 }
 -%>
 
+        # Add SimPy simulation component instance
 <%
 for (i = 0; i < processFlowInstances.length; i++) {
     promotesString = '';
@@ -104,7 +105,7 @@ for (i = 0; i < processFlowInstances.length; i++) {
             promotesString += ', ';
     }
 -%>
-        self.add('<%= processFlowInstances[i].name %>', <%= processFlowInstances[i].base %>__SimPy_simulation(), promotes=[<%- promotesString %>])
+        self.add('<%= processFlowInstances[i].name %>', <%= processFlowInstances[i].base %>(), promotes=[<%- promotesString %>])
 <%
 }
 -%>
