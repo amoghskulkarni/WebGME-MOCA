@@ -12,7 +12,7 @@ class <%= name %>(Component):
 // Generate "add_param" statements
 for (var i = 0; i < desInterfaces.length; i++) {
     if (desInterfaces[i].srcMeta === 'in') {
-        var valueString = desInterfaces[i].srcValue;
+        var valueString = desInterfaces[i].srcValue.toString();
         if (valueString.indexOf('.') === -1)
             valueString += '.0';
 -%>
@@ -23,7 +23,7 @@ for (var i = 0; i < desInterfaces.length; i++) {
 // Generate "add_output" and "add_state" statements
 for (i = 0; i < desInterfaces.length; i++) {
     if (desInterfaces[i].srcMeta === 'out') {
-        valueString = desInterfaces[i].srcValue;
+        valueString = desInterfaces[i].srcValue.toString();
         if (valueString.indexOf('.') === -1)
             valueString += '.0';
 -%>
