@@ -35,6 +35,8 @@ from time import time
 
 class <%= name %>():
     def __init__(self<%= featureString %><%= labelString %>):
+        # TODO: Sanity check -- Check whether the features which are being passed are equal in length
+
         # Get features
         self.features = {}
 <%
@@ -44,6 +46,10 @@ class <%= name %>():
 <%
     }
 -%>
+
+        # Get the order of the features (since the order in which parameters are passed to the regression algorithm
+        # matters while using it to predict the label)
+        self.features_list = self.features.keys()
 
         # Get labels
         self.labels = {}
@@ -70,8 +76,8 @@ class <%= name %>():
         in_values = []
         out_values = []
 
-        for data_point in range(len(self.features[self.features.keys()[0]])):
-            feature_vector = [self.features[key][data_point] for key in self.features]
+        for data_point in range(len(self.features.values()[0])):
+            feature_vector = [self.features[key][data_point] for key in self.features_list]
             label_vector = [self.labels[key][data_point] for key in self.labels]
             in_values += feature_vector
             out_values += label_vector
@@ -90,7 +96,7 @@ class <%= name %>():
 -%>
         if self.trained_model is not None:
             unique_id_for_model = '<%= name %>_' + str(int(time() * 1000000))
-            joblib.dump(self.trained_model, unique_id_for_model + '.pkl')
+            joblib.dump({'features_list': self.features_list, 'model': self.trained_model}, unique_id_for_model + '.pkl')
 
             print "Trained model " + unique_id_for_model + " saved."
         else:

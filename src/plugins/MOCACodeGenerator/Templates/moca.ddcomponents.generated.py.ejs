@@ -1,7 +1,6 @@
 #!/usr/bin/python
 from openmdao.api import Component
 from sklearn.externals import joblib
-import sys
 
 <%
 // Generate the code the component
@@ -35,29 +34,13 @@ for (var j = 0; j < unknowns.length; j++) {
         self.deriv_options['type'] = 'fd'
 
         # Load the learned model using joblib dump
-        self.learned_model = joblib.load('lib/moca_ddmodels/<%= name %>/<%= learnedModel %>.pkl')
+        pickled_object = joblib.load('lib/moca_ddmodels/<%= name %>/<%= learnedModel %>.pkl')
+        self.features_list = pickled_object['features_list']
+        self.learned_model = pickled_object['model']
 
     def solve_nonlinear(self, params, unknowns, resids):
-        # Assigning shorthand(s) to the parameter(s)
-<%
-// Generate statements for dummy implementation of the method
-for (var j = 0; j < parameters.length; j++) {
--%>
-        <%= parameters[j].name %> = params['<%= parameters[j].name %>']
-<%
-}
--%>
-
-        ## TODO: Feed the **vector** of parameters to the learned model
-        ## (and not the hardcoded first element of the parameter)
-        [[<%= unknowns[0].name %>]] = self.learned_model.predict(X=[[<%= parameters[0].name %>]])
+        ## Feed the **vector** of parameters to the learned model
+        [[<%= unknowns[0].name %>]] = self.learned_model.predict(X=[[params[feature_key] for feature_key in self.features_list]])
 
         # Assign the value(s) to unknown(s)
-<%
-for (var j = 0; j < unknowns.length; j++) {
--%>
-        unknowns['<%= unknowns[j].name %>'] = <%= unknowns[j].name %>
-<%
-}
--%>
-
+        unknowns['<%= unknowns[0].name %>'] = <%= unknowns[0].name %>

@@ -49,6 +49,13 @@ define([
                 baseToPush = MOCAPlugin.core.getBase(baseToPush);
             promiseList.push(MOCAPlugin.getDDComponentData(baseToPush));
         }
+        else if (compOrGroup === 'ProcessFlow') {
+            baseToPush = MOCAPlugin.core.getBase(node);
+            while (MOCAPlugin.core.getAttribute(MOCAPlugin.core.getParent(baseToPush), 'name') !== 'ProcessFlowLibrary'
+            || MOCAPlugin.core.getAttribute(MOCAPlugin.core.getBase(baseToPush), 'name') !== 'ProcessFlow')
+                baseToPush = MOCAPlugin.core.getBase(baseToPush);
+            promiseList.push(MOCAPlugin.getProcessFlowData(baseToPush));
+        }
     };
 
     /**
@@ -67,7 +74,7 @@ define([
             recursivePromises = [];
 
         // Traverse to its base class through the instance tree
-        MOCAInterpreterLib.prototype.getOriginalBase('Group', groupPromises, groupNode);
+        MOCAPlugin.getOriginalBase('Group', groupPromises, groupNode);
 
         return MOCAPlugin.core.loadChildren(groupNode)
             .then(function (children) {
@@ -76,11 +83,15 @@ define([
                     if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]) , 'name') === 'Component'
                         || MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]) , 'name') === 'DataDrivenComponent') {
                         // Traverse to its base class through the instance tree
-                        MOCAInterpreterLib.prototype.getOriginalBase('Component', componentPromises, children[i]);
+                        MOCAPlugin.getOriginalBase('Component', componentPromises, children[i]);
+                    }
+                    // If it is a ProcessFlow..
+                    else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'ProcessFlow') {
+                        MOCAPlugin.getOriginalBase('ProcessFlow', componentPromises, children[i]);
                     }
                     // If it is a Group (be careful here!)..
                     else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]) , 'name') === 'Group') {
-                        recursivePromises.push(MOCAInterpreterLib.prototype.recursivelyPopulateGroupContents(componentPromises, groupPromises, children[i]));
+                        recursivePromises.push(MOCAPlugin.recursivelyPopulateGroupContents(componentPromises, groupPromises, children[i]));
                     }
                 }
                 return recursivePromises;
@@ -185,9 +196,9 @@ define([
             .then(function(children) {
                 for (var i = 0; i < children.length; i++) {
                     if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'Component')
-                        compInstancePromises.push(MOCAInterpreterLib.prototype.getCompInstanceData(children[i]));
+                        compInstancePromises.push(MOCAInterpreterLib.prototype.getCompInstanceData(MOCAPlugin, children[i]));
                     else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'Group')
-                        groupInstancePromises.push(MOCAInterpreterLib.prototype.getGroupInstanceData(children[i]));
+                        groupInstancePromises.push(MOCAInterpreterLib.prototype.getGroupInstanceData(MOCAPlugin, children[i]));
                     else if (MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name') === 'DataConn')
                         connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, children[i]));
                 }
@@ -285,6 +296,40 @@ define([
             })
             .then(function() {
                 return ddCompInstancesData;
+            });
+    };
+
+    MOCAInterpreterLib.prototype.getProcFlowInstanceData = function (MOCAPlugin, procFlowInstanceNode) {
+        var procFlowInstancesData = {
+            name: MOCAPlugin.core.getAttribute(procFlowInstanceNode, 'name'),
+            base: MOCAPlugin.core.getAttribute(MOCAPlugin.core.getBase(procFlowInstanceNode), 'name'),
+            promotes: []
+        };
+
+        return MOCAPlugin.core.loadChildren(procFlowInstanceNode)
+            .then(function(children) {
+                var promotePromises = [];
+                for (var i = 0; i < children.length; i++) {
+                    promotePromises.push(MOCAPlugin.core.loadCollection(children[i], 'dst')
+                        .then(function(connections) {
+                            var pointerPromises = [];
+                            for (var j = 0; j < connections.length; j++) {
+                                if (MOCAPlugin.core.getAttribute(connections[j], 'name') === 'PrToPortAssoc') {
+                                    pointerPromises.push(MOCAPlugin.core.loadPointer(connections[j], 'dst'));
+                                }
+                            }
+                            return Q.all(pointerPromises);
+                        })
+                        .then(function(dstNodes) {
+                            for (var j = 0; j < dstNodes.length; j++) {
+                                ddCompInstancesData.promotes.push(MOCAPlugin.core.getAttribute(dstNodes[j], 'name'));
+                            }
+                        })
+                    );
+                }
+            })
+            .then(function() {
+                return procFlowInstancesData;
             });
     };
 
@@ -534,6 +579,7 @@ define([
                 constraints: [],
                 compInstances: [],
                 ddCompInstances: [],
+                processFlowInstances: [],
                 groupInstances: [],
                 connections: [],
                 desvars: [],
@@ -543,6 +589,7 @@ define([
             constraintPromises = [],
             compInstancePromises = [],
             ddCompInstancePromises = [],
+            procFlowInstancePromises = [],
             groupInstancePromises = [],
             connectionPromises = [],
             desvarPromises = [],
@@ -569,7 +616,9 @@ define([
                     else if (childMetaType === 'DataConn')
                         connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, children[i]));
                     else if (childMetaType === 'DataDrivenComponent')
-                        ddCompInstancePromises.push(MOCAInterpreterLib.prototype.getDDCompInstanceData(MOCAPlugin, children[i]))
+                        ddCompInstancePromises.push(MOCAInterpreterLib.prototype.getDDCompInstanceData(MOCAPlugin, children[i]));
+                    else if (childMetaType === 'ProcessFlow')
+                        procFlowInstancePromises.push(MOCAInterpreterLib.prototype.getProcFlowInstanceData(MOCAPlugin, children[i]));
                 }
 
                 return Q.all(compInstancePromises);
@@ -604,6 +653,10 @@ define([
             })
             .then(function (ddCompInstancesData) {
                 problemData.ddCompInstances = ddCompInstancesData;
+                return Q.all(procFlowInstancePromises);
+            })
+            .then(function (procFlowInstancesData) {
+                problemData.processFlowInstances = procFlowInstancesData;
                 return problemData;
             });
     };

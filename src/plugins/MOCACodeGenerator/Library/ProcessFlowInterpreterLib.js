@@ -22,12 +22,123 @@ define([
      *      should be off in minutes)
      */
     ProcessFlowInterpreterLib.prototype.getProcessData = function (MOCAPlugin, processNode) {
-        return {
-                name: MOCAPlugin.core.getAttribute(processNode, 'name'),
-                processingTime: MOCAPlugin.core.getAttribute(processNode, 'ProcessingTime'),
-                processShiftOffTime: MOCAPlugin.core.getAttribute(processNode, 'ProcessOFFTime'),
-                processShiftOnTime: MOCAPlugin.core.getAttribute(processNode, 'ProcessONTime')
-        }
+        var processData = {
+            name: MOCAPlugin.core.getAttribute(processNode, 'name'),
+            processingTime: {
+                desParam: false,
+                name: 'processing_time',
+                value: MOCAPlugin.core.getAttribute(processNode, 'ProcessingTime')
+            },
+            processShiftOffTime: {
+                desParam: false,
+                name: 'process_shift_off_time',
+                value: MOCAPlugin.core.getAttribute(processNode, 'ProcessOFFTime')
+            },
+            processShiftOnTime: {
+                desParam: false,
+                name: 'process_shift_on_time',
+                value: MOCAPlugin.core.getAttribute(processNode, 'ProcessONTime')
+            },
+            maintenances: []
+        };
+        var maintenancePromises = [];
+
+        return MOCAPlugin.core.loadChildren(processNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name');
+
+                    if (childMetaType === 'ProcessONTime') {
+                        processData.processShiftOnTime.desParam = true;
+                        processData.processShiftOnTime.value = MOCAPlugin.core.getAttribute(children[i], 'value');
+                    } else if (childMetaType === 'ProcessOFFTime') {
+                        processData.processShiftOffTime.desParam = true;
+                        processData.processShiftOffTime.value = MOCAPlugin.core.getAttribute(children[i], 'value');
+                    } else if (childMetaType === 'ProcessingTime') {
+                        processData.processingTime.desParam = true;
+                        processData.processingTime.value = MOCAPlugin.core.getAttribute(children[i], 'value');
+                    } else if (childMetaType === 'UnexpectedMaintenance') {
+                        maintenancePromises.push(ProcessFlowInterpreterLib.prototype.getUnexpectedMaintData(MOCAPlugin, children[i]));
+                    } else if (childMetaType === 'UsageBasedMaintenance') {
+                        maintenancePromises.push(ProcessFlowInterpreterLib.prototype.getUsageBasedMaintData(MOCAPlugin, children[i]));
+                    }
+                }
+                return Q.all(maintenancePromises);
+            })
+            .then(function (maintenanceData) {
+                processData.maintenances = maintenanceData;
+                return processData;
+            })
+    };
+
+    /**
+     * The method to get the data of an UnexpectedMaintenance node
+     * @param MOCAPlugin - Reference of the MOCACodeGenerator plugin
+     * @param unexpectedMaintNode - The UnexpectedMaintenance node
+     * @return {Promise<T>} - The promise to be resolved for the UnexpectedMaintenance data
+     */
+    ProcessFlowInterpreterLib.prototype.getUnexpectedMaintData = function (MOCAPlugin, unexpectedMaintNode) {
+        var unexpectedMaintData = {
+            name: MOCAPlugin.core.getAttribute(unexpectedMaintNode, 'name'),
+            durationMean: {
+                desParam: false,
+                value: MOCAPlugin.core.getAttribute(unexpectedMaintNode, 'DurationMean')
+            },
+            mtbf: {
+                desParam: false,
+                value: MOCAPlugin.core.getAttribute(unexpectedMaintNode, 'MTBF')
+            }
+        };
+
+        return MOCAPlugin.core.loadChildren(unexpectedMaintNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name');
+                    if (childMetaType === 'DurationMean') {
+                        unexpectedMaintData.durationMean.desParam = true;
+                        unexpectedMaintData.durationMean.value = MOCAPlugin.core.getAttribute(children[i], 'value');
+                    } else if (childMetaType === 'MTBF') {
+                        unexpectedMaintData.mtbf.desParam = true;
+                        unexpectedMaintData.mtbf.value = MOCAPlugin.core.getAttribute(children[i], 'value');
+                    }
+                }
+                return unexpectedMaintData;
+            });
+    };
+
+    /**
+     * The method to get the data of a UsageBasedMaintenance node
+     * @param MOCAPlugin - Reference of the MOCACodeGenerator plugin
+     * @param usageBasedMaintNode - The UsageBasedMaintenance node
+     * @return {Promise<T>} - The promise to be resolved for the UsageBasedMaintenance data
+     */
+    ProcessFlowInterpreterLib.prototype.getUsageBasedMaintData = function (MOCAPlugin, usageBasedMaintNode) {
+        var usageBasedMaintData = {
+            name: MOCAPlugin.core.getAttribute(usageBasedMaintNode, 'name'),
+            durationMean: {
+                desParam: false,
+                value: MOCAPlugin.core.getAttribute(usageBasedMaintNode, 'DurationMean')
+            },
+            cycles: {
+                desParam: false,
+                value: MOCAPlugin.core.getAttribute(usageBasedMaintNode, 'Cycles')
+            }
+        };
+
+        return MOCAPlugin.core.loadChildren(usageBasedMaintNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name');
+                    if (childMetaType === 'DurationMean') {
+                        usageBasedMaintData.durationMean.desParam = true;
+                        usageBasedMaintData.durationMean.value = MOCAPlugin.core.getAttribute(children[i], 'value');
+                    } else if (childMetaType === 'Cycles') {
+                        usageBasedMaintData.cycles.desParam = true;
+                        usageBasedMaintData.cycles.value = MOCAPlugin.core.getAttribute(children[i], 'value');
+                    }
+                }
+                return usageBasedMaintData;
+            });
     };
 
     /**
@@ -38,10 +149,100 @@ define([
      *      - Name and Size of the Buffer node
      */
     ProcessFlowInterpreterLib.prototype.getBufferData = function (MOCAPlugin, bufferNode) {
-        return {
-                name: MOCAPlugin.core.getAttribute(bufferNode, 'name'),
-                size: MOCAPlugin.core.getAttribute(bufferNode, 'Size')
-        }
+        var bufferData = {
+            name: MOCAPlugin.core.getAttribute(bufferNode, 'name'),
+            size: {
+                desParam: false,
+                value: MOCAPlugin.core.getAttribute(bufferNode, 'Size')
+            }
+        };
+
+        return MOCAPlugin.core.loadChildren(bufferNode)
+            .then(function (children) {
+                for (var i = 0; i < children.length; i++) {
+                    var childMetaType = MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name');
+
+                    if (childMetaType === 'Size') {
+                        bufferData.size.desParam = true;
+                        bufferData.size.value = MOCAPlugin.core.getAttribute(children[i], 'value');
+                    }
+                }
+                return bufferData;
+            })
+    };
+
+    /**
+     * The method to get the data of the interface to MOCA elements (Parameters and Unknowns). The usual method to get
+     * the data of a connection cannot be used because the information to be retrieved is non-uniform and depends upon
+     * the type of dst and dstParent.
+     * @param MOCAPlugin
+     * @param connectionNode
+     */
+    ProcessFlowInterpreterLib.prototype.getInterfaceData = function (MOCAPlugin, connectionNode) {
+        var deferred = Q.defer(),
+            connectionData = {
+                src: null,
+                srcValue: null,
+                srcMeta: null,
+                srcOnto: "",
+                dst: null,
+                dstValue: null,
+                dstMeta: null,
+                dstOnto: "",
+                dstParent: null,
+                dstParentMeta: null,
+                dstGrandParent: null,
+                dstGrandParentMeta: null
+            };
+
+        MOCAPlugin.core.loadPointer(connectionNode, 'src', function (err, srcNode) {
+            if (err) {
+                deferred.reject(new Error(err))
+            } else {
+                var srcMeta = MOCAPlugin.getMetaType(srcNode);
+
+                connectionData.src = MOCAPlugin.core.getAttribute(srcNode, 'name');
+
+                var srcMetaName = MOCAPlugin.core.getAttribute(srcMeta, 'name');
+                if (srcMetaName === 'Parameter') {
+                    connectionData.srcMeta = 'in';
+                    connectionData.srcValue = MOCAPlugin.core.getAttribute(srcNode, 'Value');
+                } else if (srcMetaName === 'Unknown') {
+                    connectionData.srcMeta = 'out';
+                    connectionData.srcValue = MOCAPlugin.core.getAttribute(srcNode, 'Value');
+                }
+
+                MOCAPlugin.core.loadPointer(connectionNode, 'dst', function (err, dstNode) {
+                    if (err) {
+                        deferred.reject(new Error(err));
+                    } else {
+                        var dstParent = MOCAPlugin.core.getParent(dstNode),
+                            dstMeta = MOCAPlugin.getMetaType(dstNode),
+                            dstParentMeta = MOCAPlugin.getMetaType(dstParent),
+                            dstGrandParent = MOCAPlugin.core.getParent(dstParent),
+                            dstGrandParentMeta = MOCAPlugin.getMetaType(dstGrandParent);
+                        if (srcMetaName === 'Parameter') {
+                            connectionData.dstValue = MOCAPlugin.core.getAttribute(dstNode, 'value');
+                        }
+
+                        connectionData.dst = MOCAPlugin.core.getAttribute(dstNode, 'name');
+                        connectionData.dstMeta = MOCAPlugin.core.getAttribute(dstMeta, 'name');
+                        connectionData.dstParent = MOCAPlugin.core.getAttribute(dstParent, 'name');
+                        connectionData.dstParentMeta = MOCAPlugin.core.getAttribute(dstParentMeta, 'name');
+                        if ((connectionData.dstParentMeta === 'UnexpectedMaintenance')
+                            || (connectionData.dstParentMeta === 'UsageBasedMaintenance')
+                            || (connectionData.dstParentMeta === 'TimeBasedMaintenance')) {
+                            connectionData.dstGrandParent = MOCAPlugin.core.getAttribute(dstGrandParent, 'name');
+                            connectionData.dstGrandParentMeta = MOCAPlugin.core.getAttribute(dstGrandParentMeta, 'name');
+                        }
+
+                        deferred.resolve(connectionData);
+                    }
+                });
+            }
+        });
+
+        return deferred.promise;
     };
 
     /**
@@ -60,23 +261,28 @@ define([
                 simend: MOCAPlugin.core.getAttribute(processFlowNode, 'SimulationEndTime'),
                 processes: [],
                 buffers: [],
-                connections: []
+                connections: [],
+                desInterfaces: []
             },
             processPromises = [],
             bufferPromises = [],
-            connectionPromises = [];
+            connectionPromises = [],
+            desInterfacePromises = [];
 
         return MOCAPlugin.core.loadChildren(processFlowNode)
             .then(function(children) {
                 for (var i = 0; i < children.length; i++) {
                     var childMetaType = MOCAPlugin.core.getAttribute(MOCAPlugin.getMetaType(children[i]), 'name');
 
-                    if (childMetaType === 'Process')
+                    if (childMetaType === 'Process') {
                         processPromises.push(ProcessFlowInterpreterLib.prototype.getProcessData(MOCAPlugin, children[i]));
-                    else if (childMetaType === 'Buffer')
+                    } else if (childMetaType === 'Buffer') {
                         bufferPromises.push(ProcessFlowInterpreterLib.prototype.getBufferData(MOCAPlugin, children[i]));
-                    else if (childMetaType === 'ProcToBuffFlow' || childMetaType === 'BuffToProcFlow')
+                    } else if (childMetaType === 'ProcToBuffFlow' || childMetaType === 'BuffToProcFlow') {
                         connectionPromises.push(connInterpreter.getConnectionData(MOCAPlugin, children[i]));
+                    } else if (childMetaType === 'ParamToDESInAssoc' || childMetaType === 'UnknownToDESOutAssoc') {
+                        desInterfacePromises.push(ProcessFlowInterpreterLib.prototype.getInterfaceData(MOCAPlugin, children[i]));
+                    }
                 }
 
                 return Q.all(processPromises);
@@ -91,8 +297,12 @@ define([
             })
             .then(function (connectionsData) {
                 processFlowData.connections = connectionsData;
+                return Q.all(desInterfacePromises);
+            })
+            .then(function (desInterfacesData) {
+                processFlowData.desInterfaces = desInterfacesData;
                 return processFlowData;
-            });
+            })
     };
 
     return ProcessFlowInterpreterLib.prototype;

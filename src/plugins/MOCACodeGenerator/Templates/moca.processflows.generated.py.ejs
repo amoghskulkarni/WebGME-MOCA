@@ -1,7 +1,48 @@
 import simpy
 
 class <%= name %>__SimPy_simulation():
-    def __init__(self):
+    def __init__(self, params=None):
+        if params is not None:
+<%
+for (var i = 0; i < desInterfaces.length; i++) {
+    var desInterface = desInterfaces[i];
+    // If the desInterface is a Parameter
+    if (desInterface.srcMeta === 'in') {
+        // if the param / result is a child of the process/buffer itself
+        if (desInterface.dstGrandParent === null) {
+-%>
+            self.<%= desInterface.dstParent %>__<%= desInterface.dstMeta %> = params['<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>']
+<%
+        } else {
+-%>
+            self.<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %> = params['<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>']
+<%
+        }
+    }
+}
+-%>
+            pass
+        else:
+<%
+for (var i = 0; i < desInterfaces.length; i++) {
+    var desInterface = desInterfaces[i];
+    // If the desInterface is a Parameter
+    if (desInterface.srcMeta === 'in') {
+    // if the param / result is a child of the process/buffer itself
+        if (desInterface.dstGrandParent === null) {
+-%>
+            self.<%= desInterface.dstParent %>__<%= desInterface.dstMeta %> = <%= desInterface.dstValue %>
+<%
+        } else {
+-%>
+            self.<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %> = <%= desInterface.dstValue %>
+<%
+        }
+    }
+}
+-%>
+            pass
+
         # SimPy environment
         self.env = simpy.Environment()
 
@@ -9,7 +50,7 @@ class <%= name %>__SimPy_simulation():
         self.simulation_states = {
             'timestamps': [],
 <%
-for (var i=0; i < buffers.length; i++) {
+for (i = 0; i < buffers.length; i++) {
 -%>
             'buff_<%= buffers[i].name %>_usage': [],
 <%
@@ -17,12 +58,24 @@ for (var i=0; i < buffers.length; i++) {
 -%>
         }
 
+        # Simulation results
+        self.simulation_results = {}
+<%
+for (i = 0; i < processes.length; i++) {
+-%>
+        self.simulation_results['<%= processes[i].name %>__TotalPartsProduced'] = 0
+        self.simulation_results['<%= processes[i].name %>__TotalWaitingTime'] = 0
+<%
+}
+-%>
+
+
         # SimPy process for monitoring simulation
         self.sim_monitor = self.env.process(self.monitor(self.env))
 
         # SimPy processes for shifts
 <%
-for (var i=0; i < processes.length; i++) {
+for (i = 0; i < processes.length; i++) {
 -%>
         self.<%= processes[i].name %> = self.env.process(self.<%= processes[i].name %>__shift_controller(self.env))
 <%
@@ -31,26 +84,79 @@ for (var i=0; i < processes.length; i++) {
 
         # SimPy stores for buffers
 <%
-for (var i=0; i< buffers.length; i++) {
+for (i = 0; i< buffers.length; i++) {
+    if (buffers[i].size.desParam === false) {
 -%>
-        self.<%= buffers[i].name %> = simpy.Store(self.env, capacity=<%= buffers[i].size %>)
+        self.<%= buffers[i].name %> = simpy.Store(self.env, capacity=<%= buffers[i].size.value %>)
 <%
+    } else {
+        var desInterfaceIndex = -1;
+        for (var j = 0; j < desInterfaces.length; j++) {
+            if ((desInterfaces[j].dstMeta === 'Size') && (desInterfaces[j].dstParent === buffers[i].name)) {
+                desInterfaceIndex = j;
+                break;
+            }
+        }
+        if (desInterfaceIndex != -1) {
+-%>
+        self.<%= buffers[i].name %> = simpy.Store(self.env, capacity=self.<%= desInterfaces[desInterfaceIndex].dstParent %>__<%= desInterfaces[desInterfaceIndex].dstMeta %>)
+<%
+        }
+    }
 }
 -%>
 
     # Methods for SimPy processes (for shifts and internal business logic)
 <%
-for (var i=0; i < processes.length; i++) {
+for (i = 0; i < processes.length; i++) {
 -%>
     def <%= processes[i].name %>__shift_controller(self, simpy_env):
         while True:
             # Start production
             <%= processes[i].name %>_proc = simpy_env.process(self.<%= processes[i].name %>__business_logic(simpy_env))
-            yield simpy_env.timeout(<%= processes[i].processShiftOnTime %>)
+<%
+    if (processes[i].processShiftOnTime.desParam === false) {
+-%>
+            yield simpy_env.timeout(<%= processes[i].processShiftOnTime.value %>)
+<%
+    } else {
+        desInterfaceIndex = -1;
+        for (j = 0; j < desInterfaces.length; j++) {
+            if ((desInterfaces[j].dstMeta === 'ProcessONTime') && (desInterfaces[j].dstParent === processes[i].name)) {
+                desInterfaceIndex = j;
+                break;
+            }
+        }
+        if (desInterfaceIndex != -1) {
+-%>
+            yield simpy_env.timeout(self.<%= desInterfaces[desInterfaceIndex].dstParent %>__<%= desInterfaces[desInterfaceIndex].dstMeta %>)
+<%
+        }
+    }
+-%>
 
             # Stop production
             <%= processes[i].name %>_proc.interrupt("end_of_shift")
-            yield simpy_env.timeout(<%= processes[i].processShiftOffTime %>)
+<%
+    if (processes[i].processShiftOnTime.desParam === false) {
+-%>
+            yield simpy_env.timeout(<%= processes[i].processShiftOffTime.value %>)
+<%
+    } else {
+        desInterfaceIndex = -1;
+        for (j = 0; j < desInterfaces.length; j++) {
+            if ((desInterfaces[j].dstMeta === 'ProcessOFFTime') && (desInterfaces[j].dstParent === processes[i].name)) {
+                desInterfaceIndex = j;
+                break;
+            }
+        }
+        if (desInterfaceIndex != -1) {
+-%>
+            yield simpy_env.timeout(self.<%= desInterfaces[desInterfaceIndex].dstParent %>__<%= desInterfaces[desInterfaceIndex].dstMeta %>)
+<%
+        }
+    }
+-%>
 
     def <%= processes[i].name %>__business_logic(self, simpy_env):
         # A unique item ID needs to be associated with every item to push it into buffers (restriction by SimPy)
@@ -60,7 +166,9 @@ for (var i=0; i < processes.length; i++) {
                 # Get the input material (or in case of processes at the start of the chain, don't do anything)
 <%
     // Filter every such connection for which this process is dst
-    for (var j=0; j < connections.length; j++) {
+    // TODO: Not all processes will need from every upstream buffer, some will need from only 1 of them to function
+    // (AND/OR functions of the incoming buffer)
+    for (j = 0; j < connections.length; j++) {
         if (connections[j].name == 'BuffToProcFlow' && connections[j].dst == processes[i].name) {
 -%>
                 yield self.<%= connections[j].src %>.get()
@@ -70,12 +178,33 @@ for (var i=0; i < processes.length; i++) {
 -%>
 
                 # Simulate production
-                yield simpy_env.timeout(<%= processes[i].processingTime %>)
+<%
+    if (processes[i].processingTime.desParam === false) {
+%>
+                yield simpy_env.timeout(<%= processes[i].processingTime.value %>)
+<%
+    } else {
+        desInterfaceIndex = -1;
+        for (j = 0; j < desInterfaces.length; j++) {
+            if ((desInterfaces[j].dstMeta === 'ProcessingTime') && (desInterfaces[j].dstParent === processes[i].name)) {
+                desInterfaceIndex = j;
+                break;
+            }
+        }
+        if (desInterfaceIndex != -1) {
+-%>
+                yield simpy_env.timeout(self.<%= desInterfaces[desInterfaceIndex].dstParent %>__<%= desInterfaces[desInterfaceIndex].dstMeta %>)
+<%
+        }
+    }
+-%>
+                # Increment the number of parts produced
+                self.simulation_results['<%= processes[i].name %>__TotalPartsProduced'] += 1
 
                 # Put the processed material into the buffer (assumption: process is storing the part in only one buffer)
 <%
     // Filter the first connection for which this process is src
-    for (var j=0; j < connections.length; j++) {
+    for (j = 0; j < connections.length; j++) {
         if (connections[j].name == 'ProcToBuffFlow' && connections[j].src == processes[i].name) {
 -%>
                 yield self.<%= connections[j].dst %>.put("<%= processes[i].name %>_%s" % item_id)
@@ -98,7 +227,7 @@ for (var i=0; i < processes.length; i++) {
             yield simpy_env.timeout(0.1)
             self.simulation_states['timestamps'].append(simpy_env.now)
 <%
-for (var i=0; i < buffers.length; i++) {
+for (i = 0; i < buffers.length; i++) {
 -%>
             self.simulation_states['buff_<%= buffers[i].name %>_usage'].append(len(self.<%= buffers[i].name %>.items))
 <%
@@ -107,4 +236,24 @@ for (var i=0; i < buffers.length; i++) {
 
     # Method to simulate the SimPy simulation
     def simulate(self):
+        results = {}
         self.env.run(until=<%= simend %>)
+<%
+for (i = 0; i < desInterfaces.length; i++) {
+    desInterface = desInterfaces[i];
+    // If the desInterface is a Parameter
+    if (desInterface.srcMeta === 'out') {
+    // if the param / result is a child of the process/buffer itself
+        if (desInterface.dstGrandParent === null) {
+-%>
+        results['<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>'] = self.simulation_results['<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>']
+<%
+        } else {
+-%>
+        results['<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>'] = self.simulation_results['<%= desInterface.dstGrandParent %>__<%= desInterface.dstParent %>__<%= desInterface.dstMeta %>']
+<%
+        }
+    }
+}
+-%>
+        return results
