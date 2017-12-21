@@ -264,6 +264,7 @@ define([
                         }
                         // If it is a ProcessFlow..
                         else if (self.core.getAttribute(self.getMetaType(children[i]), 'name') === 'ProcessFlow') {
+                            // Traverse to its base class through the instance tree
                             self.getOriginalBase('ProcessFlow', processFlowPromises, children[i]);
                         }
                         // If it is a Group..
@@ -285,6 +286,10 @@ define([
                 })
                 .then(function (ddComponentsData) {
                     dataModel.ddComps = ddComponentsData;
+                    return Q.all(processFlowPromises);
+                })
+                .then(function (processFlowData) {
+                    dataModel.processFlows = processFlowData;
                     return Q.all(groupPromises);
                 })
                 .then(function (groupsData) {
