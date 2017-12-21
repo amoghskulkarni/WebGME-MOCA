@@ -11,11 +11,8 @@ class <%= name %>(Component):
 <%
 // Generate "add_param" statements
 for (var i = 0; i < desInterfaces.length; i++) {
-    var desInterface = desInterfaces[i];
-    if (desInterface.srcMeta === 'in') {
-        var valueString = desInterface.srcValue;
 -%>
-        self.add_param('<%= desInterface.src %>', val=int(<%= valueString %>))
+        self.add_param('<%= desInterfaces[i].src %>', val=<%= desInterfaces[i].srcValue %>)
 <%
     }
 }
@@ -23,11 +20,8 @@ for (var i = 0; i < desInterfaces.length; i++) {
 <%
 // Generate "add_output" and "add_state" statements
 for (i = 0; i < desInterfaces.length; i++) {
-    desInterface = desInterfaces[i];
-    if (desInterface.srcMeta === 'out') {
-        valueString = desInterface.srcValue;
 -%>
-        self.add_output('<%= desInterface.src %>', val=int(<%= valueString %>))
+        self.add_output('<%= desInterfaces[i].src %>', val=int(<%= desInterfaces[i].srcValue %>))
 <%
     }
 }
@@ -40,7 +34,7 @@ for (i = 0; i < desInterfaces.length; i++) {
         parameters = {}
 <%
 for (i = 0; i < desInterfaces.length; i++) {
-    desInterface = desInterfaces[i];
+    var desInterface = desInterfaces[i];
     // If the desInterface is a Parameter
     if (desInterface.srcMeta === 'in') {
         // if the param / result is a child of the process/buffer itself
