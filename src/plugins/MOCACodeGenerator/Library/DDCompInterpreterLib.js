@@ -255,7 +255,7 @@ define([
                         for (var j = 0; j < ddComponentData.connections.length; j++) {
                             var connection_2 = ddComponentData.connections[j];
                             if (connection_2.name === 'UnknownToLabelAssoc') {
-                                if (connection_1.src === connection_2.src) {
+                                if (connection_1.dst === connection_2.dst) {
                                     // TODO: Save the connection as the logical connection
                                 }
                             }
@@ -265,7 +265,7 @@ define([
                         for (var j = 0; j < ddComponentData.connections.length; j++) {
                             var connection_2 = ddComponentData.connections[j];
                             if (connection_2.name === 'ParamToFeatureAssoc') {
-                                if (connection_1.src === connection_2.src) {
+                                if (connection_1.dst === connection_2.dst) {
                                     // TODO: Save the connection as the logical connection
                                 }
                             }
