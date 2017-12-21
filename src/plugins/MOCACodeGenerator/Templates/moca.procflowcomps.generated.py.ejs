@@ -11,15 +11,19 @@ class <%= name %>(Component):
 <%
 // Generate "add_param" statements
 for (var i = 0; i < desInterfaces.length; i++) {
+    if (desInterfaces[i].srcMeta === 'in') {
 -%>
         self.add_param('<%= desInterfaces[i].src %>', val=<%= desInterfaces[i].srcValue %>)
 <%
+    }
 }
 // Generate "add_output" and "add_state" statements
 for (i = 0; i < desInterfaces.length; i++) {
+    if (desInterface[i].srcMeta === 'out') {
 -%>
         self.add_output('<%= desInterfaces[i].src %>', val=<%= desInterfaces[i].srcValue %>)
 <%
+    }
 }
 -%>
 
