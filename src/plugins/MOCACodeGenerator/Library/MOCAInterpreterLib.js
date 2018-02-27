@@ -702,7 +702,7 @@ define([
                 return Q.all(problemPromises);
             })
             .then(function (problemInstanceData) {
-                problemData.problems = problemInstanceData;
+                problemData.problemInstances = problemInstanceData;
                 return Q.all(promotePromises);
             })
             .then(function (promoteData) {
