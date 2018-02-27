@@ -29,6 +29,11 @@ for (i = 0; i < groupInstances.length; i++) {
 from lib.moca_groups.<%= groupInstances[i].base %> import <%= groupInstances[i].base %>
 <%
 }
+for (i = 0; i < problemInstances.length; i++) {
+-%>
+from <%= problemInstances.base%> import <%= problemInstances.base %>
+<%
+}
 -%>
 
 # Dynamic imports
@@ -91,6 +96,22 @@ for (i = 0; i < ddCompInstances.length; i++) {
     }
 -%>
         self.add('<%= ddCompInstances[i].name %>', <%= ddCompInstances[i].base %>(), promotes=[<%- promotesString %>])
+<%
+}
+-%>
+
+        # Add problem component instances
+<%
+// Generate the conde for add() statements for data-driven components -
+for (i = 0; i < problemInstances.length; i++) {
+    promotesString = '';
+    for (j = 0; j < problemInstances[i].promotes.length; j++) {
+        promotesString += "'" + problemInstances[i].promotes[j] + "'";
+        if (j != problemInstances[i].promotes.length - 1)
+            promotesString += ', ';
+    }
+-%>
+        self.add('<%= problemInstances[i].name %>', <%= problemInstances.base %>(), promtoes=[<%- prmotesString %>])
 <%
 }
 -%>
