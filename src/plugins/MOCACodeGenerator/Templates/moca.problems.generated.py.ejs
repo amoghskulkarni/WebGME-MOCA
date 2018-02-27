@@ -31,7 +31,7 @@ from lib.moca_groups.<%= groupInstances[i].base %> import <%= groupInstances[i].
 }
 for (i = 0; i < problemInstances.length; i++) {
 -%>
-from <%= problemInstances[i].base%> import <%= problemInstances[i].base %>
+from <%= problemInstances[i].base%>__MOCAComponent import <%= problemInstances[i].base %>__MOCAComponent
 <%
 }
 -%>
@@ -111,7 +111,7 @@ for (i = 0; i < problemInstances.length; i++) {
             promotesString += ', ';
     }
 -%>
-        self.add('<%= problemInstances[i].name %>', <%= problemInstances[i].base %>(), promotes=[<%- promotesString %>])
+        self.add('<%= problemInstances[i].name %>', <%= problemInstances[i].base %>__MOCAComponent(), promotes=[<%- promotesString %>])
 <%
 }
 -%>
