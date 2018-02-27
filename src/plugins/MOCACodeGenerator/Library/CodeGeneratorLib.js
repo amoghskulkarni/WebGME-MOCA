@@ -101,7 +101,7 @@ define([
                 for (i = 0; i < dataModel.problems.length; i++) {
                     genFileName = 'MOCA_GeneratedCode/src/' + dataModel.problems[i].name + '.py';
                     var genIpynbFile = 'MOCA_GeneratedCode/' + dataModel.problems[i].name + '.ipynb';
-                    var mocacompFile = 'MOCA_GeneratedCode/src/' + dataModel.problems.name + '__MOCAComponent.py';
+                    var mocacompFile = 'MOCA_GeneratedCode/src/' + dataModel.problems[i].name + '__MOCAComponent.py';
                     filesToAdd[genFileName] = ejs.render(TEMPLATES[fileInfo.template], dataModel.problems[i]);
                     filesToAdd[genIpynbFile] = ejs.render(TEMPLATES[fileInfo.ipynbfile], dataModel.problems[i]);
                     filesToAdd[mocacompFile] = ejs.render(TEMPLATES[fileInfo.mocacomponent], dataModel.problems[i]);
