@@ -631,7 +631,8 @@ define([
             connectionPromises = [],
             desvarPromises = [],
             objectivePromises = [],
-            recordPromises = [];
+            recordPromises = [],
+            promotePromises = [];
 
         return MOCAPlugin.core.loadChildren(problemNode)
             .then(function(children) {
@@ -658,6 +659,8 @@ define([
                         procFlowInstancePromises.push(MOCAInterpreterLib.prototype.getProcFlowInstanceData(MOCAPlugin, children[i]));
                     else if (childMetaType === 'Problem')
                         problemPromises.push(MOCAInterpreterLib.prototype.getProblemInstanceData(MOCAPlugin, children[i]));
+                    else if (childMetaType === 'PrToPortAssoc')
+                        promotePromises.push(connInterpreter.getConnectionData(MOCAPlugin, children[i]));
                 }
 
                 return Q.all(compInstancePromises);
@@ -700,6 +703,10 @@ define([
             })
             .then(function (problemInstanceData) {
                 problemData.problems = problemInstanceData;
+                return Q.all(promotePromises);
+            })
+            .then(function (promoteData) {
+                problemData.promotes = promoteData;
                 return problemData;
             });
     };
