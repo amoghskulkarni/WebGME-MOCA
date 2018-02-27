@@ -31,7 +31,7 @@ from lib.moca_groups.<%= groupInstances[i].base %> import <%= groupInstances[i].
 }
 for (i = 0; i < problemInstances.length; i++) {
 -%>
-from <%= problemInstances.base%> import <%= problemInstances.base %>
+from <%= problemInstances[i].base%> import <%= problemInstances[i].base %>
 <%
 }
 -%>
