@@ -1,0 +1,62 @@
+#!/usr/bin/python
+from openmdao.api import Component
+from <%= name %> import <%= name %>
+
+<%
+// Generate the code the component
+-%>
+class <%= name %>__MOCAComponent(Component):
+    def __init__(self):
+        super(<%= name %>, self).__init__()
+<%
+// Generate "add_output" statements
+for (var j = 0; j < promotes.length; j++) {
+    if (promotes[j].srcMeta === 'InPromote') {
+-%>
+        self.add_param('<%= promotes[j].src %>', val=0.0)
+<%
+    }
+}
+-%>
+<%
+// Generate "add_output" and "add_state" statements
+for (j = 0; j < promotes.length; j++) {
+    if (promotes[j].srcMeta === 'OutPromote') {
+-%>
+        self.add_output('<%= promotes[j].src %>', val=0.0)
+<%
+    }
+}
+-%>
+
+        self.deriv_options['type'] = 'fd'
+
+    def solve_nonlinear(self, params, unknowns, resids):
+        # Instantiate the problem
+        problem = <%= name %>()
+
+        # Feed the parameters
+<%
+for (j = 0; j < promotes.length; j++) {
+    if (promotes[j].srcMeta === 'InPromote') {
+-%>
+        problem['<%= promotes[j].dstParent %>.<%= promotes.dst %>'] = params['<%= promotes[j].src %>']
+<%
+    }
+}
+-%>
+
+        # Execute the problem
+        problem.setup()
+        problem.run()
+
+        # Assign the value(s) to unknown(s)
+<%
+for (j = 0; j < promotes.length; j++) {
+    if (promotes[j].srcMeta === 'OutPromote') {
+-%>
+        unknowns['<%= promotes[j].src %>'] = problem['<%= promotes[j].dstParent %>.<%= promotes.dst %>']
+<%
+    }
+}
+-%>
