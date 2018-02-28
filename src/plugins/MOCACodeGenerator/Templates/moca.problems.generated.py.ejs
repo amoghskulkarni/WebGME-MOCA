@@ -143,7 +143,7 @@ for (i = 0; i < groupInstances.length; i++) {
             promotesString += ', ';
     }
 -%>
-        self.add('<%= groupInstances[i].name %>', <%= groupInstances[i].base %>(), promotes=[<%- promotesString %>])
+        self.add('<%= groupInstances[i].name %>', <%= groupInstances[i].base %>(), promotes=[])
 <%
 }
 -%>
