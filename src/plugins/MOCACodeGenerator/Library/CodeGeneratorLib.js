@@ -428,10 +428,13 @@ define([
             for (var j = 0; j < dataModel.groups[i].connections.length; j++) {
                 if (dataModel.groups[i].connections[j].srcOnto !== dataModel.groups[i].connections[j].dstOnto) {
                     noWarnings = false;
-                    MOCAPlugin.sendNotification('WARNING: In Group ' + dataModel.groups[i].name
+                    MOCAPlugin.sendNotification({
+                        message: 'ERROR: In Group ' + dataModel.groups[i].name
                         + ', port ' + dataModel.groups[i].connections[j].src + ' of ' + dataModel.groups[i].connections[j].srcParent
                         + ' is associated to different ontological element than that of '
-                        + 'port ' + dataModel.groups[i].connections[j].dst + ' of ' + dataModel.groups[i].connections[j].dstParent);
+                        + 'port ' + dataModel.groups[i].connections[j].dst + ' of ' + dataModel.groups[i].connections[j].dstParent,
+                        severity: 'error'
+                    });
                 }
             }
         }
@@ -441,10 +444,13 @@ define([
             for (var j = 0; j < dataModel.problems[i].connections.length; j++) {
                 if (dataModel.problems[i].connections[j].srcOnto !== dataModel.problems[i].connections[j].dstOnto) {
                     noWarnings = false;
-                    MOCAPlugin.sendNotification('WARNING: In Problem ' + dataModel.problems[i].name
+                    MOCAPlugin.sendNotification({
+                        message: 'ERROR: In Problem ' + dataModel.problems[i].name
                         + ', port ' + dataModel.problems[i].connections[j].src + ' of ' + dataModel.problems[i].connections[j].srcParent
                         + ' is associated to different ontological element than that of '
-                        + 'port ' + dataModel.problems[i].connections[j].dst + ' of ' + dataModel.problems[i].connections[j].dstParent);
+                        + 'port ' + dataModel.problems[i].connections[j].dst + ' of ' + dataModel.problems[i].connections[j].dstParent,
+                        severity: 'error'
+                    });
                 }
             }
         }
