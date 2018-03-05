@@ -422,7 +422,7 @@ define([
 
         // parse dataModel for mismatching ontology link
         // TODO: Do this with the help of validator framework
-        /*for (var i = 0; i < dataModel.groups.length; i++) {
+        for (var i = 0; i < dataModel.groups.length; i++) {
             // for every group, check every data connection
             for (var j = 0; j < dataModel.groups[i].connections.length; j++) {
                 if (dataModel.groups[i].connections[j].srcOnto !== dataModel.groups[i].connections[j].dstOnto) {
@@ -432,9 +432,9 @@ define([
                         + 'port ' + dataModel.groups[i].connections[j].dst + ' of ' + dataModel.groups[i].connections[j].dstParent);
                 }
             }
-        }*/
+        }
 
-        /*for (var i = 0; i < dataModel.problems.length; i++) {
+        for (var i = 0; i < dataModel.problems.length; i++) {
             // for every group, check every data connection
             for (var j = 0; j < dataModel.problems[i].connections.length; j++) {
                 if (dataModel.problems[i].connections[j].srcOnto !== dataModel.problems[i].connections[j].dstOnto) {
@@ -444,7 +444,7 @@ define([
                         + 'port ' + dataModel.problems[i].connections[j].dst + ' of ' + dataModel.problems[i].connections[j].dstParent);
                 }
             }
-        }*/
+        }
 
         // Check if the plugin is executed in the client (browser) or server context
         // (if the 'window' object is undefined, it's executed on the server-side)
