@@ -409,7 +409,8 @@ define([
         var MOCAPlugin = this,
             filesToAdd = {},
             deferred = new Q.defer(),
-            artifact = null;
+            artifact = null,
+            noWarnings = true;
 
         if (pluginInvocation === 'ROOT')
             artifact = MOCAPlugin.blobClient.createArtifact('MOCA');
@@ -420,31 +421,30 @@ define([
         else if (pluginInvocation === 'DataDrivenComponent')
             artifact = MOCAPlugin.blobClient.createArtifact(dataModel.ddComps[0].name);
 
-        MOCAPlugin.sendNotification('Test');
         // parse dataModel for mismatching ontology link
         // TODO: Do this with the help of validator framework
-        if (typeof window !== 'undefined') {
-            for (var i = 0; i < dataModel.groups.length; i++) {
-                // for every group, check every data connection
-                for (var j = 0; j < dataModel.groups[i].connections.length; j++) {
-                    if (dataModel.groups[i].connections[j].srcOnto !== dataModel.groups[i].connections[j].dstOnto) {
-                        alert('WARNING: In Group ' + dataModel.groups[i].name
-                            + ', port ' + dataModel.groups[i].connections[j].src + ' of ' + dataModel.groups[i].connections[j].srcParent
-                            + ' is associated to different ontological element than that of '
-                            + 'port ' + dataModel.groups[i].connections[j].dst + ' of ' + dataModel.groups[i].connections[j].dstParent);
-                    }
+        for (var i = 0; i < dataModel.groups.length; i++) {
+            // for every group, check every data connection
+            for (var j = 0; j < dataModel.groups[i].connections.length; j++) {
+                if (dataModel.groups[i].connections[j].srcOnto !== dataModel.groups[i].connections[j].dstOnto) {
+                    noWarnings = false;
+                    MOCAPlugin.sendNotification('WARNING: In Group ' + dataModel.groups[i].name
+                        + ', port ' + dataModel.groups[i].connections[j].src + ' of ' + dataModel.groups[i].connections[j].srcParent
+                        + ' is associated to different ontological element than that of '
+                        + 'port ' + dataModel.groups[i].connections[j].dst + ' of ' + dataModel.groups[i].connections[j].dstParent);
                 }
             }
+        }
 
-            for (var i = 0; i < dataModel.problems.length; i++) {
-                // for every group, check every data connection
-                for (var j = 0; j < dataModel.problems[i].connections.length; j++) {
-                    if (dataModel.problems[i].connections[j].srcOnto !== dataModel.problems[i].connections[j].dstOnto) {
-                        alert('WARNING: In Problem ' + dataModel.problems[i].name
-                            + ', port ' + dataModel.problems[i].connections[j].src + ' of ' + dataModel.problems[i].connections[j].srcParent
-                            + ' is associated to different ontological element than that of '
-                            + 'port ' + dataModel.problems[i].connections[j].dst + ' of ' + dataModel.problems[i].connections[j].dstParent);
-                    }
+        for (var i = 0; i < dataModel.problems.length; i++) {
+            // for every group, check every data connection
+            for (var j = 0; j < dataModel.problems[i].connections.length; j++) {
+                if (dataModel.problems[i].connections[j].srcOnto !== dataModel.problems[i].connections[j].dstOnto) {
+                    noWarnings = false;
+                    MOCAPlugin.sendNotification('WARNING: In Problem ' + dataModel.problems[i].name
+                        + ', port ' + dataModel.problems[i].connections[j].src + ' of ' + dataModel.problems[i].connections[j].srcParent
+                        + ' is associated to different ontological element than that of '
+                        + 'port ' + dataModel.problems[i].connections[j].dst + ' of ' + dataModel.problems[i].connections[j].dstParent);
                 }
             }
         }
@@ -452,23 +452,27 @@ define([
         // Check if the plugin is executed in the client (browser) or server context
         // (if the 'window' object is undefined, it's executed on the server-side)
         if (typeof window === 'undefined') {
-            // Save the files on the server side
-            CodeGeneratorLib.prototype.savePythonSourceFiles(MOCAPlugin, dataModel);
+            if (noWarnings === true) {
+                // Save the files on the server side
+                CodeGeneratorLib.prototype.savePythonSourceFiles(MOCAPlugin, dataModel);
+            }
         }
         else {
-            if (pluginInvocation === 'ROOT') {
-                filesToAdd['MOCA.json'] = JSON.stringify(dataModel, null, 2);
-                filesToAdd['MOCA_metadata.json'] = JSON.stringify({
-                    projectId: MOCAPlugin.projectId,
-                    commitHash: MOCAPlugin.commitHash,
-                    branchName: MOCAPlugin.branchName,
-                    timeStamp: (new Date()).toISOString(),
-                    pluginVersion: MOCAPlugin.getVersion()
-                }, null, 2);
-            }
+            if (noWarnings === true) {
+                if (pluginInvocation === 'ROOT') {
+                    filesToAdd['MOCA.json'] = JSON.stringify(dataModel, null, 2);
+                    filesToAdd['MOCA_metadata.json'] = JSON.stringify({
+                        projectId: MOCAPlugin.projectId,
+                        commitHash: MOCAPlugin.commitHash,
+                        branchName: MOCAPlugin.branchName,
+                        timeStamp: (new Date()).toISOString(),
+                        pluginVersion: MOCAPlugin.getVersion()
+                    }, null, 2);
+                }
 
-            // Save the files using the blobClient and give them as a downloadable handle
-            CodeGeneratorLib.prototype.downloadPythonSourceFiles(MOCAPlugin, filesToAdd, dataModel, deferred, artifact);
+                // Save the files using the blobClient and give them as a downloadable handle
+                CodeGeneratorLib.prototype.downloadPythonSourceFiles(MOCAPlugin, filesToAdd, dataModel, deferred, artifact);
+            }
         }
 
         return deferred.promise;
