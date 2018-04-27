@@ -37,7 +37,13 @@ from <%= problemInstances[i].base%>__MOCAComponent import <%= problemInstances[i
 -%>
 
 # Dynamic imports
+<%
+if (driver !== 'Default (run once)') {
+-%>
 from openmdao.api import <%= driverDictionary[driver] %>
+<%
+}
+-%>
 from openmdao.api import DumpRecorder, SqliteRecorder
 from openmdao.recorders.csv_recorder import CsvRecorder
 <%
