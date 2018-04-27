@@ -91,7 +91,7 @@ define([
                 // Result success is false at invocation.
                 callback(err, self.result);
             });
-
+        }
     };
 
     return UMPImporter;
