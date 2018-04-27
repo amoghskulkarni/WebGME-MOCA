@@ -67,9 +67,12 @@ define([
 
         // Using the coreAPI to make changes.
 
-        nodeObject = self.core.createNode({ 'parent': self.activeNode });
+        nodeObject = self.core.createNode({
+            'parent': self.activeNode,
+            'base': self.META['Component']
+        });
 
-        self.core.setAttribute(nodeObject, 'name', 'My new obj');
+        self.core.setAttribute(nodeObject, 'name', 'My new component');
         self.core.setRegistry(nodeObject, 'position', {x: 70, y: 70});
 
 
