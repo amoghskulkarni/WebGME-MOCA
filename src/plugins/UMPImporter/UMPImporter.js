@@ -67,7 +67,7 @@ define([
 
         // Using the coreAPI to make changes.
 
-        nodeObject = self.activeNode;
+        nodeObject = self.core.createNode({ 'parent': self.activeNode });
 
         self.core.setAttribute(nodeObject, 'name', 'My new obj');
         self.core.setRegistry(nodeObject, 'position', {x: 70, y: 70});
