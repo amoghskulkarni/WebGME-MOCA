@@ -373,6 +373,40 @@ define([
             });
     };
 
+    MOCAInterpreterLib.prototype.getProblemInstanceData = function (MOCAPlugin, problemInstanceNode) {
+        var problemInstancesData = {
+            name: MOCAPlugin.core.getAttribute(problemInstanceNode, 'name'),
+            base: MOCAPlugin.core.getAttribute(MOCAPlugin.core.getBase(problemInstanceNode), 'name'),
+            promotes: []
+        };
+
+        return MOCAPlugin.core.loadChildren(problemInstanceNode)
+            .then(function(children) {
+                var promotePromises = [];
+                for (var i = 0; i < children.length; i++) {
+                    promotePromises.push(MOCAPlugin.core.loadCollection(children[i], 'dst')
+                        .then(function(connections) {
+                            var pointerPromises = [];
+                            for (var j = 0; j < connections.length; j++) {
+                                if (MOCAPlugin.core.getAttribute(connections[j], 'name') === 'PrToPortAssoc') {
+                                    pointerPromises.push(MOCAPlugin.core.loadPointer(connections[j], 'dst'));
+                                }
+                            }
+                            return Q.all(pointerPromises);
+                        })
+                        .then(function(dstNodes) {
+                            for (var j = 0; j < dstNodes.length; j++) {
+                                problemInstancesData.promotes.push(MOCAPlugin.core.getAttribute(dstNodes[j], 'name'));
+                            }
+                        })
+                    );
+                }
+            })
+            .then(function () {
+                return problemInstancesData;
+            });
+    };
+
     /**
      * The method to get the data from a DesignVariable node
      * @param MOCAPlugin - Reference of the MOCACodeGenerator plugin
@@ -581,20 +615,24 @@ define([
                 ddCompInstances: [],
                 processFlowInstances: [],
                 groupInstances: [],
+                problemInstances: [],
                 connections: [],
                 desvars: [],
                 objectives: [],
-                records: []
+                records: [],
+                promotes: []
             },
             constraintPromises = [],
             compInstancePromises = [],
+            problemPromises = [],
             ddCompInstancePromises = [],
             procFlowInstancePromises = [],
             groupInstancePromises = [],
             connectionPromises = [],
             desvarPromises = [],
             objectivePromises = [],
-            recordPromises = [];
+            recordPromises = [],
+            promotePromises = [];
 
         return MOCAPlugin.core.loadChildren(problemNode)
             .then(function(children) {
@@ -619,6 +657,10 @@ define([
                         ddCompInstancePromises.push(MOCAInterpreterLib.prototype.getDDCompInstanceData(MOCAPlugin, children[i]));
                     else if (childMetaType === 'ProcessFlow')
                         procFlowInstancePromises.push(MOCAInterpreterLib.prototype.getProcFlowInstanceData(MOCAPlugin, children[i]));
+                    else if (childMetaType === 'Problem')
+                        problemPromises.push(MOCAInterpreterLib.prototype.getProblemInstanceData(MOCAPlugin, children[i]));
+                    else if (childMetaType === 'PrToPortAssoc')
+                        promotePromises.push(connInterpreter.getConnectionData(MOCAPlugin, children[i]));
                 }
 
                 return Q.all(compInstancePromises);
@@ -657,6 +699,14 @@ define([
             })
             .then(function (procFlowInstancesData) {
                 problemData.processFlowInstances = procFlowInstancesData;
+                return Q.all(problemPromises);
+            })
+            .then(function (problemInstanceData) {
+                problemData.problemInstances = problemInstanceData;
+                return Q.all(promotePromises);
+            })
+            .then(function (promoteData) {
+                problemData.promotes = promoteData;
                 return problemData;
             });
     };

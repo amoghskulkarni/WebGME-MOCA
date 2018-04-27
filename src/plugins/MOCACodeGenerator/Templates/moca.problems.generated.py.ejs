@@ -29,10 +29,21 @@ for (i = 0; i < groupInstances.length; i++) {
 from lib.moca_groups.<%= groupInstances[i].base %> import <%= groupInstances[i].base %>
 <%
 }
+for (i = 0; i < problemInstances.length; i++) {
+-%>
+from <%= problemInstances[i].base%>__MOCAComponent import <%= problemInstances[i].base %>__MOCAComponent
+<%
+}
 -%>
 
 # Dynamic imports
+<%
+if (driver !== 'Default (run once)') {
+-%>
 from openmdao.api import <%= driverDictionary[driver] %>
+<%
+}
+-%>
 from openmdao.api import DumpRecorder, SqliteRecorder
 from openmdao.recorders.csv_recorder import CsvRecorder
 <%
@@ -95,6 +106,22 @@ for (i = 0; i < ddCompInstances.length; i++) {
 }
 -%>
 
+        # Add problem component instances
+<%
+// Generate the code for add() statements for problem components -
+for (i = 0; i < problemInstances.length; i++) {
+    promotesString = '';
+    for (j = 0; j < problemInstances[i].promotes.length; j++) {
+        promotesString += "'" + problemInstances[i].promotes[j] + "'";
+        if (j != problemInstances[i].promotes.length - 1)
+            promotesString += ', ';
+    }
+-%>
+        self.add('<%= problemInstances[i].name %>', <%= problemInstances[i].base %>__MOCAComponent(), promotes=[])
+<%
+}
+-%>
+
         # Add SimPy simulation component instance
 <%
 for (i = 0; i < processFlowInstances.length; i++) {
@@ -122,7 +149,7 @@ for (i = 0; i < groupInstances.length; i++) {
             promotesString += ', ';
     }
 -%>
-        self.add('<%= groupInstances[i].name %>', <%= groupInstances[i].base %>(), promotes=[<%- promotesString %>])
+        self.add('<%= groupInstances[i].name %>', <%= groupInstances[i].base %>(), promotes=[])
 <%
 }
 -%>
