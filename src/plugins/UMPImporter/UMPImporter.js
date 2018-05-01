@@ -11,12 +11,14 @@ define([
     'plugin/PluginConfig',
     'text!./metadata.json',
     'plugin/PluginBase',
+    'q',
     'plugin/UMPImporter/UMPImporter/Library/equation_parser',
-    'plugin/UMPImporter/UMPImporter/Library/xml-js.min'
+    'plugin/UMPImporter/UMPImporter/Library/xml-js'
 ], function (
     PluginConfig,
     pluginMetadata,
     PluginBase,
+    Q,
     equationParser,
     xmlParser) {
     'use strict';
