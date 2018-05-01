@@ -11,12 +11,14 @@ define([
     'plugin/PluginConfig',
     'text!./metadata.json',
     'plugin/PluginBase',
+    'Q',
     'plugin/UMPImporter/UMPImporter/Library/equation_parser',
     'plugin/UMPImporter/UMPImporter/Library/xml-js'
 ], function (
     PluginConfig,
     pluginMetadata,
     PluginBase,
+    q,
     equationParser,
     xmlParser) {
     'use strict';
@@ -34,6 +36,8 @@ define([
         // Call base class' constructor.
         PluginBase.call(this);
         this.pluginMetadata = pluginMetadata;
+        this.equationParser = equationParser;
+        this.xmlParser = xmlParser;
     };
 
     /**
@@ -42,8 +46,6 @@ define([
      * @type {object}
      */
     UMPImporter.metadata = pluginMetadata;
-    UMPImporter.equationParser = equationParser;
-    UMPImporter.xmlParser = xmlParser;
 
     // Prototypical inheritance from PluginBase.
     UMPImporter.prototype = Object.create(PluginBase.prototype);
