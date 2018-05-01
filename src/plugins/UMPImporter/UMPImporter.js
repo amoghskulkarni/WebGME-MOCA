@@ -12,8 +12,8 @@ define([
     'text!./metadata.json',
     'plugin/PluginBase',
     'q',
-    'plugin/UMPImporter/UMPImporter/Library/equation_parser',
-    'plugin/UMPImporter/UMPImporter/Library/xml-js'
+    '../Library/equation_parser',
+    '../Library/xml-js'
 ], function (
     PluginConfig,
     pluginMetadata,
@@ -24,6 +24,7 @@ define([
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
+
 
     /**
      * Initializes a new instance of UMPImporter.
@@ -232,7 +233,7 @@ define([
                             MOCAComponent.inputs = flattenedParsedEquationTree
                                 .filter(function (value) {
                                     return (value !== null) && (value !== 'pi');
-                                });
+                                    });
 
                             console.log(MOCAComponent);
                         } else {
