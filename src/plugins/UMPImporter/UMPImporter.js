@@ -219,10 +219,11 @@ define([
                             // Flatten out the tree
                             var flattenedParsedEquationTree = this.flattenTree(parsedEquationTree['inputs']),
                                 MOCAComponent = {
-                                    name: equationObj.attributes.name,
-                                    interfaces: {
+                                    'name': equationObj.attributes.name,
+                                    'interfaces': {
                                         'output': parsedEquationTree['output'],
-                                        'inputs': flattenedParsedEquationTree.filter(value => value !== null && value !== 'pi')
+                                        'inputs': flattenedParsedEquationTree
+                                            .filter(value => value !== null && value !== 'pi')
                                     }
                                 };
 
