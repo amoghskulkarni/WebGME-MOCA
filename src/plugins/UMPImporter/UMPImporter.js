@@ -12,19 +12,16 @@ define([
     'text!./metadata.json',
     'plugin/PluginBase',
     'q',
-    '../Library/equation_parser.js',
-    '../Library/xml-js.js'
+    '../UMPImporter/Library/equation_parser',
+    '../UMPImporter/Library/xml-js'
 ], function (
     PluginConfig,
     pluginMetadata,
     PluginBase,
-    Q,
-    equationParser,
-    xmlParser) {
+    Q) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
-
 
     /**
      * Initializes a new instance of UMPImporter.
