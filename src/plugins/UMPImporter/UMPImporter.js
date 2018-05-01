@@ -34,8 +34,6 @@ define([
         // Call base class' constructor.
         PluginBase.call(this);
         this.pluginMetadata = pluginMetadata;
-        this.equationParser = equationParser;
-        this.xmlParser = xmlParser;
     };
 
     /**
@@ -44,6 +42,8 @@ define([
      * @type {object}
      */
     UMPImporter.metadata = pluginMetadata;
+    UMPImporter.equationParser = equationParser;
+    UMPImporter.xmlParser = xmlParser;
 
     // Prototypical inheritance from PluginBase.
     UMPImporter.prototype = Object.create(PluginBase.prototype);
