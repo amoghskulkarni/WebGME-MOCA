@@ -226,10 +226,13 @@ define([
                                     'name': equationObj.attributes.name,
                                     'interfaces': {
                                         'output': parsedEquationTree['output'],
-                                        'inputs': flattenedParsedEquationTree
-                                            .filter(value => value !== null && value !== 'pi')
+                                        'inputs': []
                                     }
                                 };
+                            MOCAComponent.inputs = flattenedParsedEquationTree
+                                .filter(function (value) {
+                                    return (value !== null) && (value !== 'pi');
+                                });
 
                             console.log(MOCAComponent);
                         } else {
