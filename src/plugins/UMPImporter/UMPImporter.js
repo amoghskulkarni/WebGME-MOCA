@@ -34,6 +34,8 @@ define([
         // Call base class' constructor.
         PluginBase.call(this);
         this.pluginMetadata = pluginMetadata;
+        this.equationParser = equationParser;
+        this.xmlParser = xmlParser;
     };
 
     /**
@@ -184,7 +186,7 @@ define([
 
         var xmlFile = self.core.getAttribute(componentLibraryNode, 'UMPSpec');
 
-        var jsonString = xmlParser.xml2json(xmlFile, {compact: false, spaces: 4});
+        var jsonString = this.xmlParser.xml2json(xmlFile, {compact: false, spaces: 4});
         var jsonObj = JSON.parse(jsonString);
         self.logger.info('UMPSpec converted into JSON');
 
@@ -207,9 +209,9 @@ define([
                         console.log(mathmlEquationString);
 
                         try {
-                            parsedEquationTree = equationParser.parse(mathmlEquationString);
+                            parsedEquationTree = this.equationParser.parse(mathmlEquationString);
                         } catch (e) {
-                            if (e === equationParser.SyntaxError) {
+                            if (e === this.equationParser.SyntaxError) {
                                 console.log('Parser error!');
                                 continue;
                             }
