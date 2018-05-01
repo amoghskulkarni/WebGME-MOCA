@@ -12,8 +12,8 @@ define([
     'text!./metadata.json',
     'plugin/PluginBase',
     'q',
-    '../UMPImporter/Library/equation_parser',
-    '../UMPImporter/Library/xml-js'
+    '../Library/equation_parser.js',
+    '../Library/xml-js.js'
 ], function (
     PluginConfig,
     pluginMetadata,
