@@ -12,7 +12,7 @@ define([
     'text!./metadata.json',
     'plugin/PluginBase',
     'plugin/UMPImporter/UMPImporter/Library/equation_parser',
-    'plugin/UMPImporter/UMPImporter/Library/xml-js.min'
+    'plugin/UMPImporter/UMPImporter/Library/xml-js'
 ], function (
     PluginConfig,
     pluginMetadata,
