@@ -252,6 +252,15 @@ define([
         }
 
         for (var i = 0; i < MOCAComponents.length; i++) {
+            MOCAComponents[i].name = MOCAComponents[i].name
+                .map(function (value, index, self) {
+                    if (value === ' ') {
+                        self[index] = '_';
+                    } else {
+                        self[index] = value;
+                    }
+                });
+
             componentObject = self.core.createNode({
                 'parent': componentLibraryNode,
                 'base': self.META['Component']
@@ -279,7 +288,7 @@ define([
             }
 
             var messageObj = new pluginMessage();
-            messageObj.message = 'Created ' + MOCAComponents[i].name + ' MOCA Component.';
+            messageObj.message = 'Created "' + MOCAComponents[i].name + '" MOCA Component.';
             self.result.addMessage(messageObj);
         }
 
