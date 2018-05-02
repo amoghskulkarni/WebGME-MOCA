@@ -226,12 +226,18 @@ define([
                                     'interfaces': {
                                         'output': parsedEquationTree['output'],
                                         'inputs': []
-                                    }
+                                    },
+                                    'outputFunction': mathmlEquationString
                                 };
                             MOCAComponent.inputs = flattenedParsedEquationTree
                                 .filter(function (value) {
                                     return (value !== null) && (value !== 'pi');
-                                    });
+                                });
+
+                            MOCAComponent.inputs = MOCAComponent.inputs
+                                .filter(function (value, index, self) {
+                                    return self.indexOf(value) === index;
+                                });
 
                             MOCAComponents.push(MOCAComponent);
                             console.log(MOCAComponent);
@@ -248,9 +254,27 @@ define([
                 'parent': componentLibraryNode,
                 'base': self.META['Component']
             });
-
+            self.core.setAttribute(componentObject, 'OutputFunction', MOCAComponents[i].outputFunction);
             self.core.setAttribute(componentObject, 'name', MOCAComponents[i].name);
-            self.core.setRegistry(componentObject, 'position', {x: 70 + (i * 50), y: 70});
+            self.core.setRegistry(componentObject, 'position', {x: 70, y: 70 + (i * 100)});
+
+            // Create output port
+            var outputPortObject = self.core.createNode({
+                'parent': componentObject,
+                'base': self.META['Unknown']
+            });
+            self.core.setAttribute(outputPortObject, 'name', MOCAComponents[i].interfaces.output);
+            self.core.setRegistry(outputPortObject, 'position', {x: 70, y: 70});
+
+            // Create input ports
+            for (var j = 0; j < MOCAComponents[i].interfaces.inputs; j++) {
+                var inputPortObject = self.core.createNode({
+                    'parent': componentObject,
+                    'base': self.META['Parameter']
+                });
+                self.core.setAttribute(inputPortObject, 'name', MOCAComponents[i].interfaces.inputs[j])
+                self.core.setRegistry(inputPortObject, 'position', {x: 700, y: 70 + (j * 100)});
+            }
         }
 
         // This will save the changes. If you don't want to save;
@@ -258,7 +282,7 @@ define([
         self.save('UMPImporter updated model.')
             .then(function () {
                 self.result.setSuccess(true);
-                callback(null, self.result);
+                callback('Test', self.result);
             })
             .catch(function (err) {
                 // Result success is false at invocation.
