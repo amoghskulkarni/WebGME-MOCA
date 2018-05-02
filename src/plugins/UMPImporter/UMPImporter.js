@@ -267,7 +267,7 @@ define([
             self.core.setRegistry(outputPortObject, 'position', {x: 700, y: 70});
 
             // Create input ports
-            for (var j = 0; j < MOCAComponents[i].interfaces.inputs; j++) {
+            for (var j = 0; j < MOCAComponents[i].interfaces.inputs.length; j++) {
                 var inputPortObject = self.core.createNode({
                     'parent': componentObject,
                     'base': self.META['Parameter']
@@ -275,6 +275,8 @@ define([
                 self.core.setAttribute(inputPortObject, 'name', MOCAComponents[i].interfaces.inputs[j]);
                 self.core.setRegistry(inputPortObject, 'position', {x: 70, y: 70 + (j * 100)});
             }
+
+            self.result.addMessage('Created ' + MOCAComponents[i].name + ' MOCA Component.' )
         }
 
         // This will save the changes. If you don't want to save;
@@ -282,7 +284,7 @@ define([
         self.save('UMPImporter updated model.')
             .then(function () {
                 self.result.setSuccess(true);
-                callback('Test', self.result);
+                callback(null, self.result);
             })
             .catch(function (err) {
                 // Result success is false at invocation.
