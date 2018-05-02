@@ -252,14 +252,7 @@ define([
         }
 
         for (var i = 0; i < MOCAComponents.length; i++) {
-            MOCAComponents[i].name = MOCAComponents[i].name
-                .map(function (value, index, self) {
-                    if (value === ' ') {
-                        self[index] = '_';
-                    } else {
-                        self[index] = value;
-                    }
-                });
+            MOCAComponents[i].name.replace(' ', '_');
 
             componentObject = self.core.createNode({
                 'parent': componentLibraryNode,
