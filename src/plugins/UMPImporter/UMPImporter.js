@@ -252,7 +252,7 @@ define([
         }
 
         for (var i = 0; i < MOCAComponents.length; i++) {
-            MOCAComponents[i].name.replace(' ', '_');
+            MOCAComponents[i].name = MOCAComponents[i].name.replace(' ', '_');
 
             componentObject = self.core.createNode({
                 'parent': componentLibraryNode,
