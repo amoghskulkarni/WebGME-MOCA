@@ -229,12 +229,12 @@ define([
                                     },
                                     'outputFunction': mathmlEquationString
                                 };
-                            MOCAComponent.inputs = flattenedParsedEquationTree
+                            MOCAComponent.interfaces.inputs = flattenedParsedEquationTree
                                 .filter(function (value) {
                                     return (value !== null) && (value !== 'pi');
                                 });
 
-                            MOCAComponent.inputs = MOCAComponent.inputs
+                            MOCAComponent.interfaces.inputs = MOCAComponent.interfaces.inputs
                                 .filter(function (value, index, self) {
                                     return self.indexOf(value) === index;
                                 });
