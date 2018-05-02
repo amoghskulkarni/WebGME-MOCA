@@ -264,7 +264,7 @@ define([
                 'base': self.META['Unknown']
             });
             self.core.setAttribute(outputPortObject, 'name', MOCAComponents[i].interfaces.output);
-            self.core.setRegistry(outputPortObject, 'position', {x: 70, y: 70});
+            self.core.setRegistry(outputPortObject, 'position', {x: 700, y: 70});
 
             // Create input ports
             for (var j = 0; j < MOCAComponents[i].interfaces.inputs; j++) {
@@ -272,8 +272,8 @@ define([
                     'parent': componentObject,
                     'base': self.META['Parameter']
                 });
-                self.core.setAttribute(inputPortObject, 'name', MOCAComponents[i].interfaces.inputs[j])
-                self.core.setRegistry(inputPortObject, 'position', {x: 700, y: 70 + (j * 100)});
+                self.core.setAttribute(inputPortObject, 'name', MOCAComponents[i].interfaces.inputs[j]);
+                self.core.setRegistry(inputPortObject, 'position', {x: 70, y: 70 + (j * 100)});
             }
         }
 
