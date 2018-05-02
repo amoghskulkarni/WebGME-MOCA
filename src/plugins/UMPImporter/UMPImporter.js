@@ -9,6 +9,7 @@
 
 define([
     'plugin/PluginConfig',
+    'plugin/PluginMessage',
     'text!./metadata.json',
     'plugin/PluginBase',
     'q',
@@ -16,6 +17,7 @@ define([
     '../UMPImporter/Library/xml-js'
 ], function (
     PluginConfig,
+    pluginMessage,
     pluginMetadata,
     PluginBase,
     Q) {
@@ -256,9 +258,9 @@ define([
             });
             self.core.setAttribute(componentObject, 'OutputFunction', MOCAComponents[i].outputFunction);
             self.core.setAttribute(componentObject, 'name', MOCAComponents[i].name);
-            self.core.setRegistry(componentObject, 'position', {x: 70, y: 70 + (i * 100)});
+            self.core.setRegistry(componentObject, 'position', {x: 70 + (i * 150), y: 70});
 
-            // Create output port
+            // Create the output port
             var outputPortObject = self.core.createNode({
                 'parent': componentObject,
                 'base': self.META['Unknown']
@@ -276,7 +278,9 @@ define([
                 self.core.setRegistry(inputPortObject, 'position', {x: 70, y: 70 + (j * 100)});
             }
 
-            self.result.addMessage('Created ' + MOCAComponents[i].name + ' MOCA Component.' )
+            var messageObj = new pluginMessage();
+            messageObj.message = 'Created ' + MOCAComponents[i].name + ' MOCA Component.';
+            self.result.addMessage(messageObj);
         }
 
         // This will save the changes. If you don't want to save;
