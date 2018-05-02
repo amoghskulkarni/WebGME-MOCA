@@ -252,11 +252,7 @@ define([
         }
 
         for (var i = 0; i < MOCAComponents.length; i++) {
-            for (var j = 0; j < MOCAComponents[i].name.length; j++) {
-                if (MOCAComponents[i].name[j] === ' ') {
-                    MOCAComponents[i].name[j] = '_'
-                }
-            }
+            MOCAComponents[i].name = MOCAComponents[i].name.replace(/ /g, '_');
 
             componentObject = self.core.createNode({
                 'parent': componentLibraryNode,
@@ -275,7 +271,7 @@ define([
             self.core.setRegistry(outputPortObject, 'position', {x: 700, y: 70});
 
             // Create input ports
-            for (j = 0; j < MOCAComponents[i].interfaces.inputs.length; j++) {
+            for (var j = 0; j < MOCAComponents[i].interfaces.inputs.length; j++) {
                 var inputPortObject = self.core.createNode({
                     'parent': componentObject,
                     'base': self.META['Parameter']
