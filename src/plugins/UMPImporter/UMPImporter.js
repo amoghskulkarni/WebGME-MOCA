@@ -173,7 +173,8 @@ define([
         // Use self to access core, project, result, logger etc from PluginBase.
         // These are all instantiated at this point.
         var self = this,
-            nodeObject;
+            componentObject,
+            MOCAComponents = [];
 
         // Using the logger.
         // self.logger.debug('This is a debug message.');
@@ -232,6 +233,7 @@ define([
                                     return (value !== null) && (value !== 'pi');
                                     });
 
+                            MOCAComponents.push(MOCAComponent);
                             console.log(MOCAComponent);
                         } else {
                             console.log('WARNING: Couldn\'t parse the mathematical equation for: ' + equationObj.attributes.name)
@@ -241,13 +243,15 @@ define([
             }
         }
 
-        nodeObject = self.core.createNode({
-            'parent': componentLibraryNode,
-            'base': self.META['Component']
-        });
+        for (var i = 0; i < MOCAComponents.length; i++) {
+            componentObject = self.core.createNode({
+                'parent': componentLibraryNode,
+                'base': self.META['Component']
+            });
 
-        self.core.setAttribute(nodeObject, 'name', 'My new component');
-        self.core.setRegistry(nodeObject, 'position', {x: 70, y: 70});
+            self.core.setAttribute(componentObject, 'name', MOCAComponents[i].name);
+            self.core.setRegistry(componentObject, 'position', {x: 70 + (i * 50), y: 70});
+        }
 
         // This will save the changes. If you don't want to save;
         // exclude self.save and call callback directly from this scope.
