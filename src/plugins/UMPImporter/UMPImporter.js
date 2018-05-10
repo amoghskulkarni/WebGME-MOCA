@@ -162,36 +162,16 @@ define([
         return ret;
     };
 
-    /**
-     * Main function for the plugin to execute. This will perform the execution.
-     * Notes:
-     * - Always log with the provided logger.[error,warning,info,debug].
-     * - Do NOT put any user interaction logic UI, etc. inside this method.
-     * - callback always has to be called even if error happened.
-     *
-     * @param {function(string, plugin.PluginResult)} callback - the result callback
-     */
-    UMPImporter.prototype.main = function (callback) {
-        // Use self to access core, project, result, logger etc from PluginBase.
-        // These are all instantiated at this point.
-        var self = this,
-            componentObject,
-            MOCAComponents = [];
-
-        // Using the logger.
-        // self.logger.debug('This is a debug message.');
-        // self.logger.info('This is an info message.');
-        // self.logger.warn('This is a warning message.');
-        // self.logger.error('This is an error message.');
-
-        // Using the coreAPI to make changes.
-        var componentLibraryNode = self.activeNode;
-
-        var xmlFile = self.core.getAttribute(componentLibraryNode, 'UMPSpec');
-
-        var jsonString = this.xmlParser(xmlFile, {compact: false, spaces: 4});
-        var jsonObj = JSON.parse(jsonString);
-        self.logger.info('UMPSpec converted into JSON');
+    UMPImporter.prototype.parseUMPSpec = function(jsonObj) {
+        var UMP = {
+            name: '',
+            interfaces: {
+                inputs: [],
+                outputs: []
+            },
+            routes: [],
+            MOCAComponents: []
+        };
 
         var umpObj = jsonObj.elements["0"];
 
@@ -241,7 +221,7 @@ define([
                                     return self.indexOf(value) === index;
                                 });
 
-                            MOCAComponents.push(MOCAComponent);
+                            UMP.MOCAComponents.push(MOCAComponent);
                             console.log(MOCAComponent);
                         } else {
                             console.log('WARNING: Couldn\'t parse the mathematical equation for: ' + equationObj.attributes.name)
@@ -251,15 +231,50 @@ define([
             }
         }
 
-        for (var i = 0; i < MOCAComponents.length; i++) {
-            MOCAComponents[i].name = MOCAComponents[i].name.replace(/ /g, '_');
+        return UMP;
+    };
 
-            componentObject = self.core.createNode({
+    /**
+     * Main function for the plugin to execute. This will perform the execution.
+     * Notes:
+     * - Always log with the provided logger.[error,warning,info,debug].
+     * - Do NOT put any user interaction logic UI, etc. inside this method.
+     * - callback always has to be called even if error happened.
+     *
+     * @param {function(string, plugin.PluginResult)} callback - the result callback
+     */
+    UMPImporter.prototype.main = function (callback) {
+        // Use self to access core, project, result, logger etc from PluginBase.
+        // These are all instantiated at this point.
+        var self = this,
+            MOCAComponents = [];
+
+        // Using the logger.
+        // self.logger.debug('This is a debug message.');
+        // self.logger.info('This is an info message.');
+        // self.logger.warn('This is a warning message.');
+        // self.logger.error('This is an error message.');
+
+        // Using the coreAPI to make changes.
+        var componentLibraryNode = self.activeNode;
+
+        var xmlFile = self.core.getAttribute(componentLibraryNode, 'UMPSpec');
+
+        var jsonString = this.xmlParser(xmlFile, {compact: false, spaces: 4});
+        var jsonObj = JSON.parse(jsonString);
+        self.logger.info('UMPSpec converted into JSON');
+
+        var umpObj = self.parseUMPSpec(jsonObj);
+
+        for (var i = 0; i < umpObj.MOCAComponents.length; i++) {
+            umpObj.MOCAComponents[i].name = umpObj.MOCAComponents[i].name.replace(/ /g, '_');
+
+            var componentObject = self.core.createNode({
                 'parent': componentLibraryNode,
                 'base': self.META['Component']
             });
-            self.core.setAttribute(componentObject, 'OutputFunction', MOCAComponents[i].outputFunction);
-            self.core.setAttribute(componentObject, 'name', MOCAComponents[i].name);
+            self.core.setAttribute(componentObject, 'OutputFunction', umpObj.MOCAComponents[i].outputFunction);
+            self.core.setAttribute(componentObject, 'name', umpObj.MOCAComponents[i].name);
             self.core.setRegistry(componentObject, 'position', {x: 70 + (i * 150), y: 70});
 
             // Create the output port
@@ -267,23 +282,41 @@ define([
                 'parent': componentObject,
                 'base': self.META['Unknown']
             });
-            self.core.setAttribute(outputPortObject, 'name', MOCAComponents[i].interfaces.output);
+            self.core.setAttribute(outputPortObject, 'name', umpObj.MOCAComponents[i].interfaces.output);
             self.core.setRegistry(outputPortObject, 'position', {x: 700, y: 70});
 
             // Create input ports
-            for (var j = 0; j < MOCAComponents[i].interfaces.inputs.length; j++) {
+            for (var j = 0; j < umpObj.MOCAComponents[i].interfaces.inputs.length; j++) {
                 var inputPortObject = self.core.createNode({
                     'parent': componentObject,
                     'base': self.META['Parameter']
                 });
-                self.core.setAttribute(inputPortObject, 'name', MOCAComponents[i].interfaces.inputs[j]);
+                self.core.setAttribute(inputPortObject, 'name', umpObj.MOCAComponents[i].interfaces.inputs[j]);
                 self.core.setRegistry(inputPortObject, 'position', {x: 70, y: 70 + (j * 100)});
             }
 
             var messageObj = new pluginMessage();
-            messageObj.message = 'Created "' + MOCAComponents[i].name + '" MOCA Component.';
+            messageObj.message = 'Created "' + umpObj.MOCAComponents[i].name + '" MOCA Component.';
             self.result.addMessage(messageObj);
         }
+
+        var ROOTNode = self.core.getParent(componentLibraryNode);
+
+        self.core.loadChildren(ROOTNode, function (err, children) {
+            if (err) {
+                callback(err, self.result);
+            } else {
+                // We have an array of the children and can get information from them
+                var i;
+                for (i = 0; i < children.length; i++) {
+                    var child = children[i];
+                    if (self.core.getAttribute(child, 'name') === 'GroupLibrary') {
+                        // Create a Group with the name of the process
+                        self.logger.info('Got the GroupLibrary child');
+                    }
+                }
+            }
+        });
 
         // This will save the changes. If you don't want to save;
         // exclude self.save and call callback directly from this scope.
