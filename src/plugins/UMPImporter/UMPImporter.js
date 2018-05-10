@@ -179,7 +179,7 @@ define([
         UMP.name = umpObj.attributes["name"];
 
         // Populate the interfaces
-        for (var e = 0; umpObj.elements.length; e++) {
+        for (var e = 0; e < umpObj.elements.length; e++) {
             if (umpObj.elements[e.toString()].name === 'ProductProcessInformation') {
                 var ppiObj = umpObj.elements[e.toString()];
 
