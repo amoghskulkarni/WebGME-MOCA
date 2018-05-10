@@ -398,20 +398,19 @@ define([
                     }
                 }
             }
-        })
-        .then(function () {
-            // This will save the changes. If you don't want to save;
-            // exclude self.save and call callback directly from this scope.
-            self.save('UMPImporter updated model.')
-                .then(function () {
-                    self.result.setSuccess(true);
-                    callback(null, self.result);
-                })
-                .catch(function (err) {
-                    // Result success is false at invocation.
-                    callback(err, self.result);
-                });
         });
+
+        // This will save the changes. If you don't want to save;
+        // exclude self.save and call callback directly from this scope.
+        self.save('UMPImporter updated model.')
+            .then(function () {
+                self.result.setSuccess(true);
+                callback(null, self.result);
+            })
+            .catch(function (err) {
+                // Result success is false at invocation.
+                callback(err, self.result);
+            });
     };
 
     return UMPImporter;
