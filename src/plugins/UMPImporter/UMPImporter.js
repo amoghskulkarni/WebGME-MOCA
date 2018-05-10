@@ -364,9 +364,10 @@ define([
                 for (i = 0; i < children.length; i++) {
                     var child = children[i];
                     if (self.core.getAttribute(child, 'name') === 'GroupLibrary') {
+                        var groupLibraryNode = child;
                         // Create a Group with the name of the process
                         var groupObject = self.core.createNode({
-                            'parent': child,
+                            'parent': groupLibraryNode,
                             'base': self.META['Group']
                         });
                         self.core.setAttribute(groupObject, 'name', umpObj.name);
