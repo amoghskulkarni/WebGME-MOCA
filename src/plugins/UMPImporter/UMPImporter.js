@@ -390,6 +390,10 @@ define([
                             self.core.setAttribute(outputPortObject, 'name', umpObj.interfaces.outputs[j].symbol);
                             self.core.setRegistry(outputPortObject, 'position', {x: 700, y: 70 + (j * 100)});
                         }
+
+                        var messageObj = new pluginMessage();
+                        messageObj.message = 'Created "' + umpObj.name + '" MOCA Group.';
+                        self.result.addMessage(messageObj);
                     }
                 }
             }
