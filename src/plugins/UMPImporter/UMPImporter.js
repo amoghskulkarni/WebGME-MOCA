@@ -365,7 +365,31 @@ define([
                     var child = children[i];
                     if (self.core.getAttribute(child, 'name') === 'GroupLibrary') {
                         // Create a Group with the name of the process
-                        self.logger.info('Got the GroupLibrary child');
+                        var groupObject = self.core.createNode({
+                            'parent': child,
+                            'base': self.META['Group']
+                        });
+                        self.core.setAttribute(groupObject, 'name', umpObj.name);
+
+                        // Create input ports
+                        for (j = 0; j < umpObj.interfaces.inputs.length; j++) {
+                            var inputPortObject = self.core.createNode({
+                                'parent': groupObject,
+                                'base': self.META['InPromote']
+                            });
+                            self.core.setAttribute(inputPortObject, 'name', umpObj.interfaces.inputs[j].symbol);
+                            self.core.setRegistry(inputPortObject, 'position', {x: 70, y: 70 + (j * 100)});
+                        }
+
+                        // Create output ports
+                        for (j = 0; j < umpObj.interfaces.outputs.length; j++) {
+                            var outputPortObject = self.core.createNode({
+                                'parent': groupObject,
+                                'base': self.META['OutPromote']
+                            });
+                            self.core.setAttribute(outputPortObject, 'name', umpObj.interfaces.outputs[j].symbol);
+                            self.core.setRegistry(outputPortObject, 'position', {x: 700, y: 70 + (j * 100)});
+                        }
                     }
                 }
             }
