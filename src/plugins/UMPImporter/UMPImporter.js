@@ -186,26 +186,44 @@ define([
                 // Find the control parameters (inputs)
                 for (var p = 0; p < ppiObj.elements.length; p++) {
                     if (ppiObj.elements[p.toString()].name === 'ControlParameter') {
-                        var controlParameterObj = ppiObj.elements[p.toString()];
+                        var controlParameter = {
+                                'name': "",
+                                'symbol': ""
+                            },
+                            controlParameterObj = ppiObj.elements[p.toString()];
 
                         for (var c = 0; c < controlParameterObj.elements.length; c++) {
                             if (controlParameterObj.elements[c.toString()].name === 'Name') {
-                                UMP.interfaces.inputs.push(controlParameterObj.elements[c.toString()].elements['0'].text);
+                                controlParameter['name'] = controlParameterObj.elements[c.toString()].elements['0'].text;
+                            }
+                            if (controlParameterObj.elements[c.toString()].name === 'Symbol') {
+                                controlParameter['symbol'] = this.parseMathMLEquation(controlParameterObj.elements[c.toString()].elements['0']);
                             }
                         }
+
+                        UMP.interfaces.inputs.push(controlParameter);
                     }
                 }
 
                 // Find the metric of interests (outputs)
                 for (p = 0; p < ppiObj.elements.length; p++) {
                     if (ppiObj.elements[p.toString()].name === 'MetricOfInterest') {
-                        var moiObj = ppiObj.elements[p.toString()];
+                        var moi = {
+                                'name': "",
+                                'symbol': ""
+                            },
+                            moiObj = ppiObj.elements[p.toString()];
 
                         for (c = 0; c < moiObj.elements.length; c++) {
                             if (moiObj.elements[c.toString()].name === 'Name') {
-                                UMP.interfaces.outputs.push(moiObj.elements[c.toString()].elements['0'].text);
+                                moi['name'] = moiObj.elements[c.toString()].elements['0'].text;
+                            }
+                            if (moiObj.elements[c.toString()].name === 'Symbol') {
+                                moi['symbol'] = this.parseMathMLEquation(moiObj.elements[c.toString()].elements['0'])
                             }
                         }
+
+                        UMP.interfaces.outputs.push(moi)
                     }
                 }
             }
