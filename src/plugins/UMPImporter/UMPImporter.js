@@ -175,7 +175,44 @@ define([
 
         var umpObj = jsonObj.elements["0"];
 
-        for (var e = 0; e < umpObj.elements.length; e++) {
+        // Extract the name
+        UMP.name = umpObj.attributes["name"];
+
+        // Populate the interfaces
+        for (var e = 0; umpObj.elements.length; e++) {
+            if (umpObj.elements[e.toString()].name === 'ProductProcessInformation') {
+                var ppiObj = umpObj.elements[e.toString()];
+
+                // Find the control parameters (inputs)
+                for (var p = 0; p < ppiObj.elements.length; p++) {
+                    if (ppiObj.elements[p.toString()].name === 'ControlParameter') {
+                        var controlParameterObj = ppiObj.elements[p.toString()];
+
+                        for (var c = 0; c < controlParameterObj.elements.length; c++) {
+                            if (controlParameterObj.elements[c.toString()].name === 'Name') {
+                                UMP.interfaces.inputs.push(controlParameterObj.elements[c.toString()].name);
+                            }
+                        }
+                    }
+                }
+
+                // Find the metric of interests (outputs)
+                for (p = 0; p < ppiObj.elements.length; p++) {
+                    if (ppiObj.elements[p.toString()].name === 'MetricOfInterest') {
+                        var moiObj = ppiObj.elements[p.toString()];
+
+                        for (c = 0; c < moiObj.elements.length; c++) {
+                            if (moiObj.elements[c.toString()].name === 'Name') {
+                                UMP.interfaces.outputs.push(moiObj.elements[c.toString()].name);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Populate the MOCAComponents
+        for (e = 0; e < umpObj.elements.length; e++) {
             if (umpObj.elements[e.toString()].name === 'Transformation') {
                 var transformationObj = umpObj.elements[e.toString()];
                 for (var t = 0; t < transformationObj.elements.length; t++) {
