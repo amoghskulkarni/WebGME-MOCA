@@ -190,7 +190,7 @@ define([
 
                         for (var c = 0; c < controlParameterObj.elements.length; c++) {
                             if (controlParameterObj.elements[c.toString()].name === 'Name') {
-                                UMP.interfaces.inputs.push(controlParameterObj.elements[c.toString()].name);
+                                UMP.interfaces.inputs.push(controlParameterObj.elements[c.toString()].elements['0'].text);
                             }
                         }
                     }
@@ -203,7 +203,7 @@ define([
 
                         for (c = 0; c < moiObj.elements.length; c++) {
                             if (moiObj.elements[c.toString()].name === 'Name') {
-                                UMP.interfaces.outputs.push(moiObj.elements[c.toString()].name);
+                                UMP.interfaces.outputs.push(moiObj.elements[c.toString()].elements['0'].text);
                             }
                         }
                     }
