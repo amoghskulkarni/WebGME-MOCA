@@ -176,7 +176,7 @@ define([
         var umpObj = jsonObj.elements["0"];
 
         // Extract the name
-        UMP.name = umpObj.attributes["name"];
+        UMP.name = umpObj.attributes["name"].replace(/ /g, '_');
 
         // Populate the interfaces
         for (var e = 0; e < umpObj.elements.length; e++) {
@@ -194,7 +194,7 @@ define([
 
                         for (var c = 0; c < controlParameterObj.elements.length; c++) {
                             if (controlParameterObj.elements[c.toString()].name === 'Name') {
-                                controlParameter['name'] = controlParameterObj.elements[c.toString()].elements['0'].text;
+                                controlParameter['name'] = controlParameterObj.elements[c.toString()].elements['0'].text.replace(/ /g, '_');
                             }
                             if (controlParameterObj.elements[c.toString()].name === 'Symbol') {
                                 controlParameter['symbol'] = this.parseMathMLEquation(controlParameterObj.elements[c.toString()].elements['0']);
@@ -216,7 +216,7 @@ define([
 
                         for (c = 0; c < moiObj.elements.length; c++) {
                             if (moiObj.elements[c.toString()].name === 'Name') {
-                                moi['name'] = moiObj.elements[c.toString()].elements['0'].text;
+                                moi['name'] = moiObj.elements[c.toString()].elements['0'].text.replace(/ /g, '_');
                             }
                             if (moiObj.elements[c.toString()].name === 'Symbol') {
                                 moi['symbol'] = this.parseMathMLEquation(moiObj.elements[c.toString()].elements['0'])
@@ -259,7 +259,7 @@ define([
                             // Flatten out the tree
                             var flattenedParsedEquationTree = this.flattenTree(parsedEquationTree['inputs']),
                                 MOCAComponent = {
-                                    'name': equationObj.attributes.name,
+                                    'name': equationObj.attributes.name.replace(/ /g, '_'),
                                     'interfaces': {
                                         'output': parsedEquationTree['output'],
                                         'inputs': []
@@ -322,8 +322,6 @@ define([
         var umpObj = self.parseUMPSpec(jsonObj);
 
         for (var i = 0; i < umpObj.MOCAComponents.length; i++) {
-            umpObj.MOCAComponents[i].name = umpObj.MOCAComponents[i].name.replace(/ /g, '_');
-
             var componentObject = self.core.createNode({
                 'parent': componentLibraryNode,
                 'base': self.META['Component']
