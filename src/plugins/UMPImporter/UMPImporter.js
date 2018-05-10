@@ -395,6 +395,18 @@ define([
                         var messageObj = new pluginMessage();
                         messageObj.message = 'Created "' + umpObj.name + '" MOCA Group.';
                         self.result.addMessage(messageObj);
+
+                        // This will save the changes. If you don't want to save;
+                        // exclude self.save and call callback directly from this scope.
+                        self.save('UMPImporter updated model.')
+                            .then(function () {
+                                self.result.setSuccess(true);
+                                callback(null, self.result);
+                            })
+                            .catch(function (err) {
+                                // Result success is false at invocation.
+                                callback(err, self.result);
+                            });
                     }
                 }
             }
