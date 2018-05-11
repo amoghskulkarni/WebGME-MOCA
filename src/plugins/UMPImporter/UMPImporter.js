@@ -163,7 +163,8 @@ define([
     };
 
     UMPImporter.prototype.parseUMPSpec = function(jsonObj) {
-        var UMP = {
+        var self = this,
+            UMP = {
             name: '',
             interfaces: {
                 inputs: [],
@@ -286,7 +287,14 @@ define([
                             UMP.MOCAComponents.push(MOCAComponent);
                             console.log(MOCAComponent);
                         } else {
-                            console.log('WARNING: Couldn\'t parse the mathematical equation for: ' + equationObj.attributes.name)
+                            console.log('WARNING: Couldn\'t parse the mathematical equation for: ' + equationObj.attributes.name);
+
+                            var messageObj = new pluginMessage();
+                            messageObj.message = 'Could not parse the equation for "'
+                                + equationObj.attributes.name.replace(/ /g, '_')
+                                + '" MOCA Component.';
+                            messageObj.severity = 'warning';
+                            self.result.addMessage(messageObj);
                         }
                     }
                 }
@@ -423,9 +431,9 @@ define([
                         }
 
                         // Create the data connections
-                        // for (j = 0; j < umpObj.MOCAComponents.length; j++) {
-                        //
-                        // }
+                        for (j = 0; j < umpObj.MOCAComponents.length; j++) {
+
+                        }
 
                         var messageObj = new pluginMessage();
                         messageObj.message = 'Created "' + umpObj.name + '" MOCA Group.';
