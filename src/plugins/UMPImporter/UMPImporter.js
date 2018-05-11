@@ -420,6 +420,7 @@ define([
                             umpObj.interfaces.outputs[j].nodeObj = outputPortObject;
                         }
 
+                        var compInstances = [];
                         // Create instances of the Components
                         for (j = 0; j < umpObj.MOCAComponents.length; j++) {
                             var compInstanceObject = self.core.createNode({
@@ -428,11 +429,22 @@ define([
                             });
                             self.core.setAttribute(compInstanceObject, 'name', umpObj.MOCAComponents[j].name + '__instance');
                             self.core.setRegistry(compInstanceObject, 'position', {x: 350, y: 70 + (j * 200)});
+
+                            compInstances.push(compInstanceObject);
                         }
 
                         // Create the data connections
-                        for (j = 0; j < umpObj.MOCAComponents.length; j++) {
-
+                        for (j = 0; j < compInstances.length; j++) {
+                            var compInstance = compInstances[j];
+                            self.core.loadChildren(compInstance, function (err1, children1) {
+                                if (err1) {
+                                    callback(err1, self.result);
+                                } else {
+                                    for (var k = 0; k < children1.length; k++) {
+                                        console.log(self.core.getAttribute(children1[k], 'name'));
+                                    }
+                                }
+                            })
                         }
 
                         var messageObj = new pluginMessage();
