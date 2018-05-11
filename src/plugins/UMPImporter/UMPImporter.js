@@ -188,7 +188,8 @@ define([
                     if (ppiObj.elements[p.toString()].name === 'ControlParameter') {
                         var controlParameter = {
                                 'name': "",
-                                'symbol': ""
+                                'symbol': "",
+                                'nodeObj': null
                             },
                             controlParameterObj = ppiObj.elements[p.toString()];
 
@@ -210,7 +211,8 @@ define([
                     if (ppiObj.elements[p.toString()].name === 'MetricOfInterest') {
                         var moi = {
                                 'name': "",
-                                'symbol': ""
+                                'symbol': "",
+                                'nodeObj': null
                             },
                             moiObj = ppiObj.elements[p.toString()];
 
@@ -265,7 +267,11 @@ define([
                                         'inputs': []
                                     },
                                     'outputFunction': mathmlEquationString,
-                                    'nodeObj': null
+                                    'nodeObj': null,
+                                    'interfaceNodeObjs': {
+                                        'output': null,
+                                        'inputs': []
+                                    }
                                 };
                             MOCAComponent.interfaces.inputs = flattenedParsedEquationTree
                                 .filter(function (value) {
@@ -331,6 +337,7 @@ define([
             self.core.setAttribute(componentObject, 'name', umpObj.MOCAComponents[i].name);
             self.core.setRegistry(componentObject, 'position', {x: 70 + (i * 150), y: 70});
 
+            // Save the reference to the object for future
             umpObj.MOCAComponents[i].nodeObj = componentObject;
 
             // Create the output port
@@ -341,6 +348,8 @@ define([
             self.core.setAttribute(outputPortObject, 'name', umpObj.MOCAComponents[i].interfaces.output);
             self.core.setRegistry(outputPortObject, 'position', {x: 700, y: 70});
 
+            umpObj.MOCAComponents[i].interfaceNodeObjs.output = outputPortObject;
+
             // Create input ports
             for (var j = 0; j < umpObj.MOCAComponents[i].interfaces.inputs.length; j++) {
                 var inputPortObject = self.core.createNode({
@@ -349,6 +358,9 @@ define([
                 });
                 self.core.setAttribute(inputPortObject, 'name', umpObj.MOCAComponents[i].interfaces.inputs[j]);
                 self.core.setRegistry(inputPortObject, 'position', {x: 70, y: 70 + (j * 100)});
+
+                // Save the reference to the object for future
+                umpObj.MOCAComponents[i].interfaceNodeObjs.inputs.push(inputPortObject);
             }
 
             var messageObj = new pluginMessage();
@@ -367,10 +379,9 @@ define([
                 for (i = 0; i < children.length; i++) {
                     var child = children[i];
                     if (self.core.getAttribute(child, 'name') === 'GroupLibrary') {
-                        var groupLibraryNode = child;
                         // Create a Group with the name of the process
                         var groupObject = self.core.createNode({
-                            'parent': groupLibraryNode,
+                            'parent': child,
                             'base': self.META['Group']
                         });
                         self.core.setAttribute(groupObject, 'name', umpObj.name);
@@ -383,6 +394,9 @@ define([
                             });
                             self.core.setAttribute(inputPortObject, 'name', umpObj.interfaces.inputs[j].symbol);
                             self.core.setRegistry(inputPortObject, 'position', {x: 70, y: 70 + (j * 100)});
+
+                            // Save the reference to the object for future
+                            umpObj.interfaces.inputs[j].nodeObj = inputPortObject;
                         }
 
                         // Create output ports
@@ -393,6 +407,9 @@ define([
                             });
                             self.core.setAttribute(outputPortObject, 'name', umpObj.interfaces.outputs[j].symbol);
                             self.core.setRegistry(outputPortObject, 'position', {x: 700, y: 70 + (j * 100)});
+
+                            // Save the reference to the object for future
+                            umpObj.interfaces.outputs[j].nodeObj = outputPortObject;
                         }
 
                         // Create instances of the Components
@@ -401,9 +418,14 @@ define([
                                 'parent': groupObject,
                                 'base': umpObj.MOCAComponents[j].nodeObj
                             });
-                            self.core.setAttribute(compInstanceObject, 'name', umpObj.MOCAComponents[j].name + '_instance');
-                            self.core.setRegistry(compInstanceObject, 'position', {x: 350, y: 70 + (j * 100)});
+                            self.core.setAttribute(compInstanceObject, 'name', umpObj.MOCAComponents[j].name + '__instance');
+                            self.core.setRegistry(compInstanceObject, 'position', {x: 350, y: 70 + (j * 200)});
                         }
+
+                        // Create the data connections
+                        // for (j = 0; j < umpObj.MOCAComponents.length; j++) {
+                        //
+                        // }
 
                         var messageObj = new pluginMessage();
                         messageObj.message = 'Created "' + umpObj.name + '" MOCA Group.';
