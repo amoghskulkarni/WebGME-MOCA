@@ -264,7 +264,8 @@ define([
                                         'output': parsedEquationTree['output'],
                                         'inputs': []
                                     },
-                                    'outputFunction': mathmlEquationString
+                                    'outputFunction': mathmlEquationString,
+                                    'nodeObj': null
                                 };
                             MOCAComponent.interfaces.inputs = flattenedParsedEquationTree
                                 .filter(function (value) {
@@ -330,6 +331,8 @@ define([
             self.core.setAttribute(componentObject, 'name', umpObj.MOCAComponents[i].name);
             self.core.setRegistry(componentObject, 'position', {x: 70 + (i * 150), y: 70});
 
+            umpObj.MOCAComponents[i].nodeObj = componentObject;
+
             // Create the output port
             var outputPortObject = self.core.createNode({
                 'parent': componentObject,
@@ -390,6 +393,16 @@ define([
                             });
                             self.core.setAttribute(outputPortObject, 'name', umpObj.interfaces.outputs[j].symbol);
                             self.core.setRegistry(outputPortObject, 'position', {x: 700, y: 70 + (j * 100)});
+                        }
+
+                        // Create instances of the Components
+                        for (j = 0; j < umpObj.MOCAComponents.length; j++) {
+                            var compInstanceObject = self.core.createNode({
+                                'parent': groupObject,
+                                'base': umpObj.MOCAComponents[j].nodeObj
+                            });
+                            self.core.setAttribute(compInstanceObject, 'name', umpObj.MOCAComponents[j].name + '_instance');
+                            self.core.setRegistry(compInstanceObject, 'position', {x: 350, y: 70 + (j * 100)});
                         }
 
                         var messageObj = new pluginMessage();
