@@ -477,12 +477,12 @@ define([
 
                                     for (var l = 0; l < compInstancesPorts.length; l++) {
                                         if (compInstancesPorts[l].type === 'Unknown'
-                                            && compInstancesPorts[l].parentName === route.srcParent
+                                            && compInstancesPorts[l].parentName === route.srcParent + '__instance'
                                             && compInstancesPorts[l].name === route.src) {
                                             self.core.setPointer(dataConnObj, 'src', compInstancesPorts[l].obj);
                                         }
                                         if (compInstancesPorts[l].type === 'Parameter'
-                                            && compInstancesPorts[l].parentName === route.dstParent
+                                            && compInstancesPorts[l].parentName === route.dstParent + '__instance'
                                             && compInstancesPorts[l].name === route.dst) {
                                             self.core.setPointer(dataConnObj, 'dst', compInstancesPorts[l].obj);
                                             compInstancesPorts[l].splice(l, 1);
