@@ -346,7 +346,6 @@ define([
                 if (UMP.interfaces.outputs[e].symbol === UMP.MOCAComponents[f].interfaces.output) {
                     UMP.interfaceConns.push({
                         'type': 'output',
-                        'srcObj': UMP.interfaces.outputs[e].nodeObj,
                         'dstParent': UMP.MOCAComponents[f].name,
                         'dst': UMP.MOCAComponents[f].interfaces.output
                     });
@@ -357,12 +356,11 @@ define([
 
         for (e = 0; e < UMP.interfaces.inputs.length; e++) {
             for (f = 0; f < UMP.MOCAComponents.length; f++) {
-                for (g = 0; g < UMP.MOCAComponents[f].interfaces.inputs; g++) {
+                for (g = 0; g < UMP.MOCAComponents[f].interfaces.inputs.length; g++) {
                     if (UMP.interfaces.inputs[e].symbol === UMP.MOCAComponents[f].interfaces.inputs[g]
                         && !matchedInPromotes.includes(UMP.interfaces.inputs[e].symbol)) {
                         UMP.interfaceConns.push({
                             'type': 'input',
-                            'srcObj': UMP.interfaces.inputs[e].nodeObj,
                             'dstParent': UMP.MOCAComponents[f].name,
                             'dst': UMP.MOCAComponents[f].interfaces.inputs[g]
                         });
@@ -550,11 +548,31 @@ define([
                                             'base': self.META['PrToPortAssoc']
                                         });
 
-                                    for (l = 0; l < compInstancesPorts.length; l++) {
-                                        if (compInstancesPorts[l].parentName === interfaceConn.dstParent + '__instance'
-                                            && compInstancesPorts[l].name === interfaceConn.dst) {
-                                            self.core.setPointer(interfaceConnObj, 'src', interfaceConn.srcObj);
-                                            self.core.setPointer(interfaceConnObj, 'dst', compInstancesPorts[l].obj)
+                                    if (interfaceConn.type === 'input') {
+                                        for (l = 0; l < umpObj.interfaces.inputs.length; l++) {
+                                            if (umpObj.interfaces.inputs[l].symbol === interfaceConn.dst) {
+                                                for (var m = 0; m < compInstancesPorts.length; m++) {
+                                                    if (compInstancesPorts[m].parentName === interfaceConn.dstParent + '__instance'
+                                                        && compInstancesPorts[m].name === interfaceConn.dst) {
+                                                        self.core.setPointer(interfaceConnObj, 'src', umpObj.interfaces.inputs[l].nodeObj);
+                                                        self.core.setPointer(interfaceConnObj, 'dst', compInstancesPorts[l].obj)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (interfaceConn.type === 'output') {
+                                        for (l = 0; l < umpObj.interfaces.outputs.length; l++) {
+                                            if (umpObj.interfaces.outputs[l].symbol === interfaceConn.dst) {
+                                                for (m = 0; m < compInstancesPorts.length; m++) {
+                                                    if (compInstancesPorts[m].parentName === interfaceConn.dstParent + '__instance'
+                                                        && compInstancesPorts[m].name === interfaceConn.dst) {
+                                                        self.core.setPointer(interfaceConnObj, 'src', umpObj.interfaces.outputs[l].nodeObj);
+                                                        self.core.setPointer(interfaceConnObj, 'dst', compInstancesPorts[l].obj)
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
