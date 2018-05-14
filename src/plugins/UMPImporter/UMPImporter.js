@@ -475,7 +475,7 @@ define([
                                             'base': self.META['DataConn']
                                         });
 
-                                    for (var l = compInstancesPorts.length - 1; l >= 0 ; l--) {
+                                    for (var l = 0; l < compInstancesPorts.length; l++) {
                                         if (compInstancesPorts[l].type === 'Unknown'
                                             && compInstancesPorts[l].parentName === route.srcParent + '__instance'
                                             && compInstancesPorts[l].name === route.src) {
@@ -485,7 +485,6 @@ define([
                                             && compInstancesPorts[l].parentName === route.dstParent + '__instance'
                                             && compInstancesPorts[l].name === route.dst) {
                                             self.core.setPointer(dataConnObj, 'dst', compInstancesPorts[l].obj);
-                                            compInstancesPorts[l].splice(l, 1);
                                         }
                                     }
                                 }
