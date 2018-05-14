@@ -301,6 +301,22 @@ define([
             }
         }
 
+        // Populate the routes
+        for (e = 0; e < UMP.MOCAComponents.length; e++) {
+            for (var f = 0; f < UMP.MOCAComponents.length; f++) {
+                for (var g = 0; g < UMP.MOCAComponents[f].interfaces.inputs.length; g++) {
+                    if (UMP.MOCAComponents[e].interfaces.output === UMP.MOCAComponents[f].interfaces.inputs[g]) {
+                        UMP.routes.push({
+                            'srcParent': UMP.MOCAComponents[e].name,
+                            'src': UMP.MOCAComponents[e].interfaces.output,
+                            'dstParent': UMP.MOCAComponents[f].name,
+                            'dst': UMP.MOCAComponents[f].interfaces.inputs[g]
+                        })
+                    }
+                }
+            }
+        }
+
         return UMP;
     };
 
@@ -316,8 +332,7 @@ define([
     UMPImporter.prototype.main = function (callback) {
         // Use self to access core, project, result, logger etc from PluginBase.
         // These are all instantiated at this point.
-        var self = this,
-            MOCAComponents = [];
+        var self = this;
 
         // Using the logger.
         // self.logger.debug('This is a debug message.');
@@ -433,18 +448,28 @@ define([
                             compInstances.push(compInstanceObject);
                         }
 
+                        var compInstancesPortsPromises = [],
+                            compInstancesPorts = [];
                         // Create the data connections
                         for (j = 0; j < compInstances.length; j++) {
-                            var compInstance = compInstances[j];
-                            self.core.loadChildren(compInstance, function (err1, children1) {
-                                if (err1) {
-                                    callback(err1, self.result);
-                                } else {
-                                    for (var k = 0; k < children1.length; k++) {
-                                        console.log(self.core.getAttribute(children1[k], 'name'));
+                            compInstancesPortsPromises.push(self.core.loadChildren(compInstances[j]));
+                        }
+
+                        Q.all(compInstancesPortsPromises)
+                            .then(function (compInstancePorts) {
+                                for (j = 0; j < compInstancePorts.length; j++) {
+                                    for (var k = 0; k < compInstancePorts[j].length; k++) {
+                                        compInstancesPorts.push({
+                                            'type': self.core.getAttribute(self.core.getMetaType(compInstancePorts[j][k]), 'name'),
+                                            'parent': compInstances[j],
+                                            'name': self.core.getAttribute(compInstances[j], 'name')
+                                        })
                                     }
                                 }
-                            })
+                            });
+
+                        for (j = 0; j < compInstancesPorts.length; j++) {
+                            console.log(compInstancesPorts[j]);
                         }
 
                         var messageObj = new pluginMessage();
