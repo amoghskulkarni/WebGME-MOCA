@@ -460,35 +460,52 @@ define([
                                 for (j = 0; j < compInstancePorts.length; j++) {
                                     for (var k = 0; k < compInstancePorts[j].length; k++) {
                                         compInstancesPorts.push({
+                                            'type': self.core.getAttribute(self.core.getMetaType(compInstancePorts[j][k]), 'name'),
                                             'parentName': self.core.getAttribute(compInstances[j], 'name'),
                                             'name': self.core.getAttribute(compInstancePorts[j][k], 'name'),
                                             'obj': compInstancePorts[j][k]
                                         })
                                     }
 
-                                    console.log(umpObj);
+                                    for (j = 0; j < umpObj.routes.length; j++) {
+                                        var route = umpObj.routes[j],
+                                            dataConnObj = self.createNode({
+                                                'parent': groupObject,
+                                                'base': self.META['DataConn']
+                                            });
 
-                                    for (j = 0; j < compInstancesPorts.length; j++) {
-                                        console.log(compInstancesPorts[j]);
+                                        for (k = 0; k < compInstancePorts.length; k++) {
+                                            if (compInstancePorts[k].type === 'Unknown'
+                                                && compInstancePorts[k].parentName === route.srcParent
+                                                && compInstancePorts[k].name === route.src) {
+                                                self.core.setPointer(dataConnObj, 'src', compInstancePorts[k]);
+                                            }
+                                            if (compInstancePorts[k].type === 'Parameter'
+                                                && compInstancePorts[k].parentName === route.dstParent
+                                                && compInstancePorts[k].name === route.dst) {
+                                                self.core.setPointer(dataConnObj, 'dst', compInstancePorts[k]);
+                                                compInstancePorts.splice(k, 1);
+                                            }
+                                        }
                                     }
                                 }
+
+                                // This will save the changes. If you don't want to save;
+                                // exclude self.save and call callback directly from this scope.
+                                self.save('UMPImporter updated model.')
+                                    .then(function () {
+                                        self.result.setSuccess(true);
+                                        callback(null, self.result);
+                                    })
+                                    .catch(function (err) {
+                                        // Result success is false at invocation.
+                                        callback(err, self.result);
+                                    });
                             });
 
                         var messageObj = new pluginMessage();
                         messageObj.message = 'Created "' + umpObj.name + '" MOCA Group.';
                         self.result.addMessage(messageObj);
-
-                        // This will save the changes. If you don't want to save;
-                        // exclude self.save and call callback directly from this scope.
-                        self.save('UMPImporter updated model.')
-                            .then(function () {
-                                self.result.setSuccess(true);
-                                callback(null, self.result);
-                            })
-                            .catch(function (err) {
-                                // Result success is false at invocation.
-                                callback(err, self.result);
-                            });
                     }
                 }
             }
