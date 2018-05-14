@@ -502,8 +502,7 @@ define([
                                             && compInstancesPorts[l].name === route.src) {
                                             self.core.setPointer(dataConnObj, 'src', compInstancesPorts[l].obj);
                                         }
-                                        if (compInstancesPorts[l].type === 'Parameter'
-                                            && compInstancesPorts[l].parentName === route.dstParent + '__instance'
+                                        if (compInstancesPorts[l].parentName === route.dstParent + '__instance'
                                             && compInstancesPorts[l].name === route.dst) {
                                             self.core.setPointer(dataConnObj, 'dst', compInstancesPorts[l].obj);
                                         }
