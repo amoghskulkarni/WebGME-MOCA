@@ -465,12 +465,12 @@ define([
                                             'name': self.core.getAttribute(compInstances[j], 'name')
                                         })
                                     }
+
+                                    for (j = 0; j < compInstancesPorts.length; j++) {
+                                        console.log(compInstancesPorts[j]);
+                                    }
                                 }
                             });
-
-                        for (j = 0; j < compInstancesPorts.length; j++) {
-                            console.log(compInstancesPorts[j]);
-                        }
 
                         var messageObj = new pluginMessage();
                         messageObj.message = 'Created "' + umpObj.name + '" MOCA Group.';
