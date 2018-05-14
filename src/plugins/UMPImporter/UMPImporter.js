@@ -241,13 +241,13 @@ define([
                         var equationObj = transformationObj.elements[t.toString()],
                             equationName = equationObj.attributes.name;
 
-                        console.log(equationName);
+                        // console.log(equationName);
 
                         var mathmlEquationObj = equationObj.elements["0"].elements["0"],
                             mathmlEquationString = this.parseMathMLEquation(mathmlEquationObj),
                             parsedEquationTree = [];
 
-                        console.log(mathmlEquationString);
+                        // console.log(mathmlEquationString);
 
                         try {
                             parsedEquationTree = this.equationParser.parse(mathmlEquationString);
@@ -285,7 +285,7 @@ define([
                                 });
 
                             UMP.MOCAComponents.push(MOCAComponent);
-                            console.log(MOCAComponent);
+                            // console.log(MOCAComponent);
                         } else {
                             console.log('WARNING: Couldn\'t parse the mathematical equation for: ' + equationObj.attributes.name);
 
@@ -460,9 +460,9 @@ define([
                                 for (j = 0; j < compInstancePorts.length; j++) {
                                     for (var k = 0; k < compInstancePorts[j].length; k++) {
                                         compInstancesPorts.push({
-                                            'type': self.core.getAttribute(self.core.getMetaType(compInstancePorts[j][k]), 'name'),
-                                            'parent': compInstances[j],
-                                            'name': self.core.getAttribute(compInstances[j], 'name')
+                                            'parentName': self.core.getAttribute(compInstances[j], 'name'),
+                                            'name': self.core.getAttribute(compInstancePorts[j][k], 'name'),
+                                            'obj': compInstancePorts[j][k]
                                         })
                                     }
 
