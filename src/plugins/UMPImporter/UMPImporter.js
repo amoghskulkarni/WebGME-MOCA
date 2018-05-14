@@ -475,7 +475,7 @@ define([
                                             'base': self.META['DataConn']
                                         });
 
-                                    for (var l = 0; l < compInstancesPorts.length; l++) {
+                                    for (var l = compInstancesPorts.length - 1; l >= 0 ; l--) {
                                         if (compInstancesPorts[l].type === 'Unknown'
                                             && compInstancesPorts[l].parentName === route.srcParent + '__instance'
                                             && compInstancesPorts[l].name === route.src) {
