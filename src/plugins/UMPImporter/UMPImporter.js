@@ -170,8 +170,9 @@ define([
                 inputs: [],
                 outputs: []
             },
-            routes: [],
-            MOCAComponents: []
+            dataConns: [],
+            MOCAComponents: [],
+            interfaceConns: []
         };
 
         var umpObj = jsonObj.elements["0"];
@@ -301,12 +302,12 @@ define([
             }
         }
 
-        // Populate the routes
+        // Populate the dataConns
         for (e = 0; e < UMP.MOCAComponents.length; e++) {
             for (var f = 0; f < UMP.MOCAComponents.length; f++) {
                 for (var g = 0; g < UMP.MOCAComponents[f].interfaces.inputs.length; g++) {
                     if (UMP.MOCAComponents[e].interfaces.output === UMP.MOCAComponents[f].interfaces.inputs[g]) {
-                        UMP.routes.push({
+                        UMP.dataConns.push({
                             'srcParent': UMP.MOCAComponents[e].name,
                             'src': UMP.MOCAComponents[e].interfaces.output,
                             'dstParent': UMP.MOCAComponents[f].name,
@@ -325,7 +326,7 @@ define([
                         if (UMP.MOCAComponents[e].interfaces.inputs[f] === UMP.MOCAComponents[g].interfaces.inputs[h]
                             && e !== g
                             && !matchedPorts.includes(UMP.MOCAComponents[e].interfaces.inputs[f])) {
-                            UMP.routes.push({
+                            UMP.dataConns.push({
                                 'srcParent': UMP.MOCAComponents[e].name,
                                 'src': UMP.MOCAComponents[e].interfaces.inputs[f],
                                 'dstParent': UMP.MOCAComponents[g].name,
@@ -335,6 +336,39 @@ define([
                     }
                 }
                 matchedPorts.push(UMP.MOCAComponents[e].interfaces.inputs[f])
+            }
+        }
+
+        // Populate the interfaceConns
+        var matchedInPromotes = [];
+        for (e = 0; e < UMP.interfaces.outputs.length; e++) {
+            for (f = 0; f < UMP.MOCAComponents.length; f++) {
+                if (UMP.interfaces.outputs[e].symbol === UMP.MOCAComponents[f].interfaces.output) {
+                    UMP.interfaceConns.push({
+                        'type': 'output',
+                        'srcObj': UMP.interfaces.outputs[e].nodeObj,
+                        'dstParent': UMP.MOCAComponents[f].name,
+                        'dst': UMP.MOCAComponents[f].interfaces.output
+                    });
+                    break;
+                }
+            }
+        }
+
+        for (e = 0; e < UMP.interfaces.inputs.length; e++) {
+            for (f = 0; f < UMP.MOCAComponents.length; f++) {
+                for (g = 0; g < UMP.MOCAComponents[f].interfaces.inputs; g++) {
+                    if (UMP.interfaces.inputs[e].symbol === UMP.MOCAComponents[f].interfaces.inputs[g]
+                        && !matchedInPromotes.includes(UMP.interfaces.inputs[e].symbol)) {
+                        UMP.interfaceConns.push({
+                            'type': 'input',
+                            'srcObj': UMP.interfaces.inputs[e].nodeObj,
+                            'dstParent': UMP.MOCAComponents[f].name,
+                            'dst': UMP.MOCAComponents[f].interfaces.inputs[g]
+                        });
+                        matchedInPromotes.push(UMP.interfaces.inputs[e].symbol)
+                    }
+                }
             }
         }
 
@@ -477,20 +511,20 @@ define([
                         }
 
                         Q.all(compInstancesPortsPromises)
-                            .then(function (compInstancePorts) {
-                                for (j = 0; j < compInstancePorts.length; j++) {
-                                    for (var k = 0; k < compInstancePorts[j].length; k++) {
+                            .then(function (compInstPortsObjects) {
+                                for (j = 0; j < compInstPortsObjects.length; j++) {
+                                    for (var k = 0; k < compInstPortsObjects[j].length; k++) {
                                         compInstancesPorts.push({
-                                            'type': self.core.getAttribute(self.core.getMetaType(compInstancePorts[j][k]), 'name'),
+                                            'type': self.core.getAttribute(self.core.getMetaType(compInstPortsObjects[j][k]), 'name'),
                                             'parentName': self.core.getAttribute(compInstances[j], 'name'),
-                                            'name': self.core.getAttribute(compInstancePorts[j][k], 'name'),
-                                            'obj': compInstancePorts[j][k]
+                                            'name': self.core.getAttribute(compInstPortsObjects[j][k], 'name'),
+                                            'obj': compInstPortsObjects[j][k]
                                         })
                                     }
                                 }
 
-                                for (k = 0; k < umpObj.routes.length; k++) {
-                                    var route = umpObj.routes[k],
+                                for (k = 0; k < umpObj.dataConns.length; k++) {
+                                    var route = umpObj.dataConns[k],
                                         dataConnObj = self.core.createNode({
                                             'parent': groupObject,
                                             'base': self.META['DataConn']
@@ -505,6 +539,22 @@ define([
                                             && compInstancesPorts[l].parentName === route.dstParent + '__instance'
                                             && compInstancesPorts[l].name === route.dst) {
                                             self.core.setPointer(dataConnObj, 'dst', compInstancesPorts[l].obj);
+                                        }
+                                    }
+                                }
+
+                                for (k = 0; k < umpObj.interfaceConns.length; k++) {
+                                    var interfaceConn = umpObj.interfaceConns[k],
+                                        interfaceConnObj = self.core.createNode({
+                                            'parent': groupObject,
+                                            'base': self.META['PrToPortAssoc']
+                                        });
+
+                                    for (l = 0; l < compInstancesPorts.length; l++) {
+                                        if (compInstancesPorts[l].parentName === interfaceConn.dstParent + '__instance'
+                                            && compInstancesPorts[l].name === interfaceConn.dst) {
+                                            self.core.setPointer(interfaceConnObj, 'src', interfaceConn.srcObj);
+                                            self.core.setPointer(interfaceConnObj, 'dst', compInstancesPorts[l].obj)
                                         }
                                     }
                                 }
