@@ -475,16 +475,18 @@ define([
                                             });
 
                                         for (k = 0; k < compInstancePorts.length; k++) {
-                                            if (compInstancePorts[k].type === 'Unknown'
-                                                && compInstancePorts[k].parentName === route.srcParent
-                                                && compInstancePorts[k].name === route.src) {
-                                                self.core.setPointer(dataConnObj, 'src', compInstancePorts[k]);
-                                            }
-                                            if (compInstancePorts[k].type === 'Parameter'
-                                                && compInstancePorts[k].parentName === route.dstParent
-                                                && compInstancePorts[k].name === route.dst) {
-                                                self.core.setPointer(dataConnObj, 'dst', compInstancePorts[k]);
-                                                compInstancePorts.splice(k, 1);
+                                            for (var l = 0; l < compInstancePorts[k].length; l++) {
+                                                if (compInstancePorts[k][l].type === 'Unknown'
+                                                    && compInstancePorts[k][l].parentName === route.srcParent
+                                                    && compInstancePorts[k][l].name === route.src) {
+                                                    self.core.setPointer(dataConnObj, 'src', compInstancePorts[k][l]);
+                                                }
+                                                if (compInstancePorts[k][l].type === 'Parameter'
+                                                    && compInstancePorts[k][l].parentName === route.dstParent
+                                                    && compInstancePorts[k][l].name === route.dst) {
+                                                    self.core.setPointer(dataConnObj, 'dst', compInstancePorts[k][l]);
+                                                    compInstancePorts[k].splice(l, 1);
+                                                }
                                             }
                                         }
                                     }
