@@ -555,7 +555,7 @@ define([
                                                     if (compInstancesPorts[m].parentName === interfaceConn.dstParent + '__instance'
                                                         && compInstancesPorts[m].name === interfaceConn.dst) {
                                                         self.core.setPointer(interfaceConnObj, 'src', umpObj.interfaces.inputs[l].nodeObj);
-                                                        self.core.setPointer(interfaceConnObj, 'dst', compInstancesPorts[l].obj)
+                                                        self.core.setPointer(interfaceConnObj, 'dst', compInstancesPorts[m].obj)
                                                     }
                                                 }
                                             }
@@ -569,7 +569,7 @@ define([
                                                     if (compInstancesPorts[m].parentName === interfaceConn.dstParent + '__instance'
                                                         && compInstancesPorts[m].name === interfaceConn.dst) {
                                                         self.core.setPointer(interfaceConnObj, 'src', umpObj.interfaces.outputs[l].nodeObj);
-                                                        self.core.setPointer(interfaceConnObj, 'dst', compInstancesPorts[l].obj)
+                                                        self.core.setPointer(interfaceConnObj, 'dst', compInstancesPorts[m].obj)
                                                     }
                                                 }
                                             }
