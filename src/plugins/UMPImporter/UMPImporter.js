@@ -317,6 +317,27 @@ define([
             }
         }
 
+        var matchedPorts = [];
+        for (e = 0; e < UMP.MOCAComponents.length; e++) {
+            for (f = 0; f < UMP.MOCAComponents.length; f++) {
+                for (g = 0; g < UMP.MOCAComponents[e].interfaces.inputs.length; g++) {
+                    for (var h = 0; h < UMP.MOCAComponents[f].interfaces.inputs.length; h++) {
+                        if (UMP.MOCAComponents[e].interfaces.inputs[g] === UMP.MOCAComponents[f].interfaces.inputs[h]
+                            && e !== f
+                            && !matchedPorts.includes(UMP.MOCAComponents[e].interfaces.inputs[g])) {
+                            UMP.routes.push({
+                                'srcParent': UMP.MOCAComponents[e].name,
+                                'src': UMP.MOCAComponents[e].interfaces.inputs[g],
+                                'dstParent': UMP.MOCAComponents[f].name,
+                                'dst': UMP.MOCAComponents[f].interfaces.inputs[h]
+                            });
+                            matchedPorts.push(UMP.MOCAComponents[e].interfaces.inputs[g])
+                        }
+                    }
+                }
+            }
+        }
+
         return UMP;
     };
 
