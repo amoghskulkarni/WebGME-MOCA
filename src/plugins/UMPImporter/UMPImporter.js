@@ -467,25 +467,25 @@ define([
                                         })
                                     }
 
-                                    for (j = 0; j < umpObj.routes.length; j++) {
+                                    for (k = 0; k < umpObj.routes.length; k++) {
                                         var route = umpObj.routes[j],
                                             dataConnObj = self.core.createNode({
                                                 'parent': groupObject,
                                                 'base': self.META['DataConn']
                                             });
 
-                                        for (k = 0; k < compInstancePorts.length; k++) {
-                                            for (var l = 0; l < compInstancePorts[k].length; l++) {
-                                                if (compInstancePorts[k][l].type === 'Unknown'
-                                                    && compInstancePorts[k][l].parentName === route.srcParent
-                                                    && compInstancePorts[k][l].name === route.src) {
-                                                    self.core.setPointer(dataConnObj, 'src', compInstancePorts[k][l]);
+                                        for (var l = 0; l < compInstancePorts.length; l++) {
+                                            for (var m = 0; m < compInstancePorts[l].length; m++) {
+                                                if (compInstancePorts[l][m].type === 'Unknown'
+                                                    && compInstancePorts[l][m].parentName === route.srcParent
+                                                    && compInstancePorts[l][m].name === route.src) {
+                                                    self.core.setPointer(dataConnObj, 'src', compInstancePorts[l][m]);
                                                 }
-                                                if (compInstancePorts[k][l].type === 'Parameter'
-                                                    && compInstancePorts[k][l].parentName === route.dstParent
-                                                    && compInstancePorts[k][l].name === route.dst) {
-                                                    self.core.setPointer(dataConnObj, 'dst', compInstancePorts[k][l]);
-                                                    compInstancePorts[k].splice(l, 1);
+                                                if (compInstancePorts[l][m].type === 'Parameter'
+                                                    && compInstancePorts[l][m].parentName === route.dstParent
+                                                    && compInstancePorts[l][m].name === route.dst) {
+                                                    self.core.setPointer(dataConnObj, 'dst', compInstancePorts[l][m]);
+                                                    compInstancePorts[l].splice(m, 1);
                                                 }
                                             }
                                         }
