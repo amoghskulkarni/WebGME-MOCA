@@ -466,6 +466,8 @@ define([
                                         })
                                     }
 
+                                    console.log(umpObj);
+
                                     for (j = 0; j < compInstancesPorts.length; j++) {
                                         console.log(compInstancesPorts[j]);
                                     }
