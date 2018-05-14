@@ -468,7 +468,7 @@ define([
                                     }
 
                                     for (k = 0; k < umpObj.routes.length; k++) {
-                                        var route = umpObj.routes[j],
+                                        var route = umpObj.routes[k],
                                             dataConnObj = self.core.createNode({
                                                 'parent': groupObject,
                                                 'base': self.META['DataConn']
