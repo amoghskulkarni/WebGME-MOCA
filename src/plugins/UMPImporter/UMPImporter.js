@@ -636,7 +636,7 @@ define([
                                                 // Create the design variables
                                                 for (k = 0; k < inPromoteObjs.length; k++) {
                                                     for (l = 0; l < umpObj.interfaces.inputs.length; l++) {
-                                                        if (inPromoteObjs[k].name === self.core.getAttribute(umpObj.interfaces.inputs[l].nodeObj, 'name')) {
+                                                        if (self.core.getAttribute(inPromoteObjs[k], 'name') === umpObj.interfaces.inputs[l].symbol) {
                                                             var designVariableObj = self.core.createNode({
                                                                 'parent': problemObject,
                                                                 'base': self.META['DesignVariable']
