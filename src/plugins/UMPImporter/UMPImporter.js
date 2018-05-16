@@ -642,7 +642,7 @@ define([
                                                                 'base': self.META['DesignVariable']
                                                             });
                                                             self.core.setAttribute(designVariableObj, 'name', umpObj.interfaces.inputs[l].name);
-                                                            if (umpObj.interfaces.inputs[l].boundEquation.upper !== null) {
+                                                            if (umpObj.interfaces.inputs[l].boundEquation.higher !== null) {
                                                                 self.core.setAttribute(designVariableObj, 'Upper', umpObj.interfaces.inputs[l].boundEquation.higher);
                                                             }
                                                             if (umpObj.interfaces.inputs[l].boundEquation.lower !== null) {
