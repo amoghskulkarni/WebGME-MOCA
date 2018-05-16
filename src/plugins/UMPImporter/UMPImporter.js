@@ -641,12 +641,12 @@ define([
                                                                 'parent': problemObject,
                                                                 'base': self.META['DesignVariable']
                                                             });
-                                                            self.core.setAttribute(designVariableObj, 'name', inPromoteObjs[k].name);
-                                                            if (inPromoteObjs[k].boundEquation.upper !== null) {
-                                                                self.core.setAttribute(designVariableObj, 'Upper', inPromoteObjs[k].boundEquation.upper);
+                                                            self.core.setAttribute(designVariableObj, 'name', umpObj.interfaces.inputs[l].name);
+                                                            if (umpObj.interfaces.inputs[l].boundEquation.upper !== null) {
+                                                                self.core.setAttribute(designVariableObj, 'Upper', umpObj.interfaces.inputs[l].boundEquation.upper);
                                                             }
-                                                            if (inPromoteObjs[k].boundEquation.lower !== null) {
-                                                                self.core.setAttribute(designVariableObj, 'Lower', inPromoteObjs[k].boundEquation.lower);
+                                                            if (umpObj.interfaces.inputs[l].boundEquation.lower !== null) {
+                                                                self.core.setAttribute(designVariableObj, 'Lower', umpObj.interfaces.inputs[l].boundEquation.lower);
                                                             }
                                                             self.core.setRegistry(designVariableObj, 'position', {x: 100, y: 70 + k * 150});
 
