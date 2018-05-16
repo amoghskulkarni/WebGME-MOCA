@@ -655,7 +655,7 @@ define([
                                                                 'base': self.META['DesVarToInConn']
                                                             });
                                                             self.core.setPointer(designVariableConnObj, 'src', designVariableObj);
-                                                            self.core.setPointer(designVariableConnObj, 'dst', umpObj.interfaces.inputs[l].nodeObj);
+                                                            self.core.setPointer(designVariableConnObj, 'dst', inPromoteObjs[k]);
                                                         }
                                                     }
                                                 }
