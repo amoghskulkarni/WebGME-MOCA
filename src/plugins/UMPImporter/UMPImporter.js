@@ -615,20 +615,66 @@ define([
                                             'base': groupObject
                                         });
                                         self.core.setAttribute(groupInstanceObject, 'name', umpObj.name + '__instance');
+
+                                        // Create the design variables and constraints using the inequalities
+                                        self.core.loadChildren(groupInstanceObject, function (err1, children1) {
+                                            if (err1) {
+                                                callback(err1, self.result);
+                                            } else {
+                                                var inPromoteObjs = [],
+                                                    outPromoteObjs = [];
+                                                for (k = 0; k < children1.length; k++) {
+                                                    var child1 = children1[k];
+
+                                                    if (self.core.getAttribute(self.core.getMetaType(child1), 'name') === 'InPromote') {
+                                                        inPromoteObjs.push(child1);
+                                                    } else if (self.core.getAttribute(self.core.getMetaType(child1), 'name') === 'OutPromote') {
+                                                        outPromoteObjs.push(child1);
+                                                    }
+                                                }
+
+                                                // Create the design variables
+                                                for (k = 0; k < inPromoteObjs.length; k++) {
+                                                    for (l = 0; l < umpObj.interfaces.inputs.length; l++) {
+                                                        if (inPromoteObjs[k].name === self.core.getAttribute(umpObj.interfaces.inputs[l], 'name')) {
+                                                            var designVariableObj = self.core.createNode({
+                                                                'parent': problemObject,
+                                                                'base': self.META['DesignVariable']
+                                                            });
+                                                            self.core.setAttribute(designVariableObj, 'name', inPromoteObjs[k].name);
+                                                            if (inPromoteObjs[k].boundEquation.upper !== null) {
+                                                                self.core.setAttribute(designVariableObj, 'Upper', inPromoteObjs[k].boundEquation.upper);
+                                                            }
+                                                            if (inPromoteObjs[k].boundEquation.lower !== null) {
+                                                                self.core.setAttribute(designVariableObj, 'Lower', inPromoteObjs[k].boundEquation.lower);
+                                                            }
+                                                            self.core.setRegistry(designVariableObj, 'position', {x: 100, y: 70 + k * 150});
+
+                                                            var designVariableConnObj = self.core.createNode({
+                                                                'parent': problemObject,
+                                                                'base': self.META['DesVarToInConn']
+                                                            });
+                                                            self.core.setPointer(designVariableConnObj, 'src', designVariableObj);
+                                                            self.core.setPointer(designVariableConnObj, 'dst', umpObj.interfaces.inputs[l].nodeObj);
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            // This will save the changes. If you don't want to save;
+                                            // exclude self.save and call callback directly from this scope.
+                                            self.save('UMPImporter updated model.')
+                                                .then(function () {
+                                                    self.result.setSuccess(true);
+                                                    callback(null, self.result);
+                                                })
+                                                .catch(function (err) {
+                                                    // Result success is false at invocation.
+                                                    callback(err, self.result);
+                                                });
+                                        });
                                     }
                                 }
-
-                                // This will save the changes. If you don't want to save;
-                                // exclude self.save and call callback directly from this scope.
-                                self.save('UMPImporter updated model.')
-                                    .then(function () {
-                                        self.result.setSuccess(true);
-                                        callback(null, self.result);
-                                    })
-                                    .catch(function (err) {
-                                        // Result success is false at invocation.
-                                        callback(err, self.result);
-                                    });
                             });
 
                         var messageObj = new pluginMessage();
