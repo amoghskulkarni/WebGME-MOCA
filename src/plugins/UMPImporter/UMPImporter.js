@@ -660,6 +660,35 @@ define([
                                                     }
                                                 }
 
+                                                // Create the constraint objects
+                                                for (k = 0; k < outPromoteObjs.length; k++) {
+                                                    for (l = 0; l < umpObj.interfaces.outputs.length; l++) {
+                                                        if (self.core.getAttribute(outPromoteObjs[k], 'name') === umpObj.interfaces.outputs[l].symbol) {
+                                                            var constraintObj = self.core.createNode({
+                                                                'parent': problemObject,
+                                                                'base': self.META['Constraint']
+                                                            });
+                                                            self.core.setAttribute(constraintObj, 'name', umpObj.interfaces.outputs[l].name);
+                                                            if (umpObj.interfaces.outputs[l].boundEquation.higher !== null) {
+                                                                self.core.setAttribute(constraintObj, 'Upper', umpObj.interfaces.outputs[l].boundEquation.higher);
+                                                                self.core.setAttribute(constraintObj, 'EnableUpper', true);
+                                                            }
+                                                            if (umpObj.interfaces.outputs[l].boundEquation.lower !== null) {
+                                                                self.core.setAttribute(constraintObj, 'Lower', umpObj.interfaces.outputs[l].boundEquation.lower);
+                                                                self.core.setAttribute(constraintObj, 'EnableLower', true);
+                                                            }
+                                                            self.core.setRegistry(constraintObj, 'position', {x: 700, y: 70 + k * 150});
+
+                                                            var constraintConnObj = self.core.createNode({
+                                                                'parent': problemObject,
+                                                                'base': self.META['PortToConstraintConn']
+                                                            });
+                                                            self.core.setPointer(constraintConnObj, 'src', outPromoteObjs[k]);
+                                                            self.core.setPointer(constraintConnObj, 'dst', constraintObj);
+                                                        }
+                                                    }
+                                                }
+
                                                 // This will save the changes. If you don't want to save;
                                                 // exclude self.save and call callback directly from this scope.
                                                 self.save('UMPImporter updated model.')
