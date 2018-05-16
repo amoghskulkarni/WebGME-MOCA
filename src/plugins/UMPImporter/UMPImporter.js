@@ -14,6 +14,7 @@ define([
     'plugin/PluginBase',
     'q',
     '../UMPImporter/Library/equation_parser',
+    '../UMPImporter/Library/inequality_parser',
     '../UMPImporter/Library/xml-js'
 ], function (
     PluginConfig,
@@ -37,6 +38,7 @@ define([
         PluginBase.call(this);
         this.pluginMetadata = pluginMetadata;
         this.equationParser = window.mathParser;
+        this.inequalityParser = window.inequalityParser;
         this.xmlParser = window.xml2json;
     };
 
@@ -191,6 +193,7 @@ define([
                         var controlParameter = {
                                 'name': "",
                                 'symbol': "",
+                                'boundEquation': null,
                                 'nodeObj': null
                             },
                             controlParameterObj = ppiObj.elements[p.toString()];
@@ -201,6 +204,16 @@ define([
                             }
                             if (controlParameterObj.elements[c.toString()].name === 'Symbol') {
                                 controlParameter['symbol'] = this.parseMathMLEquation(controlParameterObj.elements[c.toString()].elements['0']);
+                            }
+                            if (controlParameterObj.elements[c.toString()].name === 'BoundEquation') {
+                                var boundEqnString = this.parseMathMLEquation(controlParameterObj.elements[c.toString()].elements['0'].elements['0']);
+                                try {
+                                    controlParameter['boundEquation'] = this.inequalityParser.parse(boundEqnString);
+                                } catch (e) {
+                                    if (e === this.equationParser.SyntaxError) {
+                                        console.log('Inequality parser error!');
+                                    }
+                                }
                             }
                         }
 
@@ -214,6 +227,7 @@ define([
                         var moi = {
                                 'name': "",
                                 'symbol': "",
+                                'boundEquation': null,
                                 'nodeObj': null
                             },
                             moiObj = ppiObj.elements[p.toString()];
@@ -224,6 +238,16 @@ define([
                             }
                             if (moiObj.elements[c.toString()].name === 'Symbol') {
                                 moi['symbol'] = this.parseMathMLEquation(moiObj.elements[c.toString()].elements['0'])
+                            }
+                            if (moiObj.elements[c.toString()].name === 'BoundEquation') {
+                                boundEqnString = this.parseMathMLEquation(moiObj.elements[c.toString()].elements['0'].elements['0']);
+                                try {
+                                    moi['boundEquation'] = this.inequalityParser.parse(boundEqnString);
+                                } catch (e) {
+                                    if (e === this.equationParser.SyntaxError) {
+                                        console.log('Inequality parser error!');
+                                    }
+                                }
                             }
                         }
 
@@ -239,8 +263,7 @@ define([
                 var transformationObj = umpObj.elements[e.toString()];
                 for (var t = 0; t < transformationObj.elements.length; t++) {
                     if (transformationObj.elements[t.toString()].name === 'Equation') {
-                        var equationObj = transformationObj.elements[t.toString()],
-                            equationName = equationObj.attributes.name;
+                        var equationObj = transformationObj.elements[t.toString()];
 
                         // console.log(equationName);
 
