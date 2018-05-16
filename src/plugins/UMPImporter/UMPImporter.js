@@ -474,12 +474,12 @@ define([
                 callback(err, self.result);
             } else {
                 // We have an array of the children and can get information from them
-                var i;
+                var i, groupObject, problemObject;
                 for (i = 0; i < children.length; i++) {
                     var child = children[i];
                     if (self.core.getAttribute(child, 'name') === 'GroupLibrary') {
                         // Create a Group with the name of the process
-                        var groupObject = self.core.createNode({
+                        groupObject = self.core.createNode({
                             'parent': child,
                             'base': self.META['Group']
                         });
@@ -597,6 +597,24 @@ define([
                                                 }
                                             }
                                         }
+                                    }
+                                }
+
+                                for (j = 0; j < children.length; j++) {
+                                    if (self.core.getAttribute(children[j], 'name') === 'ProblemLibrary') {
+                                        // Create a Problem with the name of the process
+                                        problemObject = self.core.createNode({
+                                            'parent': children[j],
+                                            'base': self.META['Problem']
+                                        });
+                                        self.core.setAttribute(problemObject, 'name', umpObj.name + '__MOCA_Problem');
+
+                                        // Create an instance of the problem within the problem
+                                        var groupInstanceObject = self.core.createNode({
+                                            'parent': problemObject,
+                                            'base': groupObject
+                                        });
+                                        self.core.setAttribute(groupInstanceObject, 'name', umpObj.name + '__instance');
                                     }
                                 }
 
