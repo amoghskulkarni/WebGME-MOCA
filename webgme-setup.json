@@ -18,6 +18,10 @@
       "DatabasePopulator": {
         "src": "src/plugins/DatabasePopulator",
         "test": "test/plugins/DatabasePopulator"
+      },
+      "UMPImporter": {
+        "src": "src/plugins/UMPImporter",
+        "test": "test/plugins/UMPImporter"
       }
     },
     "seeds": {},
