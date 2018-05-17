@@ -690,6 +690,27 @@ define([
                                                     }
                                                 }
 
+                                                // Create the record objects
+                                                for (k = 0; k < outPromoteObjs.length; k++) {
+                                                    for (l = 0; l < umpObj.interfaces.outputs.length; l++) {
+                                                        if (self.core.getAttribute(outPromoteObjs[k], 'name') === umpObj.interfaces.outputs[l].symbol) {
+                                                            var recordObj = self.core.createNode({
+                                                                'parent': problemObject,
+                                                                'base': self.META['Record']
+                                                            });
+                                                            self.core.setAttribute(recordObj, 'name', umpObj.interfaces.outputs[l].name);
+                                                            self.core.setRegistry(recordObj, 'position', {x: 700, y: 70 + k * 150});
+
+                                                            var recordConnObj = self.core.createNode({
+                                                                'parent': problemObject,
+                                                                'base': self.META['PortToRecConn']
+                                                            });
+                                                            self.core.setPointer(recordConnObj, 'src', outPromoteObjs[k]);
+                                                            self.core.setPointer(recordConnObj, 'dst', recordObj);
+                                                        }
+                                                    }
+                                                }
+
                                                 // This will save the changes. If you don't want to save;
                                                 // exclude self.save and call callback directly from this scope.
                                                 self.save('UMPImporter updated model.')
