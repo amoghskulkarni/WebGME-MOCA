@@ -699,7 +699,7 @@ define([
                                                                 'base': self.META['Record']
                                                             });
                                                             self.core.setAttribute(recordObj, 'name', umpObj.interfaces.outputs[l].name);
-                                                            self.core.setRegistry(recordObj, 'position', {x: 700, y: 70 + k * 150});
+                                                            self.core.setRegistry(recordObj, 'position', {x: 800, y: 70 + k * 150});
 
                                                             var recordConnObj = self.core.createNode({
                                                                 'parent': problemObject,
