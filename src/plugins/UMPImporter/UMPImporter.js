@@ -326,6 +326,7 @@ define([
         }
 
         // Populate the dataConns
+        var matchedPorts = [];
         for (e = 0; e < UMP.MOCAComponents.length; e++) {
             for (var f = 0; f < UMP.MOCAComponents.length; f++) {
                 for (var g = 0; g < UMP.MOCAComponents[f].interfaces.inputs.length; g++) {
@@ -335,13 +336,13 @@ define([
                             'src': UMP.MOCAComponents[e].interfaces.output,
                             'dstParent': UMP.MOCAComponents[f].name,
                             'dst': UMP.MOCAComponents[f].interfaces.inputs[g]
-                        })
+                        });
                     }
                 }
+                matchedPorts.push(UMP.MOCAComponents[e].interfaces.output);
             }
         }
 
-        var matchedPorts = [];
         for (e = 0; e < UMP.MOCAComponents.length; e++) {
             for (f = 0; f < UMP.MOCAComponents[e].interfaces.inputs.length; f++) {
                 for (g = 0; g < UMP.MOCAComponents.length; g++) {
