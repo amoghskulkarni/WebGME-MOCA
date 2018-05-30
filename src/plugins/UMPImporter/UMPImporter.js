@@ -390,7 +390,7 @@ define([
         for (e = 0; e < UMP.MOCAComponents.length; e++) {
             for (f = 0; f < UMP.MOCAComponents[e].interfaces.inputs.length; f++) {
                 for (g = 0; g < UMP.MOCAComponents.length; g++) {
-                    for (var h = 0; h < UMP.MOCAComponents[f].interfaces.inputs.length; h++) {
+                    for (var h = 0; h < UMP.MOCAComponents[g].interfaces.inputs.length; h++) {
                         if (UMP.MOCAComponents[e].interfaces.inputs[f].symbol === UMP.MOCAComponents[g].interfaces.inputs[h].symbol
                             && e !== g
                             && !matchedPorts.includes(UMP.MOCAComponents[e].interfaces.inputs[f].symbol)) {
