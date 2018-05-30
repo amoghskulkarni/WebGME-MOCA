@@ -353,7 +353,7 @@ define([
 
                         for (c = 0; c < fpObj.elements.length; c++) {
                             if (fpObj.elements[c.toString()].name === 'Value') {
-                                value = fpObj.elements[c.toString()].elements['0']
+                                value = parseFloat(fpObj.elements[c.toString()].elements['0'].text);
                             }
                         }
 
