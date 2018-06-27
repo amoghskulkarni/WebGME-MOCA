@@ -77,10 +77,10 @@ define([
             this.$el.append('  Jacobian');
         }
 
-        this._skinParts.$OntologyBrowserBtn = ONTOLOGY_BROWSE_BTN_BASE.clone();
-        this.$el.append('<br>');
-        this.$el.append(this._skinParts.$OntologyBrowserBtn);
-        this.$el.append('  Ontology');
+        // this._skinParts.$OntologyBrowserBtn = ONTOLOGY_BROWSE_BTN_BASE.clone();
+        // this.$el.append('<br>');
+        // this.$el.append(this._skinParts.$OntologyBrowserBtn);
+        // this.$el.append('  Ontology');
 
         if (metaTypeName === 'Component' || metaTypeName === 'DataPreprocessor' || metaTypeName === 'LearningAlgorithm') {
             // onClick listener for the eqn button
@@ -107,14 +107,14 @@ define([
         }
 
         // onClick listener for the ontology button
-        this._skinParts.$OntologyBrowserBtn.on('click', function () {
-            if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true &&
-            nodeObj.getAttribute('OntologyElementID') !== undefined) {
-                self._showOntologyBrowserDialog();
-            }
-            event.stopPropagation();
-            event.preventDefault();
-        });
+        // this._skinParts.$OntologyBrowserBtn.on('click', function () {
+        //     if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true &&
+        //     nodeObj.getAttribute('OntologyElementID') !== undefined) {
+        //         self._showOntologyBrowserDialog();
+        //     }
+        //     event.stopPropagation();
+        //     event.preventDefault();
+        // });
     };
 
     CodeEditorDecorator.prototype._showOntologyBrowserDialog = function () {
