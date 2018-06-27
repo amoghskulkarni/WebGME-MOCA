@@ -308,6 +308,14 @@ define([
                                     return self.indexOf(value) === index;
                                 });
 
+                            for (var input_ctr = 0; input_ctr < MOCAComponent.interfaces.inputs.length; input_ctr++) {
+                                var i_symbol = MOCAComponent.interfaces.inputs[input_ctr];
+                                MOCAComponent.interfaces.inputs[input_ctr] = {
+                                    'symbol': i_symbol,
+                                    'value': 0
+                                }
+                            }
+
                             UMP.MOCAComponents.push(MOCAComponent);
                             // console.log(MOCAComponent);
                         } else {
@@ -325,17 +333,53 @@ define([
             }
         }
 
+        // Populate the inputs with initial values
+        for (e = 0; e < umpObj.elements.length; e++) {
+            if (umpObj.elements[e.toString()].name === 'ProductProcessInformation') {
+                ppiObj = umpObj.elements[e.toString()];
+
+                // Find the fixed parameters (inputs)
+                for (p = 0; p < ppiObj.elements.length; p++) {
+                    if (ppiObj.elements[p.toString()].name === 'FixedParameter') {
+                        var symbol = null,
+                            value = 0,
+                            fpObj = ppiObj.elements[p.toString()];
+
+                        for (c = 0; c < fpObj.elements.length; c++) {
+                            if (fpObj.elements[c.toString()].name === 'Symbol') {
+                                symbol = this.parseMathMLEquation(fpObj.elements[c.toString()].elements['0'])
+                            }
+                        }
+
+                        for (c = 0; c < fpObj.elements.length; c++) {
+                            if (fpObj.elements[c.toString()].name === 'Value') {
+                                value = parseFloat(fpObj.elements[c.toString()].elements['0'].text);
+                            }
+                        }
+
+                        for (c = 0; c < UMP.MOCAComponents.length; c++) {
+                            for (var d = 0; d < UMP.MOCAComponents[c].interfaces.inputs.length; d++) {
+                                if (symbol === UMP.MOCAComponents[c].interfaces.inputs[d].symbol) {
+                                    UMP.MOCAComponents[c].interfaces.inputs[d].value = value;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Populate the dataConns
         var matchedPorts = [];
         for (e = 0; e < UMP.MOCAComponents.length; e++) {
             for (var f = 0; f < UMP.MOCAComponents.length; f++) {
                 for (var g = 0; g < UMP.MOCAComponents[f].interfaces.inputs.length; g++) {
-                    if (UMP.MOCAComponents[e].interfaces.output === UMP.MOCAComponents[f].interfaces.inputs[g]) {
+                    if (UMP.MOCAComponents[e].interfaces.output === UMP.MOCAComponents[f].interfaces.inputs[g].symbol) {
                         UMP.dataConns.push({
                             'srcParent': UMP.MOCAComponents[e].name,
                             'src': UMP.MOCAComponents[e].interfaces.output,
                             'dstParent': UMP.MOCAComponents[f].name,
-                            'dst': UMP.MOCAComponents[f].interfaces.inputs[g]
+                            'dst': UMP.MOCAComponents[f].interfaces.inputs[g].symbol
                         });
                     }
                 }
@@ -346,20 +390,20 @@ define([
         for (e = 0; e < UMP.MOCAComponents.length; e++) {
             for (f = 0; f < UMP.MOCAComponents[e].interfaces.inputs.length; f++) {
                 for (g = 0; g < UMP.MOCAComponents.length; g++) {
-                    for (var h = 0; h < UMP.MOCAComponents[f].interfaces.inputs.length; h++) {
-                        if (UMP.MOCAComponents[e].interfaces.inputs[f] === UMP.MOCAComponents[g].interfaces.inputs[h]
+                    for (var h = 0; h < UMP.MOCAComponents[g].interfaces.inputs.length; h++) {
+                        if (UMP.MOCAComponents[e].interfaces.inputs[f].symbol === UMP.MOCAComponents[g].interfaces.inputs[h].symbol
                             && e !== g
-                            && !matchedPorts.includes(UMP.MOCAComponents[e].interfaces.inputs[f])) {
+                            && !matchedPorts.includes(UMP.MOCAComponents[e].interfaces.inputs[f].symbol)) {
                             UMP.dataConns.push({
                                 'srcParent': UMP.MOCAComponents[e].name,
-                                'src': UMP.MOCAComponents[e].interfaces.inputs[f],
+                                'src': UMP.MOCAComponents[e].interfaces.inputs[f].symbol,
                                 'dstParent': UMP.MOCAComponents[g].name,
-                                'dst': UMP.MOCAComponents[g].interfaces.inputs[h]
+                                'dst': UMP.MOCAComponents[g].interfaces.inputs[h].symbol
                             });
                         }
                     }
                 }
-                matchedPorts.push(UMP.MOCAComponents[e].interfaces.inputs[f])
+                matchedPorts.push(UMP.MOCAComponents[e].interfaces.inputs[f].symbol)
             }
         }
 
@@ -381,12 +425,12 @@ define([
         for (e = 0; e < UMP.interfaces.inputs.length; e++) {
             for (f = 0; f < UMP.MOCAComponents.length; f++) {
                 for (g = 0; g < UMP.MOCAComponents[f].interfaces.inputs.length; g++) {
-                    if (UMP.interfaces.inputs[e].symbol === UMP.MOCAComponents[f].interfaces.inputs[g]
+                    if (UMP.interfaces.inputs[e].symbol === UMP.MOCAComponents[f].interfaces.inputs[g].symbol
                         && !matchedInPromotes.includes(UMP.interfaces.inputs[e].symbol)) {
                         UMP.interfaceConns.push({
                             'type': 'input',
                             'dstParent': UMP.MOCAComponents[f].name,
-                            'dst': UMP.MOCAComponents[f].interfaces.inputs[g]
+                            'dst': UMP.MOCAComponents[f].interfaces.inputs[g].symbol
                         });
                         matchedInPromotes.push(UMP.interfaces.inputs[e].symbol)
                     }
@@ -456,7 +500,8 @@ define([
                     'parent': componentObject,
                     'base': self.META['Parameter']
                 });
-                self.core.setAttribute(inputPortObject, 'name', umpObj.MOCAComponents[i].interfaces.inputs[j]);
+                self.core.setAttribute(inputPortObject, 'name', umpObj.MOCAComponents[i].interfaces.inputs[j].symbol);
+                self.core.setAttribute(inputPortObject, 'Value', umpObj.MOCAComponents[i].interfaces.inputs[j].value);
                 self.core.setRegistry(inputPortObject, 'position', {x: 70, y: 70 + (j * 100)});
 
                 // Save the reference to the object for future
@@ -699,7 +744,7 @@ define([
                                                                 'base': self.META['Record']
                                                             });
                                                             self.core.setAttribute(recordObj, 'name', umpObj.interfaces.outputs[l].name);
-                                                            self.core.setRegistry(recordObj, 'position', {x: 800, y: 70 + k * 150});
+                                                            self.core.setRegistry(recordObj, 'position', {x: 850, y: 70 + k * 150});
 
                                                             var recordConnObj = self.core.createNode({
                                                                 'parent': problemObject,
