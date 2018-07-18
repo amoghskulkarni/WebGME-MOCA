@@ -332,9 +332,15 @@ define([
                             }
                         } else if (equationObj.elements["0"].name === "PFAModel") {
 
-                            var PFAModelString = equationObj.elements["0"].elements["0"].text;
+                            var PFAModelString = equationObj.elements["0"].elements["0"].text,
+                                PFAModelObj = JSON.parse(PFAModelString),
+                                PFAModelInputs = PFAModelObj.input,
+                                PFAModelOutputs = PFAModelObj.output,
+                                PFAModelAction = PFAModelObj.action;
 
-                            console.log(PFAModelString);
+                            console.log(PFAModelInputs);
+                            console.log(PFAModelOutputs);
+                            console.log(PFAModelAction);
                         }
                     }
                 }
