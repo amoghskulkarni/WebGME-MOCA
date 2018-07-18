@@ -184,11 +184,12 @@ define([
 
     UMPImporter.prototype.parsePFAEquation = function (PFAOutputObj, PFAEquationObj) {
         var self = this,
-            PFAEquationString = "";
+            PFAEquationString = "",
+            PFAEquationOutput = PFAOutputObj.fields["0"].name;
 
-        PFAEquationString += PFAOutputObj.fields["0"].name + "=";
+        PFAEquationString += PFAEquationOutput + "=";
 
-        PFAEquationString += this.equationStringFromAST(PFAEquationObj["emit"]);
+        PFAEquationString += this.equationStringFromAST(PFAEquationObj["emit"][PFAEquationOutput]);
 
         return PFAEquationString;
     };
