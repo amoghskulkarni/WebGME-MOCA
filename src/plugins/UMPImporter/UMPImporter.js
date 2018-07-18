@@ -305,6 +305,7 @@ define([
                                         return (value !== null) && (value !== 'pi');
                                     });
 
+                                // Remove duplicates
                                 MOCAComponent.interfaces.inputs = MOCAComponent.interfaces.inputs
                                     .filter(function (value, index, self) {
                                         return self.indexOf(value) === index;
@@ -336,11 +337,32 @@ define([
                                 PFAModelObj = JSON.parse(PFAModelString),
                                 PFAModelInputs = PFAModelObj.input,
                                 PFAModelOutputs = PFAModelObj.output,
-                                PFAModelAction = PFAModelObj.action;
+                                PFAModelAction = PFAModelObj.action,
+                                PFAModelEquationString = "dummy",
 
-                            console.log(PFAModelInputs);
-                            console.log(PFAModelOutputs);
-                            console.log(PFAModelAction);
+                                PFAMOCAComponent = {
+                                    'name': equationObj.attributes.name.replace(/ /g, '_'),
+                                    'interfaces': {
+                                        'output': PFAModelOutputs.fields["0"].name,
+                                        'inputs': []
+                                    },
+                                    'outputFunction': PFAModelEquationString,
+                                    'nodeObj': null,
+                                    'interfaceNodeObjs': {
+                                        'output': null,
+                                        'inputs': []
+                                    }
+                                };
+
+                                // Create inputs of the equation
+                                for (var p_ins = 0; p_ins < PFAModelInputs.fields.length; p_ins++) {
+                                    PFAMOCAComponent.interfaces.inputs.push({
+                                        'symbol': PFAModelInputs.fields[p_ins.toString()].name,
+                                        'value': 0
+                                    })
+                                }
+
+                                UMP.MOCAComponents.push(PFAMOCAComponent);
                         }
                     }
                 }
