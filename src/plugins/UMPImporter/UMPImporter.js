@@ -164,6 +164,35 @@ define([
         return ret;
     };
 
+    UMPImporter.prototype.equationStringFromAST = function (PFAEquationNode) {
+        var stringToReturn = "",
+            term;
+        if (typeof PFAEquationNode === 'string') {
+            stringToReturn = PFAEquationNode;
+        } else {
+            for (term in PFAEquationNode) {
+                if (term === "+" || term === "-" || term === "*" || term === "/") {
+                    stringToReturn += this.equationStringFromAST(PFAEquationNode[term]["0"])
+                        + term
+                        + this.equationStringFromAST(PFAEquationNode[term]["0"]);
+                }
+                break;
+            }
+        }
+        return stringToReturn;
+    };
+
+    UMPImporter.prototype.parsePFAEquation = function (PFAOutputObj, PFAEquationObj) {
+        var self = this,
+            PFAEquationString = "";
+
+        PFAEquationString += PFAOutputObj.fields["0"].name + "=";
+
+        PFAEquationString += this.equationStringFromAST(PFAEquationObj["emit"]);
+
+        return PFAEquationString;
+    };
+
     UMPImporter.prototype.parseUMPSpec = function(jsonObj) {
         var self = this,
             UMP = {
@@ -338,7 +367,6 @@ define([
                                 PFAModelInputs = PFAModelObj.input,
                                 PFAModelOutputs = PFAModelObj.output,
                                 PFAModelAction = PFAModelObj.action,
-                                PFAModelEquationString = "dummy",
 
                                 PFAMOCAComponent = {
                                     'name': equationObj.attributes.name.replace(/ /g, '_'),
@@ -346,7 +374,7 @@ define([
                                         'output': PFAModelOutputs.fields["0"].name,
                                         'inputs': []
                                     },
-                                    'outputFunction': PFAModelEquationString,
+                                    'outputFunction': "",
                                     'nodeObj': null,
                                     'interfaceNodeObjs': {
                                         'output': null,
@@ -361,6 +389,9 @@ define([
                                         'value': 0
                                     })
                                 }
+
+                                // Create an equation string
+                                PFAMOCAComponent.outputFunction = this.parsePFAEquation(PFAModelOutputs, PFAModelAction);
 
                                 UMP.MOCAComponents.push(PFAMOCAComponent);
                         }
