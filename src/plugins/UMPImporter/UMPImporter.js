@@ -174,7 +174,7 @@ define([
                 if (term === "+" || term === "-" || term === "*" || term === "/") {
                     stringToReturn += this.equationStringFromAST(PFAEquationNode[term]["0"])
                         + term
-                        + this.equationStringFromAST(PFAEquationNode[term]["0"]);
+                        + this.equationStringFromAST(PFAEquationNode[term]["1"]);
                 }
                 break;
             }
