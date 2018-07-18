@@ -267,66 +267,74 @@ define([
 
                         // console.log(equationName);
 
-                        var mathmlEquationObj = equationObj.elements["0"].elements["0"],
-                            mathmlEquationString = this.parseMathMLEquation(mathmlEquationObj),
-                            parsedEquationTree = [];
+                        if (equationObj.elements["0"].name === "MathMLEquation") {
 
-                        // console.log(mathmlEquationString);
+                            var mathmlEquationObj = equationObj.elements["0"].elements["0"],
+                                mathmlEquationString = this.parseMathMLEquation(mathmlEquationObj),
+                                parsedEquationTree = [];
 
-                        try {
-                            parsedEquationTree = this.equationParser.parse(mathmlEquationString);
-                        } catch (e) {
-                            if (e === this.equationParser.SyntaxError) {
-                                console.log('Parser error!');
-                                continue;
-                            }
-                        }
+                            // console.log(mathmlEquationString);
 
-                        if (parsedEquationTree.length !== 0) {
-                            // Flatten out the tree
-                            var flattenedParsedEquationTree = this.flattenTree(parsedEquationTree['inputs']),
-                                MOCAComponent = {
-                                    'name': equationObj.attributes.name.replace(/ /g, '_'),
-                                    'interfaces': {
-                                        'output': parsedEquationTree['output'],
-                                        'inputs': []
-                                    },
-                                    'outputFunction': mathmlEquationString,
-                                    'nodeObj': null,
-                                    'interfaceNodeObjs': {
-                                        'output': null,
-                                        'inputs': []
-                                    }
-                                };
-                            MOCAComponent.interfaces.inputs = flattenedParsedEquationTree
-                                .filter(function (value) {
-                                    return (value !== null) && (value !== 'pi');
-                                });
-
-                            MOCAComponent.interfaces.inputs = MOCAComponent.interfaces.inputs
-                                .filter(function (value, index, self) {
-                                    return self.indexOf(value) === index;
-                                });
-
-                            for (var input_ctr = 0; input_ctr < MOCAComponent.interfaces.inputs.length; input_ctr++) {
-                                var i_symbol = MOCAComponent.interfaces.inputs[input_ctr];
-                                MOCAComponent.interfaces.inputs[input_ctr] = {
-                                    'symbol': i_symbol,
-                                    'value': 0
+                            try {
+                                parsedEquationTree = this.equationParser.parse(mathmlEquationString);
+                            } catch (e) {
+                                if (e === this.equationParser.SyntaxError) {
+                                    console.log('Parser error!');
+                                    continue;
                                 }
                             }
 
-                            UMP.MOCAComponents.push(MOCAComponent);
-                            // console.log(MOCAComponent);
-                        } else {
-                            console.log('WARNING: Couldn\'t parse the mathematical equation for: ' + equationObj.attributes.name);
+                            if (parsedEquationTree.length !== 0) {
+                                // Flatten out the tree
+                                var flattenedParsedEquationTree = this.flattenTree(parsedEquationTree['inputs']),
+                                    MOCAComponent = {
+                                        'name': equationObj.attributes.name.replace(/ /g, '_'),
+                                        'interfaces': {
+                                            'output': parsedEquationTree['output'],
+                                            'inputs': []
+                                        },
+                                        'outputFunction': mathmlEquationString,
+                                        'nodeObj': null,
+                                        'interfaceNodeObjs': {
+                                            'output': null,
+                                            'inputs': []
+                                        }
+                                    };
+                                MOCAComponent.interfaces.inputs = flattenedParsedEquationTree
+                                    .filter(function (value) {
+                                        return (value !== null) && (value !== 'pi');
+                                    });
 
-                            var messageObj = new pluginMessage();
-                            messageObj.message = 'Could not parse the equation for "'
-                                + equationObj.attributes.name.replace(/ /g, '_')
-                                + '" MOCA Component.';
-                            messageObj.severity = 'warning';
-                            self.result.addMessage(messageObj);
+                                MOCAComponent.interfaces.inputs = MOCAComponent.interfaces.inputs
+                                    .filter(function (value, index, self) {
+                                        return self.indexOf(value) === index;
+                                    });
+
+                                for (var input_ctr = 0; input_ctr < MOCAComponent.interfaces.inputs.length; input_ctr++) {
+                                    var i_symbol = MOCAComponent.interfaces.inputs[input_ctr];
+                                    MOCAComponent.interfaces.inputs[input_ctr] = {
+                                        'symbol': i_symbol,
+                                        'value': 0
+                                    }
+                                }
+
+                                UMP.MOCAComponents.push(MOCAComponent);
+                                // console.log(MOCAComponent);
+                            } else {
+                                console.log('WARNING: Couldn\'t parse the mathematical equation for: ' + equationObj.attributes.name);
+
+                                var messageObj = new pluginMessage();
+                                messageObj.message = 'Could not parse the equation for "'
+                                    + equationObj.attributes.name.replace(/ /g, '_')
+                                    + '" MOCA Component.';
+                                messageObj.severity = 'warning';
+                                self.result.addMessage(messageObj);
+                            }
+                        } else if (equationObj.elements["0"].name === "PFAModel") {
+
+                            var PFAModelString = equationObj.elements["0"].elements["0"].text;
+
+                            console.log(PFAModelString);
                         }
                     }
                 }
